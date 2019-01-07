@@ -1,21 +1,14 @@
 ---
-title: Lexical Syntax
-layout: default
-chapter: 1
+标题: Lexical Syntax
+布局: 默认
+章节: 1
 ---
 
-# Lexical Syntax
+# 词汇和语法
 
-Scala programs are written using the Unicode Basic Multilingual Plane
-(_BMP_) character set; Unicode supplementary characters are not
-presently supported.  This chapter defines the two modes of Scala's
-lexical syntax, the Scala mode and the _XML mode_. If not
-otherwise mentioned, the following descriptions of Scala tokens refer
-to _Scala mode_, and literal characters ‘c’ refer to the ASCII fragment
-`\u0000` – `\u007F`.
+Scala程序使用 Unicode Basic Multilingual Plane（_BMP_）字符集编写; 目前不支持 Unicode supplementary 字符。本篇定义了 Scala的词法的两种模式，即Scala模式和 _XML 模式_ 。如果没有另外提及, Scala 符号的以下描述参考 _Scala 模式_, 文字字符‘c’引用ASCII片段`\u0000` – `\u007F`.
 
-In Scala mode, _Unicode escapes_ are replaced by the corresponding
-Unicode character with the given hexadecimal code.
+在 Scala 模式, _Unicode escapes_ 被相应的替换为具有给定十六进制代码的Unicode字符。
 
 ```ebnf
 UnicodeEscape ::= ‘\’ ‘u’ {‘u’} hexDigit hexDigit hexDigit hexDigit
@@ -29,16 +22,29 @@ but I can't make it work nor can I imagine how this would make sense,
 so I removed it for now.
 -->
 
-To construct tokens, characters are distinguished according to the following
-classes (Unicode general category given in parentheses):
-
-1. Whitespace characters. `\u0020 | \u0009 | \u000D | \u000A`.
-1. Letters, which include lower case letters (`Ll`), upper case letters (`Lu`),
-   titlecase letters (`Lt`), other letters (`Lo`), letter numerals (`Nl`) and the
-   two characters `\u0024 ‘$’` and `\u005F ‘_’`.
-1. Digits `‘0’ | … | ‘9’`.
-1. Parentheses `‘(’ | ‘)’ | ‘[’ | ‘]’ | ‘{’ | ‘}’ `.
-1. Delimiter characters ``‘`’ | ‘'’ | ‘"’ | ‘.’ | ‘;’ | ‘,’ ``.
+为了构建字符, 根据以下类别区分字符 (在括弧中给出 Unicode 的一般类别):
+1. 空白字符. [`\u0020 `](https://www.fileformat.info/info/unicode/char/0020/index.htm)|
+ [`\u0009`](https://www.fileformat.info/info/unicode/char/0009/index.htm) |
+  [`\u000D `](https://www.fileformat.info/info/unicode/char/000d/index.htm)|
+  [` \u000A`](https://www.fileformat.info/info/unicode/char/000a/index.htm).
+1. 字母, 包括
+小写字母 ([`Ll`](https://www.fileformat.info/info/unicode/category/Ll/index.htm)),
+大写字母([`Lu`](https://www.fileformat.info/info/unicode/category/Lu/index.htm)),
+单词开头大小写字母 ([`Lt`](http://www.fileformat.info/info/unicode/category/Lt/index.htm)),
+    其他字符
+   ([`Lo`](http://www.fileformat.info/info/unicode/category/Lo/index.htm)),
+    数字
+   ([`Nl`](http://www.fileformat.info/info/unicode/category/Nl/index.htm))
+    和另外两个字符
+     [`\u0024 ‘$’`](https://www.fileformat.info/info/unicode/char/0024/index.htm) 和
+     [`\u005F ‘_’`](http://www.fileformat.info/info/unicode/char/5f/index.htm).
+1. 数字 [`‘0’ | … | ‘9’`](https://www.fileformat.info/info/unicode/category/Nd/list.htm).
+<!--
+\U0030---\U0039
+-->
+1. 括弧 [`‘(’ `](https://www.fileformat.info/info/unicode/char/0028/index.htm)|
+[` ‘)’`]() |` ‘[’ | ‘]’ | ‘{’ | ‘}’ `.
+1. 分隔符 ``‘`’ | ‘'’ | ‘"’ | ‘.’ | ‘;’ | ‘,’ ``.
 1. Operator characters. These consist of all printable ASCII characters
    (`\u0020` - `\u007E`) that are in none of the sets above, mathematical
    symbols (`Sm`) and other symbols (`So`).
@@ -507,9 +513,9 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 #### Interpolated string
 
 ```ebnf
-interpolatedString ::= alphaid ‘"’ {printableChar \ (‘"’ | ‘\$’) | escape} ‘"’ 
+interpolatedString ::= alphaid ‘"’ {printableChar \ (‘"’ | ‘\$’) | escape} ‘"’
                          |  alphaid ‘"""’ {[‘"’] [‘"’] char \ (‘"’ | ‘\$’) | escape} {‘"’} ‘"""’
-escape                 ::= ‘\$\$’ 
+escape                 ::= ‘\$\$’
                          | ‘\$’ id
                          | ‘\$’ BlockExpr
 alphaid                ::= upper idrest
@@ -517,32 +523,32 @@ alphaid                ::= upper idrest
 
 ```
 
-Interpolated string consist of an identifier starting with a letter immediately 
-followed by a string literal. There may be no whitespace characters or comments 
-between the leading identifier and the opening quote ‘”’ of the string. 
-The string literal in a interpolated string can be standard (single quote) 
+Interpolated string consist of an identifier starting with a letter immediately
+followed by a string literal. There may be no whitespace characters or comments
+between the leading identifier and the opening quote ‘”’ of the string.
+The string literal in a interpolated string can be standard (single quote)
 or multi-line (triple quote).
 
-Inside a interpolated string none of the usual escape characters are interpreted 
-(except for unicode escapes) no matter whether the string literal is normal 
-(enclosed in single quotes) or multi-line (enclosed in triple quotes). 
-Instead, there is are two new forms of dollar sign escape. 
-The most general form encloses an expression in \${ and }, i.e. \${expr}. 
-The expression enclosed in the braces that follow the leading \$ character is of 
-syntactical category BlockExpr. Hence, it can contain multiple statements, 
-and newlines are significant. Single ‘\$’-signs are not permitted in isolation 
-in a interpolated string. A single ‘\$’-sign can still be obtained by doubling the ‘\$’ 
+Inside a interpolated string none of the usual escape characters are interpreted
+(except for unicode escapes) no matter whether the string literal is normal
+(enclosed in single quotes) or multi-line (enclosed in triple quotes).
+Instead, there is are two new forms of dollar sign escape.
+The most general form encloses an expression in \${ and }, i.e. \${expr}.
+The expression enclosed in the braces that follow the leading \$ character is of
+syntactical category BlockExpr. Hence, it can contain multiple statements,
+and newlines are significant. Single ‘\$’-signs are not permitted in isolation
+in a interpolated string. A single ‘\$’-sign can still be obtained by doubling the ‘\$’
 character: ‘\$\$’.
 
-The simpler form consists of a ‘\$’-sign followed by an identifier starting with 
-a letter and followed only by letters, digits, and underscore characters, 
-e.g \$id. The simpler form is expanded by putting braces around the identifier, 
-e.g \$id is equivalent to \${id}. In the following, unless we explicitly state otherwise, 
+The simpler form consists of a ‘\$’-sign followed by an identifier starting with
+a letter and followed only by letters, digits, and underscore characters,
+e.g \$id. The simpler form is expanded by putting braces around the identifier,
+e.g \$id is equivalent to \${id}. In the following, unless we explicitly state otherwise,
 we assume that this expansion has already been performed.
 
-The expanded expression is type checked normally. Usually, StringContext will resolve to 
-the default implementation in the scala package, 
-but it could also be user-defined. Note that new interpolators can also be added through 
+The expanded expression is type checked normally. Usually, StringContext will resolve to
+the default implementation in the scala package,
+but it could also be user-defined. Note that new interpolators can also be added through
 implicit conversion of the built-in scala.StringContext.
 
 One could write an extension
