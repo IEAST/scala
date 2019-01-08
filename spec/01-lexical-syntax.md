@@ -57,7 +57,7 @@ so I removed it for now.
 1. 操作符字符. 它们由所有可打印的ASCII字符组成
   ([`\u0020` - `\u007E`](http://www.fileformat.info/info/unicode/font/dejavu_sans_mono_oblique/blockview.htm?block=basic_latin))，数学符号 ([`Sm`](https://www.fileformat.info/info/unicode/category/Sm/list.htm)) 和其他符号 ([`So`](https://www.fileformat.info/info/unicode/category/So/list.htm))不包含在内.
 
-## Identifiers
+## 标识符
 
 ```ebnf
 op       ::=  opchar {opchar}
@@ -72,38 +72,26 @@ id       ::=  plainid
 idrest   ::=  {letter | digit} [‘_’ op]
 ```
 
-There are three ways to form an identifier. First, an identifier can
-start with a letter which can be followed by an arbitrary sequence of
-letters and digits. This may be followed by underscore `‘_‘`
-characters and another string composed of either letters and digits or
-of operator characters.  Second, an identifier can start with an operator
-character followed by an arbitrary sequence of operator characters.
-The preceding two forms are called _plain_ identifiers.  Finally,
-an identifier may also be formed by an arbitrary string between
-back-quotes (host systems may impose some restrictions on which
-strings are legal for identifiers).  The identifier then is composed
-of all characters excluding the backquotes themselves.
+有三种方法可以构成标识符。第一种，标识符以字母开头，后面可以是任意字母和数字序列. 接下来可以是`‘_‘`字符以及其他的字母和数字以及操作符字符组成的字符串。
+第二种, 标识符可以一操作符字符开头，后面接任意操作符字符序列。
+前两中形式称之为 *普通* 标识符.
+最后一种,标识符也可以由后引号之间的任意字符串形成（主机系统可以对哪些字符串能合法构成标识符增加一些限制）。然后，标识符由除反引号本身之外的所有字符组成。
 
-As usual, a longest match rule applies. For instance, the string
 
+像往常一样，适用最长匹配规则。 例如，字符串
 ```scala
 big_bob++=`def`
 ```
 
-decomposes into the three identifiers `big_bob`, `++=`, and
-`def`.
+可以分解为三个标识符`big_bob`, `++=`, 和`def`.
 
-The rules for pattern matching further distinguish between
-_variable identifiers_, which start with a lower case letter, and
-_constant identifiers_, which do not. For this purpose,
-underscore `‘_‘` is taken as lower case, and the ‘\$’ character
-is taken as upper case.
 
-The ‘\$’ character is reserved for compiler-synthesized identifiers.
-User programs should not define identifiers which contain ‘\$’ characters.
+模式匹配的规则进一步区分*变量标识符*和*常量标识符*，变量标识符以小写字母开头，而常量标识符则不是。为此，下划线`'_'`作为小写，'\$'字符作为大写。
 
-The following names are reserved words instead of being members of the
-syntactic class `id` of lexical identifiers.
+'$'字符被保留给编译器合成的标识符。 用户程序不应定义包含'$'字符的标识符。
+
+以下名称是保留字（词），而不是词法标识符的语法类`id`的成员。
+
 
 ```scala
 abstract    case        catch       class       def
@@ -117,10 +105,9 @@ val         var         while       with        yield
 _    :    =    =>    <-    <:    <%     >:    #    @
 ```
 
-The Unicode operators `\u21D2` ‘$\Rightarrow$’ and `\u2190` ‘$\leftarrow$’, which have the ASCII
-equivalents `=>` and `<-`, are also reserved.
+Unicode运算符 `\u21D2` ‘$\右箭头$’ and `\u2190` ‘$\左箭头$’, 也就是等同于ASCII中的 `=>` 和 `<-`, 也是保留的.
 
-> Here are examples of identifiers:
+> Here are examples of identifiers（以下是标识符的示例）:
 > ```scala
 >     x         Object        maxIndex   p2p      empty_?
 >     +         `yield`       αρετη     _y       dot_product_*
@@ -129,34 +116,30 @@ equivalents `=>` and `<-`, are also reserved.
 
 <!-- -->
 
-> When one needs to access Java identifiers that are reserved words in Scala, use backquote-enclosed strings.
-> For instance, the statement `Thread.yield()` is illegal, since `yield` is a reserved word in Scala.
-> However, here's a work-around: `` Thread.`yield`() ``
+> 当需要访问Scala中保留的java标识符时，请使用反引号括起的字符串。
+> 例如, 这个声明 `Thread.yield()` 是不合法的, 因为 `yield` 是Scala中的保留词.
+> 但是, 这是一个解决方法: `` Thread.`yield`() ``
 
-## Newline Characters
+## 换行符
 
 ```ebnf
 semi ::= ‘;’ |  nl {nl}
 ```
 
-Scala is a line-oriented language where statements may be terminated by
-semi-colons or newlines. A newline in a Scala source text is treated
-as the special token “nl” if the three following criteria are satisfied:
+Scala是一种面向行的语言，语句可以用分号或换行符终止。 如果满足以下三个条件，则Scala源文本中的换行符将被视为特殊标记“nl”：
 
-1. The token immediately preceding the newline can terminate a statement.
-1. The token immediately following the newline can begin a statement.
-1. The token appears in a region where newlines are enabled.
+1. 紧接在换行符之前的标识终止语句。
+1. 紧接在换行符之后的标识开始声明。
+1. 标识出现在启用换行符的区域内。
 
-The tokens that can terminate a statement are: literals, identifiers
-and the following delimiters and reserved words:
+可以终止语句的标识是：文字，标识符和以下分隔符和保留字:
 
 ```scala
 this    null    true    false    return    type    <xml-start>
 _       )       ]       }
 ```
 
-The tokens that can begin a statement are all Scala tokens _except_
-the following delimiters and reserved words:
+可以开始声明的标记都是Scala标识，但以下分隔符和保留字*除外*：
 
 ```scala
 catch    else    extends    finally    forSome    match
@@ -164,17 +147,14 @@ with    yield    ,    .    ;    :    =    =>    <-    <:    <%
 >:    #    [    )    ]    }
 ```
 
-A `case` token can begin a statement only if followed by a
-`class` or `object` token.
+只有在后面接`class`和`object`标识时，`case`标记才能开始语句。  
 
-Newlines are enabled in:
+在以下位置启动换行：
 
-1. all of a Scala source file, except for nested regions where newlines
-   are disabled, and
-1. the interval between matching `{` and `}` brace tokens,
-   except for nested regions where newlines are disabled.
+1. 所有Scala源文件，除了禁用换行的嵌套区域，and
+1. 匹配`{`和`}`大括号标记之间的间隔，但禁用换行符的嵌套区域除外。
 
-Newlines are disabled in:
+以下位置禁止换行:
 
 1. the interval between matching `(` and `)` parenthesis tokens, except for
    nested regions where newlines are enabled, and
