@@ -10,6 +10,7 @@ Scala程序使用 Unicode Basic Multilingual Plane（_BMP_）字符集编写; �
 
 在 Scala 模式, _Unicode escapes_ 被相应的替换为具有给定十六进制代码的Unicode字符。
 
+
 ```ebnf
 UnicodeEscape ::= ‘\’ ‘u’ {‘u’} hexDigit hexDigit hexDigit hexDigit
 hexDigit      ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
@@ -42,18 +43,25 @@ so I removed it for now.
 <!--
 \U0030---\U0039
 -->
-1. 括弧 [`‘(’ `](https://www.fileformat.info/info/unicode/char/0028/index.htm)|
-[` ‘)’`]() |` ‘[’ | ‘]’ | ‘{’ | ‘}’ `.
-1. 分隔符 ``‘`’ | ‘'’ | ‘"’ | ‘.’ | ‘;’ | ‘,’ ``.
-1. Operator characters. These consist of all printable ASCII characters
-   (`\u0020` - `\u007E`) that are in none of the sets above, mathematical
-   symbols (`Sm`) and other symbols (`So`).
+1. 括弧
+[`‘(’ `](https://www.fileformat.info/info/unicode/char/0028/index.htm)|
+[`‘)’`](https://www.fileformat.info/info/unicode/char/0029/index.htm) |
+[`‘[’`](http://www.fileformat.info/info/unicode/char/ff3b/index.htm) |
+[`‘]’`](http://www.fileformat.info/info/unicode/char/5d/index.htm)|
+[`‘{’`](www.fileformat.info/info/unicode/char/007b/index.htm) |
+[`‘}’`](www.fileformat.info/info/unicode/char/007D/index.htm).
+1. 分隔符
+[``‘`’``](https://www.fileformat.info/info/unicode/char/055d/index.htm)|
+ [`‘'’`](https://www.fileformat.info/info/unicode/char/0027/index.htm)|
+ [`‘"’`](https://www.fileformat.info/info/unicode/char/0022/index.htm)|[` ‘.’`](https://www.fileformat.info/info/unicode/char/002e/index.htm)|[ `‘;’`](https://www.fileformat.info/info/unicode/char/003b/index.htm)|[ `‘,’ `](https://www.fileformat.info/info/unicode/char/002c/index.htm).
+1. 操作符字符. 它们由所有可打印的ASCII字符组成
+  ([`\u0020` - `\u007E`](http://www.fileformat.info/info/unicode/font/dejavu_sans_mono_oblique/blockview.htm?block=basic_latin))，数学符号 ([`Sm`](https://www.fileformat.info/info/unicode/category/Sm/list.htm)) 和其他符号 ([`So`](https://www.fileformat.info/info/unicode/category/So/list.htm))不包含在内.
 
 ## Identifiers
 
 ```ebnf
 op       ::=  opchar {opchar}
-varid    ::=  lower idrest
+varid    ::=  lower idrestg
 boundvarid ::=  varid
              | ‘`’ varid ‘`’
 plainid  ::=  upper idrest
@@ -323,7 +331,6 @@ Literal  ::=  [‘-’] integerLiteral
            |  booleanLiteral
            |  characterLiteral
            |  stringLiteral
-           |  interpolatedString
            |  symbolLiteral
            |  ‘null’
 ```
@@ -339,15 +346,13 @@ digit           ::=  ‘0’ | nonZeroDigit
 nonZeroDigit    ::=  ‘1’ | … | ‘9’
 ```
 
-Values of type `Int` are all integer
+Integer literals are usually of type `Int`, or of type
+`Long` when followed by a `L` or
+`l` suffix. Values of type `Int` are all integer
 numbers between $-2\^{31}$ and $2\^{31}-1$, inclusive.  Values of
 type `Long` are all integer numbers between $-2\^{63}$ and
 $2\^{63}-1$, inclusive. A compile-time error occurs if an integer literal
 denotes a number outside these ranges.
-
-Integer literals are usually of type `Int`, or of type
-`Long` when followed by a `L` or `l` suffix.
-(Lowercase `l` is deprecated for reasons of legibility.)
 
 However, if the expected type [_pt_](06-expressions.html#expression-typing) of a literal
 in an expression is either `Byte`, `Short`, or `Char`
@@ -361,11 +366,8 @@ is _pt_. The numeric ranges given by these types are:
 |`Short`         | $-2\^{15}$ to $2\^{15}-1$|
 |`Char`          | $0$ to $2\^{16}-1$       |
 
-The digits of a numeric literal may be separated by
-arbitrarily many underscores for purposes of legibility.
-
 > ```scala
-> 0           21_000      0x7F        -42L        0xFFFF_FFFF
+> 0          21          0xFFFFFFFF       -42L
 > ```
 
 ### Floating Point Literals
@@ -510,54 +512,6 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 > [implicit conversion](06-expressions.html#implicit-conversions) from `String` to
 > `StringLike`, the method is applicable to all strings.
 
-#### Interpolated string
-
-```ebnf
-interpolatedString ::= alphaid ‘"’ {printableChar \ (‘"’ | ‘\$’) | escape} ‘"’
-                         |  alphaid ‘"""’ {[‘"’] [‘"’] char \ (‘"’ | ‘\$’) | escape} {‘"’} ‘"""’
-escape                 ::= ‘\$\$’
-                         | ‘\$’ id
-                         | ‘\$’ BlockExpr
-alphaid                ::= upper idrest
-                         |  varid
-
-```
-
-Interpolated string consist of an identifier starting with a letter immediately
-followed by a string literal. There may be no whitespace characters or comments
-between the leading identifier and the opening quote ‘”’ of the string.
-The string literal in a interpolated string can be standard (single quote)
-or multi-line (triple quote).
-
-Inside a interpolated string none of the usual escape characters are interpreted
-(except for unicode escapes) no matter whether the string literal is normal
-(enclosed in single quotes) or multi-line (enclosed in triple quotes).
-Instead, there is are two new forms of dollar sign escape.
-The most general form encloses an expression in \${ and }, i.e. \${expr}.
-The expression enclosed in the braces that follow the leading \$ character is of
-syntactical category BlockExpr. Hence, it can contain multiple statements,
-and newlines are significant. Single ‘\$’-signs are not permitted in isolation
-in a interpolated string. A single ‘\$’-sign can still be obtained by doubling the ‘\$’
-character: ‘\$\$’.
-
-The simpler form consists of a ‘\$’-sign followed by an identifier starting with
-a letter and followed only by letters, digits, and underscore characters,
-e.g \$id. The simpler form is expanded by putting braces around the identifier,
-e.g \$id is equivalent to \${id}. In the following, unless we explicitly state otherwise,
-we assume that this expansion has already been performed.
-
-The expanded expression is type checked normally. Usually, StringContext will resolve to
-the default implementation in the scala package,
-but it could also be user-defined. Note that new interpolators can also be added through
-implicit conversion of the built-in scala.StringContext.
-
-One could write an extension
-```scala
-implicit class StringInterpolation(s: StringContext) {
-  def id(args: Any*) = ???
-}
-```
-
 ### Escape Sequences
 
 The following escape sequences are recognized in character and string literals.
@@ -573,6 +527,10 @@ The following escape sequences are recognized in character and string literals.
 | `‘\‘ ‘'‘`     | `\u0027` | single quote    |  `'`   |
 | `‘\‘ ‘\‘`     | `\u005c` | backslash       |  `\`   |
 
+A character with Unicode between 0 and 255 may also be represented by
+an octal escape, i.e. a backslash `'\'` followed by a
+sequence of up to three octal characters.
+
 It is a compile time error if a backslash character in a character or
 string literal does not start a valid escape sequence.
 
@@ -582,9 +540,9 @@ string literal does not start a valid escape sequence.
 symbolLiteral  ::=  ‘'’ plainid
 ```
 
-A symbol literal `'x` is a shorthand for the expression `scala.Symbol("x")` and
-is of the [literal type](03-types#literal-types) `'x`. `Symbol` is a [case
-class](05-classes-and-objects.html#case-classes), which is defined as follows.
+A symbol literal `'x` is a shorthand for the expression
+`scala.Symbol("x")`. `Symbol` is a [case class](05-classes-and-objects.html#case-classes),
+which is defined as follows.
 
 ```scala
 package scala
