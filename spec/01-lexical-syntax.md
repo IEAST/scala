@@ -107,7 +107,7 @@ _    :    =    =>    <-    <:    <%     >:    #    @
 
 Unicode运算符 `\u21D2` ‘$\右箭头$’ and `\u2190` ‘$\左箭头$’, 也就是等同于ASCII中的 `=>` 和 `<-`, 也是保留的.
 
-> Here are examples of identifiers（以下是标识符的示例）:
+>以下是标识符的示例:
 > ```scala
 >     x         Object        maxIndex   p2p      empty_?
 >     +         `yield`       αρετη     _y       dot_product_*
@@ -156,58 +156,35 @@ with    yield    ,    .    ;    :    =    =>    <-    <:    <%
 
 以下位置禁止换行:
 
-1. the interval between matching `(` and `)` parenthesis tokens, except for
-   nested regions where newlines are enabled, and
-1. the interval between matching `[` and `]` bracket tokens, except for nested
-   regions where newlines are enabled.
-1. The interval between a `case` token and its matching
-   `=>` token, except for nested regions where newlines are
-   enabled.
-1. Any regions analyzed in [XML mode](#xml-mode).
+1. 匹配`(`和`)`括号标记之间的间隔，启用了换行符的嵌套区域除外，and
+1. 匹配`[`和`]`括号标记之间的间隔，启用了换行符的嵌套区域除外
+1. 匹配`case`标记和`=>` 标记之间的间隔, 但启用了换行符的嵌套区域除外
+1. 在 [XML mode](#xml-mode)模式下分析的任何区域.
 
-Note that the brace characters of `{...}` escapes in XML and
-string literals are not tokens,
-and therefore do not enclose a region where newlines
-are enabled.
+请注意，`{...}`中的括号字符以XML格式转义，字符串文字不是标记，因此不会包含启用换行符的区域。  
 
-Normally, only a single `nl` token is inserted between two
-consecutive non-newline tokens which are on different lines, even if there are multiple lines
-between the two tokens. However, if two tokens are separated by at
-least one completely blank line (i.e a line which contains no
-printable characters), then two `nl` tokens are inserted.
+通常，只有一个`nl`标记插入在不同行上的两个连续非换行标记之间，即使两个标记之间存在多条线。 但是，如果两个标记被至少一个完全空行（即不包含可打印字符的行）分开，则插入两个`nl`标记。  
 
-The Scala grammar (given in full [here](13-syntax-summary.html))
-contains productions where optional `nl` tokens, but not
-semicolons, are accepted. This has the effect that a newline in one of these
-positions does not terminate an expression or statement. These positions can
-be summarized as follows:
+Scala语法（在这里完整给出[here](13-syntax-summary.html)）包含可选`nl`标记但不接受分号的产品。 这导致其中一个位置的换行不终止表达式或语句。 这些位置可归纳如下：
 
-Multiple newline tokens are accepted in the following places (note
-that a semicolon in place of the newline would be illegal in every one
-of these cases):
+在以下位置接受多个换行符令（请注意，在每种情况下，用分号代替换行符都是非法的）：
 
-- between the condition of a
-  [conditional expression](06-expressions.html#conditional-expressions)
-  or [while loop](06-expressions.html#while-loop-expressions) and the next
-  following expression,
-- between the enumerators of a
-  [for-comprehension](06-expressions.html#for-comprehensions-and-for-loops)
-  and the next following expression, and
-- after the initial `type` keyword in a
-  [type definition or declaration](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases).
+- 在
+  [条件表达式](06-expressions.html#conditional-expressions)
+  或者 [while 循环](06-expressions.html#while-loop-expressions) 的条件与下一个表达式之间
+- 在
+  [for-comprehension](06-expressions.html#for-comprehensions-and-for-loops)枚举数和下一个表达式之间, and
+- 在 `type`
+  [类型定义或声明](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases)中的初始类型关键字之后.
 
-A single new line token is accepted
+接受一个新的行标记
 
-- in front of an opening brace ‘{’, if that brace is a legal
-  continuation of the current statement or expression,
-- after an [infix operator](06-expressions.html#prefix,-infix,-and-postfix-operations),
-  if the first token on the next line can start an expression,
-- in front of a [parameter clause](04-basic-declarations-and-definitions.html#function-declarations-and-definitions), and
-- after an [annotation](11-annotations.html#user-defined-annotations).
+- 在开头括号'{'前面，如果该括号是当前陈述或表达的合法延续 ,
+- 在[中缀表达式](06-expressions.html#prefix,-infix,-and-postfix-operations)之后，如果下一行的第一个标记可以启动表达式 ,
+- 在 [参数子句](04-basic-declarations-and-definitions.html#function-declarations-and-definitions)之前, and
+- 在 [注释](11-annotations.html#user-defined-annotations)之后.
 
-> The newline tokens between the two lines are not
-> treated as statement separators.
->
+> 两行之间的换行符不被视为语句分隔符。
 > ```scala
 > if (x > 0)
 >   x = x - 1
@@ -233,8 +210,7 @@ A single new line token is accepted
 > }
 > ```
 >
-> With an additional newline character, the same code is interpreted as
-> an object creation followed by a local block:
+> 使用额外的换行标识符时, 类似的代码被解释为同一对象创建继承至当前区块
 >
 > ```scala
 > new Iterator[Int]
@@ -245,7 +221,6 @@ A single new line token is accepted
 >   def next = { x += 1; x }
 > }
 > ```
-
 <!-- -->
 
 > ```scala
@@ -253,8 +228,7 @@ A single new line token is accepted
 >   x > 10
 > ```
 >
-> With an additional newline character, the same code is interpreted as
-> two expressions:
+> 使用额外的换行符，相同的代码将被解释为两个表达式：
 >
 > ```scala
 >   x < 0 ||
@@ -269,8 +243,7 @@ A single new line token is accepted
 >         (y: Int) = x + y
 > ```
 >
-> With an additional newline character, the same code is interpreted as
-> an abstract function definition and a syntactically illegal statement:
+> 使用额外的换行符，相同的代码被解释为抽象函数定义和语法上的非法语句:
 >
 > ```scala
 > def func(x: Int)
@@ -285,8 +258,7 @@ A single new line token is accepted
 > protected class Data { ... }
 > ```
 >
-> With an additional newline character, the same code is interpreted as
-> an attribute and a separate statement (which is syntactically illegal).
+> 使用额外的换行符时，相同的代码将被解释为属性和单独的语句（在语法上是非法的）。
 >
 > ```scala
 > @serializable
@@ -294,11 +266,9 @@ A single new line token is accepted
 > protected class Data { ... }
 > ```
 
-## Literals
+## 常量
 
-There are literals for integer numbers, floating point numbers,
-characters, booleans, symbols, strings.  The syntax of these literals is in
-each case as in Java.
+有整数型，浮点型，字符，布尔型，符号，字符串的文字。 这些文字的语法在任何情况下都与Java一样。
 
 <!-- TODO
   say that we take values from Java, give examples of some lits in
@@ -315,7 +285,7 @@ Literal  ::=  [‘-’] integerLiteral
            |  ‘null’
 ```
 
-### Integer Literals
+### 整型常量
 
 ```ebnf
 integerLiteral  ::=  (decimalNumeral | hexNumeral)
@@ -326,19 +296,9 @@ digit           ::=  ‘0’ | nonZeroDigit
 nonZeroDigit    ::=  ‘1’ | … | ‘9’
 ```
 
-Integer literals are usually of type `Int`, or of type
-`Long` when followed by a `L` or
-`l` suffix. Values of type `Int` are all integer
-numbers between $-2\^{31}$ and $2\^{31}-1$, inclusive.  Values of
-type `Long` are all integer numbers between $-2\^{63}$ and
-$2\^{63}-1$, inclusive. A compile-time error occurs if an integer literal
-denotes a number outside these ranges.
+整数文字通常是`Int`类型，或者类型为`Long`，后跟`L`或`l`后缀。 `int`类型的值是$ -2 ^ {31} $和$ 2 ^ {31} -1$之间的整数.  `Long`类型的值都是$ -2 ^ {63} $和$ 2 ^ {63} -1 $之间的整数。 如果整数是超出这些范围的数字，则会发生编译时错误。.
 
-However, if the expected type [_pt_](06-expressions.html#expression-typing) of a literal
-in an expression is either `Byte`, `Short`, or `Char`
-and the integer number fits in the numeric range defined by the type,
-then the number is converted to type _pt_ and the literal's type
-is _pt_. The numeric ranges given by these types are:
+但是，如果表达式中文字的预期类型[_pt_](06-expressions.html#expression-typing) 是 `Byte`, `Short`, 或者 `Char`并且整数适合该类型定义的数值范围，则该数字将转换为 _pt_ 类型，常量类型为 _pt_。这些类型给出的数值范围是:
 
 |                |                          |
 |----------------|--------------------------|
@@ -350,7 +310,7 @@ is _pt_. The numeric ranges given by these types are:
 > 0          21          0xFFFFFFFF       -42L
 > ```
 
-### Floating Point Literals
+### 浮点常量
 
 ```ebnf
 floatingPointLiteral  ::=  digit {digit} ‘.’ digit {digit} [exponentPart] [floatType]
@@ -361,16 +321,9 @@ exponentPart          ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] digit {digit}
 floatType             ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
 ```
 
-Floating point literals are of type `Float` when followed by
-a floating point type suffix `F` or `f`, and are
-of type `Double` otherwise.  The type `Float`
-consists of all IEEE 754 32-bit single-precision binary floating point
-values, whereas the type `Double` consists of all IEEE 754
-64-bit double-precision binary floating point values.
+浮点常量的类型为 `Float` 后跟浮点类型后缀 `F` 或 `f`, 则为`Double` 类型. 。 `Float`类型包含所有IEEE 754 32位单精度二进制浮点值，而`Double`类型包含所有IEEE 754 64位双精度二进制浮点值。
 
-If a floating point literal in a program is followed by a token
-starting with a letter, there must be at least one intervening
-whitespace character between the two tokens.
+如果程序中的浮点文字后跟一个以字母开头的标记，则两个标记之间必须至少有一个空白字符。
 
 > ```scala
 > 0.0        1e30f      3.14159f      1.0e-100      .1
@@ -378,81 +331,62 @@ whitespace character between the two tokens.
 
 <!-- -->
 
-> The phrase `1.toString` parses as three different tokens:
-> the integer literal `1`, a `.`, and the identifier `toString`.
+> 短语 `1.toString` 解析为三个不同的标记:
+> 整数 `1` , `.` , 和标识符 `toString`.
 
 <!-- -->
 
-> `1.` is not a valid floating point literal because the mandatory digit after the `.` is missing.
+> `1.` 不是有效的浮点字面值，因为后面的强制位`.`丢失。
 
-### Boolean Literals
+### 布尔常量
 
 ```ebnf
 booleanLiteral  ::=  ‘true’ | ‘false’
 ```
 
-The boolean literals `true` and `false` are
-members of type `Boolean`.
+布尔常量 `true` 和 `false`是 `Boolean`类型的成员.
 
-### Character Literals
+### 字符常量
 
 ```ebnf
 characterLiteral  ::=  ‘'’ (charNoQuoteOrNewline | UnicodeEscape | charEscapeSeq) ‘'’
 ```
 
-A character literal is a single character enclosed in quotes.
-The character can be any Unicode character except the single quote
-delimiter or `\u000A` (LF) or `\u000D` (CR);
-or any Unicode character represented by either a
-[Unicode escape](01-lexical-syntax.html) or by an [escape sequence](#escape-sequences).
+字符文字是用引号括起来的单个字符。字符可以是除单引号分隔符或`\u000A`(LF)
+或`\u000D` (CR)之外的任何Unicode字符。或由[Unicode转义符](01-lexical-syntax.html)或[转义序列](#escape-sequences)表示的何Unicode字符。
 
 > ```scala
 > 'a'    '\u0041'    '\n'    '\t'
 > ```
 
-Note that although Unicode conversion is done early during parsing,
-so that Unicode characters are generally equivalent to their escaped
-expansion in the source text, literal parsing accepts arbitrary
-Unicode escapes, including the character literal `'\u000A'`,
-which can also be written using the escape sequence `'\n'`.
+注意，unicode转换是在解析过程的早期完成的。因此Unicode字符通常等同于源文本中的转义扩展，但文字解析接受任意Unicode转义，包括字符文字`'\u000A'`，也可以使用转义序列`'\n'`。
 
-### String Literals
+### 字符串文字
 
 ```ebnf
 stringLiteral  ::=  ‘"’ {stringElement} ‘"’
 stringElement  ::=  charNoDoubleQuoteOrNewline | UnicodeEscape | charEscapeSeq
 ```
 
-A string literal is a sequence of characters in double quotes.
-The characters can be any Unicode character except the double quote
-delimiter or `\u000A` (LF) or `\u000D` (CR);
-or any Unicode character represented by either a
-[Unicode escape](01-lexical-syntax.html) or by an [escape sequence](#escape-sequences).
+字符串文字是双引号中的字符序列。字符串可以是除单引号分隔符或`\u000A`(LF)
+或`\u000D` (CR)之外的任何Unicode字符。或由[Unicode转义符](01-lexical-syntax.html)或[转义序列](#escape-sequences)表示的何Unicode字符。
 
-If the string literal contains a double quote character, it must be escaped using
-`"\""`.
+如果字符串文字包含双引号字符，则必须使用`"\""`进行转义.
 
-The value of a string literal is an instance of class `String`.
+字符串文字的值是类`String`的实例。
 
 > ```scala
 > "Hello, world!\n"
 > "\"Hello,\" replied the world."
 > ```
 
-#### Multi-Line String Literals
+#### 多行字符串文字
 
 ```ebnf
 stringLiteral   ::=  ‘"""’ multiLineChars ‘"""’
 multiLineChars  ::=  {[‘"’] [‘"’] charNoDoubleQuote} {‘"’}
 ```
-
-A multi-line string literal is a sequence of characters enclosed in
-triple quotes `""" ... """`. The sequence of characters is
-arbitrary, except that it may contain three or more consecutive quote characters
-only at the very end. Characters
-must not necessarily be printable; newlines or other
-control characters are also permitted.  Unicode escapes work as everywhere else, but none
-of the escape sequences [here](#escape-sequences) are interpreted.
+多行字符串文字是用三引号`""" ... """`括起来的字符序列。字符的顺序是任意的，但它可能只在最后包含三个或更多的连续引号字符。 字符不一定是可打印的; 也允许换行或其他控制字符。Unicode转义符可以像其他地方一样工作，但没有解释[转义序列](#escape-sequences)。
 
 > ```scala
 >   """the present string
@@ -460,7 +394,7 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 >      lines."""
 > ```
 >
-> This would produce the string:
+> 这会产生字符串：
 >
 > ```scala
 > the present string
@@ -468,9 +402,7 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 >      lines.
 > ```
 >
-> The Scala library contains a utility method `stripMargin`
-> which can be used to strip leading whitespace from multi-line strings.
-> The expression
+> Scala库包含一个实用程序方法 `stripMargin`可用于从多行字符串中去除后面几行首位的空格。 表示为
 >
 > ```scala
 >  """the present string
@@ -478,7 +410,7 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 >    |lines.""".stripMargin
 > ```
 >
-> evaluates to
+> 执行后结果
 >
 > ```scala
 > the present string
@@ -486,43 +418,40 @@ of the escape sequences [here](#escape-sequences) are interpreted.
 > lines.
 > ```
 >
-> Method `stripMargin` is defined in class
-> [scala.collection.immutable.StringLike](http://www.scala-lang.org/api/current/#scala.collection.immutable.StringLike).
-> Because there is a predefined
-> [implicit conversion](06-expressions.html#implicit-conversions) from `String` to
-> `StringLike`, the method is applicable to all strings.
+> 方法`stripMargin`在类
+> [scala.collection.immutable.StringLike](http://www.scala-lang.org/api/current/#scala.collection.immutable.StringLike)中定义.
+> 因为从 `String` 到
+> `StringLike`存在预先确定的
+> [implicit conversion](06-expressions.html#implicit-conversions) , 所以该方法适用于所有的字符串。
 
-### Escape Sequences
+### 转义字符
 
-The following escape sequences are recognized in character and string literals.
+在字符和字符串文字中可识别以下转义序列。
 
-| charEscapeSeq | unicode  | name            | char   |
-|---------------|----------|-----------------|--------|
-| `‘\‘ ‘b‘`     | `\u0008` | backspace       |  `BS`  |
-| `‘\‘ ‘t‘`     | `\u0009` | horizontal tab  |  `HT`  |
-| `‘\‘ ‘n‘`     | `\u000a` | linefeed        |  `LF`  |
-| `‘\‘ ‘f‘`     | `\u000c` | form feed       |  `FF`  |
-| `‘\‘ ‘r‘`     | `\u000d` | carriage return |  `CR`  |
-| `‘\‘ ‘"‘`     | `\u0022` | double quote    |  `"`   |
-| `‘\‘ ‘'‘`     | `\u0027` | single quote    |  `'`   |
-| `‘\‘ ‘\‘`     | `\u005c` | backslash       |  `\`   |
+| charEscapeSeq | unicode  | name      | char   |
+|---------------|----------|-----------|--------|
+| `‘\‘ ‘b‘`     | `\u0008` | 退格       |  `BS`  |
+| `‘\‘ ‘t‘`     | `\u0009` | 水平制表   |  `HT`  |
+| `‘\‘ ‘n‘`     | `\u000a` | 换行       |  `LF`  |
+| `‘\‘ ‘f‘`     | `\u000c` | 换页       |  `FF`  |
+| `‘\‘ ‘r‘`     | `\u000d` | 回车       |  `CR`  |
+| `‘\‘ ‘"‘`     | `\u0022` | 双引号     |  `"`   |
+| `‘\‘ ‘'‘`     | `\u0027` | 单引号     |  `'`   |
+| `‘\‘ ‘\‘`     | `\u005c` | 反斜线     |  `\`   |
 
-A character with Unicode between 0 and 255 may also be represented by
-an octal escape, i.e. a backslash `'\'` followed by a
-sequence of up to three octal characters.
+Unicode在0到255之间的字符也可以用八进制转义表示，即反斜杠 `'\'` 后跟最多三个八进制字符的序列。
 
-It is a compile time error if a backslash character in a character or
-string literal does not start a valid escape sequence.
+如果字符或字符串文字中的反斜杠字符未启动有效的转义序列，则会编译时报错。
 
-### Symbol literals
+### 符号文字
 
 ```ebnf
 symbolLiteral  ::=  ‘'’ plainid
 ```
 
-A symbol literal `'x` is a shorthand for the expression
-`scala.Symbol("x")`. `Symbol` is a [case class](05-classes-and-objects.html#case-classes),
-which is defined as follows.
+符号文字`'x` 是表达式
+`scala.Symbol("x")`的简写.`Symbol`是一个 [case class](05-classes-and-objects.html#case-classes),
+定义如下。
 
 ```scala
 package scala
@@ -531,31 +460,18 @@ final case class Symbol private (name: String) {
 }
 ```
 
-The `apply` method of `Symbol`'s companion object
-caches weak references to `Symbol`s, thus ensuring that
-identical symbol literals are equivalent with respect to reference
-equality.
+`Symbol`的伴随对象的`apply`方法封装了对`Symbol`的弱引用，从而确保相同的符号文字相对于引用是等价的。
 
-## Whitespace and Comments
+## 空格和注释
 
-Tokens may be separated by whitespace characters
-and/or comments. Comments come in two forms:
+标记可以用空格字符和/注释。注释的方式有两种：
+单行注释是一系列以`//`开头并延伸到行尾的字符。
 
-A single-line comment is a sequence of characters which starts with
-`//` and extends to the end of the line.
+多行注释是`/*`和`*/`之间的字符序列。 多行注释可以嵌套，但需要正确嵌套。 因此，像`/ * / * * /`这样的评论将被拒绝，因为它有未终止的注释。
 
-A multi-line comment is a sequence of characters between
-`/*` and `*/`. Multi-line comments may be nested,
-but are required to be properly nested.  Therefore, a comment like
-`/* /* */` will be rejected as having an unterminated
-comment.
 
-## Trailing Commas in Multi-line Expressions
-
-If a comma (`,`) is followed immediately, ignoring whitespace, by a newline and
-a closing parenthesis (`)`), bracket (`]`), or brace (`}`), then the comma is
-treated as a "trailing comma" and is ignored. For example:
-
+## 多行表达式中的尾随逗号
+如果立即跟随逗号（`，`），忽略空格，换行符和右括号(`)`)，括号（`]`）或大括号（`}`），则逗号将被视为“尾随逗号”并被忽略。 例如：
 ```scala
 foo(
   23,
@@ -564,13 +480,9 @@ foo(
 )
 ```
 
-## XML mode
+## XML 模式
 
-In order to allow literal inclusion of XML fragments, lexical analysis
-switches from Scala mode to XML mode when encountering an opening
-angle bracket ‘<’ in the following circumstance: The ‘<’ must be
-preceded either by whitespace, an opening parenthesis or an opening
-brace and immediately followed by a character starting an XML name.
+为了允许文本包含XML片段，在下列情况下遇到开放角括号“<”时，词法分析从Scala模式切换到XML模式：'<'必须在空格，左括号或开头之前 大括号后面紧跟一个开始XML名称的字符。
 
 ```ebnf
  ( whitespace | ‘(’ | ‘{’ ) ‘<’ (XNameStart | ‘!’ | ‘?’)
@@ -578,22 +490,14 @@ brace and immediately followed by a character starting an XML name.
   XNameStart ::= ‘_’ | BaseChar | Ideographic // as in W3C XML, but without ‘:’
 ```
 
-The scanner switches from XML mode to Scala mode if either
+如果有下列的话，扫描程序从XML模式切换到Scala模式
 
-- the XML expression or the XML pattern started by the initial ‘<’ has been
-  successfully parsed, or if
-- the parser encounters an embedded Scala expression or pattern and
-  forces the Scanner
-  back to normal mode, until the Scala expression or pattern is
-  successfully parsed. In this case, since code and XML fragments can be
-  nested, the parser has to maintain a stack that reflects the nesting
-  of XML and Scala expressions adequately.
+- 由初始“<”启动的XML表达式或XML模式已成功解析，或者
+- 解析器遇到嵌入的Scala表达式，并迫使扫描程序返回正常模式，直到成功解析Scala表达式。在这种情况下，由于代码和XML片段可以嵌套，因此解析器必须保持一个堆栈反映XML的嵌套和Scala充分表达。
 
-Note that no Scala tokens are constructed in XML mode, and that comments are interpreted
-as text.
+请注意，没有Scala符号是在XML模式下构造的，而且注释会被解释为文本。
 
-> The following value definition uses an XML literal with two embedded
-> Scala expressions:
+> 以下定义使用带有两个嵌入式Scala表达式的XML文本：
 >
 > ```scala
 > val b = <book>
