@@ -44,6 +44,7 @@
 非值类型捕获[非值](#非值)的标识符的属性。例如，[类型构造函数](#类型构造函数)不直接指定值的类型。但是，当类型构造函数应用于正确的类型参数时，它会产生一阶类型，它可能是值类型。
 
 非值类型在Scala中是间接表达的。例如，方法类型是通过写下方法签名来描述的，方法签名本身并不是真正的类型，尽管它产生了相应的[方法类型](#方法类型)。类型构造函数是另一个例子，可以编写`type Swap[m[_, _], a,b] = m[b, a]`，但是没有直接编写相应匿名类型函数的语法。
+
 ## 路径
 
 ```ebnf
@@ -55,76 +56,52 @@ StableId        ::=  id
 ClassQualifier  ::= ‘[’ id ‘]’
 ```
 
-Paths are not types themselves, but they can be a part of named types
-and in that function form a central role in Scala's type system.
+路径本身不是类型，但它们可以是命名类型的一部分，并且该函数在Scala的类型系统中形成核心角色。
 
-A path is one of the following.
+路径是以下情况之一
 
-- The empty path ε (which cannot be written explicitly in user programs).
-- $C.$`this`, where $C$ references a class.
-  The path `this` is taken as a shorthand for $C.$`this` where
-  $C$ is the name of the class directly enclosing the reference.
-- $p.x$ where $p$ is a path and $x$ is a stable member of $p$.
-  _Stable members_ are packages or members introduced by object definitions or
-  by value definitions of [non-volatile types](#volatile-types).
-- $C.$`super`$.x$ or $C.$`super`$[M].x$
-  where $C$ references a class and $x$ references a
-  stable member of the super class or designated parent class $M$ of $C$.
-  The prefix `super` is taken as a shorthand for $C.$`super` where
-  $C$ is the name of the class directly enclosing the reference.
+- 空路径 ε（不能在用户程序中明确写入）。
+- $C.$`this`, 其中 $C$ 引用一个类。路径`this`被视为 $C.$`this`的简写，其中 $C$ 是直接包含引用的类的名称。
+- $p.x$ 其中$p$是路径，$x$是$p$的稳定成员。*稳定成员* 是由对象定义或[非易失性类型](#易失性类型)的值定义引入的包或成员。
+- $C.$`super`$.x$ 或 $C.$`super`$[M].x$其中$C$引用一个类，$x$引用超类或指定父类的稳定成员 $M$ $C$。前缀`super`被视为$C.$`super`的简写，其中$C$是直接包含引用的类的名称。
 
-A _stable identifier_ is a path which ends in an identifier.
+*稳定标识符* 是以标识符结尾的路径。
 
-## Value Types
+## 值类型
 
-Every value in Scala has a type which is of one of the following
-forms.
+Scala中的每个值都具有以下形式之一的类型。
 
-### Singleton Types
+### 单例类型
 
 ```ebnf
 SimpleType  ::=  Path ‘.’ ‘type’
 ```
 
-A _singleton type_ is of the form $p.$`type`. Where $p$ is a path pointing to a
-value which [conforms](06-expressions.html#expression-typing) to
-`scala.AnyRef`, the type denotes the set of values consisting of `null` and the
-value denoted by $p$ (i.e., the value $v$ for which `v eq p`). Where the path
-does not conform to `scala.AnyRef` the type denotes the set consisting of only
-the value denoted by $p$.
+*单例类型* 的形式为$p.$`type`。其中$p$是指向符合`scala.AnyRef`的值的路径，该类型表示由`null`组成的值的集合以及由$p$表示的值（例如，值$v$是`v eq p`中的某一个）。如果路径不符合`scala.AnyRef`,则类型表示仅由$p$表示的值组成的集合。
+<!-- 针对单例类型`p.type`的模式匹配/类型测试desugars到`_ eq p` -->
 
-<!-- a pattern match/type test against a singleton type `p.type` desugars to `_ eq p` -->
-
-### Literal Types
+### 文字类型
 
 ```ebnf
 SimpleType  ::=  Literal
 ```
 
-A literal type `lit` is a special kind of singleton type which denotes the
-single literal value `lit`.  Thus, the type ascription `1: 1` gives the most
-precise type to the literal value `1`:  the literal type `1`.
+文字类型`lit`是一种特殊的单例类型，它表示单个文字值`lit`。因此，类型归属`1:1`为文字值1提供了最精确的类型:文字类型`1`。
 
-At run time, an expression `e` is considered to have literal type `lit` if `e ==
-lit`.  Concretely, the result of `e.isInstanceOf[lit]` and `e match { case _ :
-lit => }` is determined by evaluating `e == lit`.
+在运行时，如果`e == lit`，则表达式`e`被认为具有文字类型`lit`。 具体地说，`e.isInstanceOf [lit]`和`e match {case _：lit =>}`的结果是通过评估`e == lit`来确定的。
 
-Literal types are available for all types for which there is dedicated syntax
-except `Unit`. This includes the numeric types (other than `Byte` and `Short`
-which don't currently have syntax), `Boolean`, `Char`, `String` and `Symbol`.
+文字类型适用于除`Unit`之外的专用语法的所有类型。 这包括数字类型（除了`Byte`和`Short`，当前没有语法），`Boolean`，`Char`，`String`和`Symbol`。
 
-### Stable Types
-A _stable type_ is a singleton type, a literal type,
-or a type that is declared to be a subtype of trait `scala.Singleton`.
+### 稳定类型
+稳定类型是 *单例类型*，文字类型或声明为特征`scala.Singleton`的子类型的类型。
 
-### Type Projection
+### 类型投影
 
 ```ebnf
 SimpleType  ::=  SimpleType ‘#’ id
 ```
 
-A _type projection_ $T$#$x$ references the type member named
-$x$ of type $T$.
+*类型投影* $T$#$x$ 引用类型 $T$ 的名为 $x$ 的类型成员。
 
 <!--
 The following is no longer necessary:
@@ -132,59 +109,43 @@ If $x$ references an abstract type member, then $T$ must be a
 [stable type](#singleton-types)
 -->
 
-### Type Designators
+### 类型指示器
 
 ```ebnf
 SimpleType  ::=  StableId
 ```
+*类型指示符* 是指命名的值类型。它可以是简单的或合格的。 所有这些类型指示符都是类型投影的缩写。
 
-A _type designator_ refers to a named value type. It can be simple or
-qualified. All such type designators are shorthands for type projections.
+具体来说，非限定类型名称 $t$，其中 $t$ 绑定在某个类，对象或包 $C$ 中，作为 $C.$`this.type #`$t$的简写。如果 $t$ 未绑定在类，对象或包中，那么 $t$ 将作为ε`.type＃` $t$的简写。
 
-Specifically, the unqualified type name $t$ where $t$ is bound in some
-class, object, or package $C$ is taken as a shorthand for
-$C.$`this.type#`$t$. If $t$ is
-not bound in a class, object, or package, then $t$ is taken as a
-shorthand for ε`.type#`$t$.
+限定类型指示符的形式为`p.t`，其中`p`是[路径](#路径)，*t* 是类型名称。这种类型的指示符等同于类型投影`p.type #t`。
 
-A qualified type designator has the form `p.t` where `p` is
-a [path](#paths) and _t_ is a type name. Such a type designator is
-equivalent to the type projection `p.type#t`.
+###### 例
 
-###### Example
+下面列出了一些类型指示符及其扩展。 我们假设一个局部类型参数 $t$，一个值为`maintable`的类型成员`Node`和标准类`scala.Int`。
 
-Some type designators and their expansions are listed below. We assume
-a local type parameter $t$, a value `maintable`
-with a type member `Node` and the standard class `scala.Int`,
-
-| Designator          | Expansion                 |
+| 标志符               | 展开                      |
 |-------------------- | --------------------------|
 |t                    | ε.type#t                  |
 |Int                  | scala.type#Int            |
 |scala.Int            | scala.type#Int            |
 |data.maintable.Node  | data.maintable.type#Node  |
 
-### Parameterized Types
+### 参数化类型
 
 ```ebnf
 SimpleType      ::=  SimpleType TypeArgs
 TypeArgs        ::=  ‘[’ Types ‘]’
 ```
 
-A _parameterized type_ $T[ T_1 , \ldots , T_n ]$ consists of a type
-designator $T$ and type parameters $T_1 , \ldots , T_n$ where
-$n \geq 1$. $T$ must refer to a type constructor which takes $n$ type
-parameters $a_1 , \ldots , a_n$.
+*参数化类型* $T[ T_1 , \ldots , T_n ]$由类型指示符 $T$ 和类型参数 $T_1，\ldots , T_n$组成，其中$n \geq 1$. $T$。 $T$ 必须引用一个类型构造函数，它接受 $n$ 类型参数$a_1 , \ldots , a_n$.
 
-Say the type parameters have lower bounds $L_1 , \ldots , L_n$ and
-upper bounds $U_1, \ldots, U_n$.  The parameterized type is
-well-formed if each actual type parameter
-_conforms to its bounds_, i.e. $\sigma L_i <: T_i <: \sigma U_i$ where $\sigma$ is the
-substitution $[ a_1 := T_1 , \ldots , a_n := T_n ]$.
+假设类型参数的下限为$L_1 , \ldots , L_n$ ，上限为$U_1,\ldots, U_n$。如果每个实际类型参数，参数化类型都是 *符合其边界* 的,即$\sigma L_i <: T_i <: \sigma U_i$ 其中 $\sigma$ 是替换$[ a_1 := T_1 , \ldots , a_n := T_n ]$.   
 
-###### Example Parameterized Types
 
-Given the partial type definitions:
+###### 示例参数化类型
+
+给定部分类型定义：
 
 ```scala
 class TreeMap[A <: Comparable[A], B] { … }
@@ -196,7 +157,7 @@ class S[K <: String] { … }
 class G[M[ Z <: I ], I] { … }
 ```
 
-the following parameterized types are well formed:
+以下参数化类型的格式正确：
 
 ```scala
 TreeMap[I, String]
@@ -207,39 +168,32 @@ F[List, Int]
 G[S, String]
 ```
 
-###### Example
+###### 例子
 
-Given the [above type definitions](#example-parameterized-types),
-the following types are ill-formed:
+鉴于[上面的类型定义](＃示例参数化类型)，
+以下类型格式错误：
+
 
 ```scala
-TreeMap[I]            // illegal: wrong number of parameters
-TreeMap[List[I], Int] // illegal: type parameter not within bound
+TreeMap[I]            // 非法:参数数量错误
+TreeMap[List[I], Int] // 非法:类型参数不在绑定范围内
 
-F[Int, Boolean]       // illegal: Int is not a type constructor
-F[TreeMap, Int]       // illegal: TreeMap takes two parameters,
-                      //   F expects a constructor taking one
-G[S, Int]             // illegal: S constrains its parameter to
-                      //   conform to String,
-                      // G expects type constructor with a parameter
-                      //   that conforms to Int
+F[Int, Boolean]       // 非法:Int不是类型构造函数
+F[TreeMap, Int]       // 非法:TreeMap有两个参数
+                      //   F期望构造函数只取一个
+G[S, Int]             // 非法：S约束其参数为String，
+                      // G期望类型构造函数具有符合Int的参数
 ```
 
-### Tuple Types
+### 元组类型
 
 ```ebnf
 SimpleType    ::=   ‘(’ Types ‘)’
 ```
 
-A _tuple type_ $(T_1 , \ldots , T_n)$ is an alias for the
-class `scala.Tuple$n$[$T_1$, … , $T_n$]`, where $n \geq 2$.
+_元组类型_ $(T_1 , \ldots , T_n)$ 是类 `scala.Tuple$n$[$T_1$, … , $T_n$]`的别名, 其中 $n \geq 2$.
 
-Tuple classes are case classes whose fields can be accessed using
-selectors `_1` , … , `_n`. Their functionality is
-abstracted in a corresponding `Product` trait. The _n_-ary tuple
-class and product trait are defined at least as follows in the
-standard Scala library (they might also add other methods and
-implement other traits).
+Tuple类是case类，其字段可以使用选择器 `_1` , … , `_n`访问。它们的功能在相应的`Product`特征中被抽象出来,_n_-ary元组类和产品特性在标准Scala库中至少定义如下（它们也可能添加其他方法并实现其他特征）。
 
 ```scala
 case class Tuple$n$[+$T_1$, … , +$T_n$](_1: $T_1$, … , _n: $T_n$)
