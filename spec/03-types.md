@@ -1,10 +1,10 @@
 ---
-title: Types
-layout: default
-chapter: 3
+题目: 类型
+布局: 默认
+章节: 3
 ---
 
-# Types
+# 类型
 
 ```ebnf
   Type              ::=  FunctionArgTypes ‘=>’ Type
@@ -29,42 +29,22 @@ chapter: 3
   Types             ::=  Type {‘,’ Type}
 ```
 
-We distinguish between first-order types and type constructors, which
-take type parameters and yield types. A subset of first-order types
-called _value types_ represents sets of (first-class) values.
-Value types are either _concrete_ or _abstract_.
+我们区分了一阶类型和类型构造函数，它们采用类型参数和产量类型。 称为 *值类型* 的一阶类型的子集表示（第一类）值的集合。 值类型或者是 *具体* 或 *抽象* 的。  
 
-Every concrete value type can be represented as a _class type_, i.e. a
-[type designator](#type-designators) that refers to a
-[class or a trait](05-classes-and-objects.html#class-definitions) [^1], or as a
-[compound type](#compound-types) representing an
-intersection of types, possibly with a [refinement](#compound-types)
-that further constrains the types of its members.
+每个具体的值类型都可以表示为 *类类型* ，即引用[类或特征](05-classes-and-objects.html#class-definitions)的[类型指示符](#类型指示符)[^ 1]，或者表示类型交集的[复合类型](#复合类型)，可能还有进一步约束其成员类型的[细化](#复合类型)。
 <!--
-A shorthand exists for denoting [function types](#function-types)
+表示 [function types]的缩写(#function-types)
 -->
-Abstract value types are introduced by [type parameters](04-basic-declarations-and-definitions.html#type-parameters)
-and [abstract type bindings](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases).
-Parentheses in types can be used for grouping.
+抽象值类型由[类型参数](04-basic-declarations-and-definitions.html#type-parameters)和
+[抽象类型绑定](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases)引入。类型中的括号可用于分组。
 
-[^1]: We assume that objects and packages also implicitly
-      define a class (of the same name as the object or package, but
-      inaccessible to user programs).
 
-Non-value types capture properties of identifiers that
-[are not values](#non-value-types). For example, a
-[type constructor](#type-constructors) does not directly specify a type of
-values. However, when a type constructor is applied to the correct type
-arguments, it yields a first-order type, which may be a value type.
+[^1]: 我们 假设对象和包也隐式定义了一个类（与对象或包同名，但用户程序无法访问）。
 
-Non-value types are expressed indirectly in Scala. E.g., a method type is
-described by writing down a method signature, which in itself is not a real
-type, although it  gives rise to a corresponding [method type](#method-types).
-Type constructors are another example, as one can write
-`type Swap[m[_, _], a,b] = m[b, a]`, but there is no syntax to write
-the corresponding anonymous type function directly.
+非值类型捕获[非值](#非值)的标识符的属性。例如，[类型构造函数](#类型构造函数)不直接指定值的类型。但是，当类型构造函数应用于正确的类型参数时，它会产生一阶类型，它可能是值类型。
 
-## Paths
+非值类型在Scala中是间接表达的。例如，方法类型是通过写下方法签名来描述的，方法签名本身并不是真正的类型，尽管它产生了相应的[方法类型](#方法类型)。类型构造函数是另一个例子，可以编写`type Swap[m[_, _], a,b] = m[b, a]`，但是没有直接编写相应匿名类型函数的语法。
+## 路径
 
 ```ebnf
 Path            ::=  StableId
