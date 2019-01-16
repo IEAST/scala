@@ -231,18 +231,18 @@ RefineStat      ::=  Dcl
                   |
 ```
 
-_复合类型_ $T_1$ `with` … `with` $T_n \\{ R \\}$表示组件类型为
-$T_1 , \ldots , T_n$ 和细化$\\{ R \\}$. 细化$\\{ R \\}$ 包含声明和类型定义。
-如果声明或定义覆盖其中一个组件类型$T_1 , \ldots , T_n$中的声明或定义，适用于
-[覆盖](05-classes-and-objects.html#overriding) 的通常规则; 否则声明或定义被称为“结构性”[^2]。
+_复合类型_ $T_1$ `with` … `with` $T_n \\{ R \\}$表示一个拥有
+$T_1 , \ldots , T_n$ 和细化$\\{ R \\}$. 细化$\\{ R \\}$ 类型成员以及修饰${R}$的对象。
+如果对象中有声明或定义覆盖了成分类型$T_1 , \ldots , T_n$中的声明或定义，就会应用通常的
+[覆盖](05-classes-and-objects.html#overriding)规则; 否则声明或定义被称为“结构化的”[^2]。
 
 [^2]：对结构定义的成员的引用（方法调用或对值或变量的访问）可以生成比非结构成员的等效代码慢得多的二进制代码。
 
-在结构细化中的方法声明中，任何值参数的类型只能引用细化内包含的类型参数或抽象类型。 也就是说，它必须引用方法本身的类型参数，或者引用细化中的类型定义。 此限制不适用于方法的结果类型。
+在结构化修饰的方法声明中，任何值参数的类型只能是指修饰内部包含的类型参数或抽象类型。也就是说，它必须引用方法本身的类型参数，或者修饰内部的类型定义。 此限制不适用于方法的返回类型。
 
-如果没有给出细化，则隐含地添加空细化,即 $T_1$ `with` … `with` $T_n$是  $T_1$ `with` … `with` $T_n \\{\\}$的简写.
+如果没有给出修饰，则默认的会添加空修饰,即 $T_1$ `with` … `with` $T_n$是  $T_1$ `with` … `with` $T_n \\{\\}$的简写.
 
-复合类型也可以只包含$\\{ R \\}$ 的细化，没有前面的组件类型。 这种类型相当于 `AnyRef` $\\{ R \\}$.
+复合类型也可以只包含$\\{ R \\}$ 的修饰，没有前面的组件类型。这种类型相当于 `AnyRef` $\\{ R \\}$.
 
 ###### 例
 
@@ -270,7 +270,7 @@ takeoff(42, bird)
 takeoff(89, a380)
 ```
 
-虽然`Bird`和`Plane`除了`Object`之外不共享任何父类，但是方法`takeoff`的参数*r*是通过结构声明的细化来定义的，它接受任何声明值`callsign`和`fly`方法的对象。
+虽然`Bird`和`Plane`没有除了`Object`之外的任何父类，但是方法`takeoff`的参数*r*是通过结构声明的细化来定义的，它接受任何声明了值`callsign`以及函数`fly`对象。
 
 ### 中缀类型
 
@@ -279,12 +279,12 @@ InfixType     ::=  CompoundType {id [nl] CompoundType}
 ```
 _中缀类型_ $T_1$ `op` $T_2$ 由一个中缀运算符`op`组成，它应用于两个类型的操作数 $T_1$ 和 $T_2$ 。该类型相当于应用类型`op`$[T_1, T_2]$。中缀运算符“op”可以是任意标识符。
 
-所有类型中缀运算符具有相同的优先级;必须使用括号进行分组。类型运算符的 [关联](06-expressions.html#prefix,-infix,-and-postfix-operations)
-是针对术语运算符确定的：以冒号‘:’结尾的类型运算符是右关联的;所有其他运算符都是左关联的。
+所有类型中缀运算符具有相同的优先级;必须使用括号进行排序。类型运算符的 [结合性](06-expressions.html#prefix,-infix,-and-postfix-operations)
+是针对术语运算符确定的，以冒号‘:’结尾的类型运算符是右结合的;所有其他运算符都是左结合的。
 
-在连续类型中缀操作$t_0 \, \mathit{op} \, t_1 \, \mathit{op_2} \, \ldots \, \mathit{op_n} \, t_n$， 所有运算符$\mathit{op}\_1 , \ldots , \mathit{op}\_n$必须具有相同的关联性。 如果它们都是左关联的，则序列被解释为 $(\ldots (t_0 \mathit{op_1} t_1) \mathit{op_2} \ldots) \mathit{op_n} t_n$, 否则它被解释为$t_0 \mathit{op_1} (t_1 \mathit{op_2} ( \ldots \mathit{op_n} t_n) \ldots)$.
+在连续类型中缀操作$t_0 \, \mathit{op} \, t_1 \, \mathit{op_2} \, \ldots \, \mathit{op_n} \, t_n$里， 所有运算符$\mathit{op}\_1 , \ldots , \mathit{op}\_n$必须具有相同的结合性。 如果它们都是左结合的，则序列被解释为 $(\ldots (t_0 \mathit{op_1} t_1) \mathit{op_2} \ldots) \mathit{op_n} t_n$, 否则它被解释为$t_0 \mathit{op_1} (t_1 \mathit{op_2} ( \ldots \mathit{op_n} t_n) \ldots)$.
 
-### 功能类型
+### 函数类型
 
 ```ebnf
 Type              ::=  FunctionArgs ‘=>’ Type
@@ -292,12 +292,12 @@ FunctionArgs      ::=  InfixType
                     |  ‘(’ [ ParamType {‘,’ ParamType } ] ‘)’
 ```
 
-类型 $(T_1 , \ldots , T_n) \Rightarrow U$ 表示采用$T1 , \ldots , Tn$ 类型的参数并生成 $U$类型结果的函数值集。 在恰好一个参数类型的情况下
-$T \Rightarrow U$ 是 $(T) \Rightarrow U$的简写函数类型。$\Rightarrow T$形式的参数类型表示 $T$类型的[按名称调用参数](04-basic-declarations-and-definitions.html#by-name-parameters)参数.
+类型 $(T_1 , \ldots , T_n) \Rightarrow U$ 表示那谢谢参数类型为$T1 , \ldots , Tn$ ，并产生一个类型为 $U$的结果函数。 如果只有一个参数类型则
+$T \Rightarrow U$ 是 $(T) \Rightarrow U$的简写。$\Rightarrow T$形式的参数类型表示 $T$类型的[按名称调用参数](04-basic-declarations-and-definitions.html#by-name-parameters)参数.
 
-函数类型与右侧相关联，例如$S \Rightarrow T \Rightarrow U$与$S \Rightarrow (T \Rightarrow U)$相同。
+函数类型与右侧相结合的，例如$S \Rightarrow T \Rightarrow U$与$S \Rightarrow (T \Rightarrow U)$相同。
 
-函数类型是定义`apply`函数的类类型的缩写。具体来说，$n$-ary函数类型$(T_1 , \ldots , T_n) \Rightarrow U$是类类型`Function$_n$[T1 , … , $T_n$, U]`的简写。 这些类类型在Scala库中定义为0到22之间的 $n$ ，如下所示。
+函数类型是定义`apply`函数的类类型的简写。比如，$n$函数类型$(T_1 , \ldots , T_n) \Rightarrow U$是类类型`Function$_n$[T1 , … , $T_n$, U]`的简写。 这些类类型在Scala库中定义为0到22之间的 $n$ ，如下所示。
 
 
 ```scala
@@ -308,9 +308,9 @@ trait Function_n[-T1 , … , -T$_n$, +R] {
 }
 ```
 
-是因此，函数类型在其结果类型中是[协变](04-basic-declarations-and-definitions.html#variance-annotations) 的，在它们的参数类型中是逆变的。
+因此，函数类型在其结果类型中是[协变](04-basic-declarations-and-definitions.html#variance-annotations) 的，与参数类型是逆变的。
 
-### 存在类型
+### 既存类型
 
 ```ebnf
 Type               ::= InfixType ExistentialClauses
@@ -320,62 +320,60 @@ ExistentialDcl     ::= ‘type’ TypeDcl
                     |  ‘val’ ValDcl
 ```
 
-A存在类型的格式为`$T$ forSome { $Q$ }`
-其中 $Q$ 是一系列[类型声明](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases).。
+既存类型的形式为`$T$ forSome { $Q$ }`
+其中 $Q$ 是[类型声明](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases)的序列。
 
 设$t_1[\mathit{tps}\_1] >: L_1 <: U_1 , \ldots , t_n[\mathit{tps}\_n] >: L_n <: U_n$
-是 $Q$ 中声明的类型（任何类型参数部分`[ $\mathit{tps}_i$ ]`可能都缺失）。每种类型$t_i$的范围包括类型 $T$存在子句 $Q$.类型变量 $t_i$ 被称为绑定在
-`$T$ forSome { $Q$ }`类型中。在 $T$类型中出现但未绑定在$T$中的类型变量在
-$T$中被认为是自由的。
+是 $Q$ 中声明的类型（任何类型参数部分`[ $\mathit{tps}_i$ ]`都可以缺失）。每种类型$t_i$的范围包括类型 $T$和既存子句 $Q$。类型变量 $t_i$ 被称为绑定在
+`$T$ forSome { $Q$ }`类型中。在$T$类型中出现但未绑定在$T$中的类型变量在$T$中被认为是自由的。
 
-`$T$ forSome { $Q$ }`的*存在类型*是$\sigma T$类型，其中$\sigma $是$t_1 , \ldots , t_n$的替换，对于每个$i$，$\sigma L_i <: \sigma t_i <: \sigma U_i$。存在类型`$T$ forSome {$\,Q\,$}`表示的值集是其所有类型实例的值集的联合。
+`$T$ forSome { $Q$ }`的*类型实例*是$\sigma T$类型，其中$\sigma $是$t_1 , \ldots , t_n$的迭代，对于每个$i$，$\sigma L_i <: \sigma t_i <: \sigma U_i$。既存类型`$T$ forSome {$\,Q\,$}`表示的值集是其所有类型实例的值集的合集。
 
-`$T$ forSome { $Q$ }` 的_skolemization_ 是类型实例 $\sigma T$,其中 $\sigma$ 是替换 $[t_1'/t_1 , \ldots , t_n'/t_n]$ 和每个 $t_i'$ 是一个新的抽象类型，下限为 $\sigma L_i$ 上限为$\sigma U_i$.
+`$T$ forSome { $Q$ }` 的 _斯科伦化_ 是类型实例 $\sigma T$,其中 $\sigma$ 是 $[t_1'/t_1 , \ldots , t_n'/t_n]$的迭代， 每个$t_i'$介于 $\sigma L_i$ 和$\sigma U_i$之间的新的抽象类型.
 
 #### 简化规则
 
-遵守以下四个等价形式存在的类型:
+既存类型遵守以下四个等价形式:
 
-1. 可以合并存在类型中的多个for子句。
+1. 可以合并既存类型中的多个for子句。
  例如,
 `$T$ forSome { $Q$ } forSome { $Q'$ }`
 相当于
 `$T$ forSome { $Q$ ; $Q'$}`。
-1. 可以删除未使用的量化。
+1. 未使用的限定可以被去掉。
 例如,
 `$T$ forSome { $Q$ ; $Q'$}`
 如果$Q'$中定义的类型没有一个被 $T$ 或 $Q$ 引用，那么它们等价于
 `$T$ forSome {$ Q $}`。
-1. 可以删除空量化。 例如,
+1. 空量化可以删除。 例如,
 `$T$ forSome { }` 相当于 $T$.
-1. 存在类型 `$T$ forSome { $Q$ }` 其中 $Q$ 包含一个子句 `type $t[\mathit{tps}] >: L <: U$` 相当于类型`$T'$ forSome { $Q$ }` ,其中$T$是将$T'$中所有$t$的[协变量](04-basic-declarations-and-definitions.html#variance-annotations)替换为$U$并且将$T$中所有的$t$的逆变量替换为$L$的结果。
+1. 既存类型 `$T$ forSome { $Q$ }` 其中 $Q$ 包含一个子句 `type $t[\mathit{tps}] >: L <: U$` 相当于类型`$T'$ forSome { $Q$ }` ,$T'$是将$T$中所有$t$的[协变量](04-basic-declarations-and-definitions.html#variance-annotations)替换为$U$并且将$T$中所有的$t$的逆变量替换为$L$的结果。
 
 #### 在值上的既存量化
 
-为了语法上的方便，在既存类型上的绑定子句可以包括值声明“val $x$: $T$”。 存在类型`$T$ forSome { $Q$; val $x$: $S\,$;$\,Q'$ }`被视为类型
-`$T'$ forSome { $Q$; type $t$ <: $S$ with Singleton; $Q'$ }`的简写，其中$t$ 是一个新类型名称，$T'$通过用$t$替换$T$中的每个`$x$.type`。
+为了语法上的方便，在既存类型上的绑定子句可以包括值声明`val $x$: $T$`。 既存类型`$T$ forSome { $Q$; val $x$: $S\,$;$\,Q'$ }`被视为类型
+`$T'$ forSome { $Q$; type $t$ <: $S$ with Singleton; $Q'$ }`的简写，其中$t$ 是一个新类型名称，$T'$通过用$t$替换$T$中的每个`$x$.type`得到的。
 
-#### 存在类型的占位符语法
+#### 既存类型的占位符语法
 
 ```ebnf
 WildcardType   ::=  ‘_’ TypeBounds
 ```
-Scala支持存在类型的占位符语法。 通配符类型的形式为
-`_$\;$>:$\,L\,$<:$\,U$`。 两个约束条款都可以省略。如果缺少下限子句`>:$\,L$`，
-则假定为`>:$\,$scala.Nothing`。如果缺少上限子句`<:$\,U$`，则假定为'<:$\,$scala.Any`。 通配符类型是存在量化类型变量的简写，其中存在量化是隐含的。
+Scala支持既存类型的占位符语法。 通配符类型的形式为
+`_$\;$>:$\,L\,$<:$\,U$`。 两个边界都可以省略。如果缺少下限子句`>:$\,L$`，
+则假定为`>:$\,$scala.Nothing`。如果缺少上限子句`<:$\,U$`，则假定为`<:$\,$scala.Any`。 通配符类型是既存量化类型变量的简写，其中既存量化是内涵的。
 
-通配符类型必须显示为参数化类型的类型参数。设
- $T = p.c[\mathit{targs},T,\mathit{targs}']$ 是一个参数化类型，其中
-$\mathit{targs}, \mathit{targs}'$ 可能为空
-$T$ 是一个 通配符类型为 `_$\;$>:$\,L\,$<:$\,U$`. 然后 $T$ 相当于存在类型
+通配符类型只能作为为参数化类型的类型参数出现。设 $T = p.c[\mathit{targs},T,\mathit{targs}']$ 是一个参数化类型，其中
+$\mathit{targs}, \mathit{targs}'$ 可以为空
+$T$ 是一个 通配符类型为 `_$\;$>:$\,L\,$<:$\,U$`. 那么 $T$ 相当于以下既存类型
 
 ```scala
 $p.c[\mathit{targs},t,\mathit{targs}']$ forSome { type $t$ >: $L$ <: $U$ }
 ```
 
-其中 $t$ 是一些新的类型变量。配符类型也可能显示为 [中缀类型](#中缀类型)
+其中 $t$ 是一个新的类型变量。配符类型也可能显示为 [中缀类型](#中缀类型)
 , [函数类型](#函数类型)
-或[元组类型](#元组类型)的一部分。它们的扩展是等效参数化类型的扩展。
+或[元组类型](#元组类型)的一部分。它们的扩展也就是等效参数化类型的扩展。
 
 ###### 例
 
@@ -386,7 +384,7 @@ class Ref[T]
 abstract class Outer { type T }
 ```
 
-以下是存在类型的一些示例：
+以下是既存类型的一些示例：
 
 ```scala
 Ref[T] forSome { type T <: java.lang.Number }
@@ -394,7 +392,7 @@ Ref[x.T] forSome { val x: Outer }
 Ref[x_type # T] forSome { type x_type <: Outer with Singleton }
 ```
 
-此列表中的最后两种类型是等效的。使用通配符语法的上述第一种类型的替代公式是：
+此列表中的最后两个类型是等效的。使用通配符语法的上述第一种类型的替代公式是：
 
 ```scala
 Ref[_ <: java.lang.Number]
@@ -416,33 +414,33 @@ List[List[t] forSome { type t }]
 class List[+T]
 ```
 
-他的类型
+类型
 
 ```scala
 List[T] forSome { type T <: java.lang.Number }
 ```
 
-等同于（通过上面的简化规则4）
+等同于（通过上面的简化规则四）
 
 ```scala
 List[java.lang.Number] forSome { type T <: java.lang.Number }
 ```
 
-这相当于（通过上面的简化规则2和3）`List[java.lang.Number]`.
+这相当于（通过上面的简化规则二和三）`List[java.lang.Number]`.
 
-## 无值类型
+## 非值类型
 
 下面解释的类型不表示值集，也不在程序中明确显示。 它们在本报告中作为已定义标识符的内部类型引入。
 
 ### 方法类型
 
-*方法类型* 在内部表示为$(\mathit{Ps})U$，其中$(\mathit{Ps})$是一些 $n \geq 0$的参数名称和类型$(p_1:T_1 , \ldots , p_n:T_n)$的序列，$U$是（值或方法）类型，此类型表示接受名为$p_1 , \ldots , p_n$ ，类型为$T_1 , \ldots , T_n$ 的参数命名方法，并返回类型为$u$的结果。
+*方法类型* 在内部表示为$(\mathit{Ps})U$，其中$(\mathit{Ps})$是一个类型序列$(p_1:T_1 , \ldots , p_n:T_n)$ $n \geq 0$，$U$是（值或方法）类型，此类型表示接受名为$p_1 , \ldots , p_n$ ，类型为$T_1 , \ldots , T_n$ 的参数命名方法，并返回类型为$u$的结果。
 
-右侧关联的方法类型： $(\mathit{Ps}\_1)(\mathit{Ps}\_2)U$ 被视为$(\mathit{Ps}\_1)((\mathit{Ps}\_2)U)$.
+方法类型是右侧关联的： $(\mathit{Ps}\_1)(\mathit{Ps}\_2)U$ 被视为$(\mathit{Ps}\_1)((\mathit{Ps}\_2)U)$.
 
-不带任何参数的方法类型是一种特殊情况。此处写入了`=> T`。无参数方法名称表达式，每次引用无参数方法名称时都会重新计算该表达式。
+不带任何参数的方法类型是一种特殊情况。可以写为`=> T`形式。无参数方法名称表达式将会在每次名称被引用时求值。
 
-方法类型不作为值的类型存在。 如果方法名称用作值，则其类型将[隐式转换](06-expressions.html#implicit-conversions)为相应的函数类型。
+方法类型不作为值的类型存在。如果方法名称以值的方式被引用，则其类型将[自动转换](06-expressions.html#implicit-conversions)为相应的函数类型。
 
 ###### 例  
 
@@ -464,7 +462,7 @@ c: (Int) (String, String) String
 
 ### 多态方法类型
 
-多态方法类型在内部表示为`[$\mathit{tps}\,$]$T$`，其中`[$\mathit{tps}\,$]`是$n \geq 0$ 的参数名称和类型`[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]`的序列，$T$是（值或方法）类型。这种类型表示[依据](#参数化类型) 类型参数 `$S_1 , \ldots , S_n$`的命名方法，他们复合下边界`$L_1 , \ldots , L_n$ `和上边界`U_1 , \ldots , U_n$`，并产生类型为$T$的结果。
+多态方法类型在内部表示为`[$\mathit{tps}\,$]$T$`，其中`[$\mathit{tps}\,$]`是类型参数部分`[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]`，$n \geq 0$，$T$是一个（值或方法）类型。这种类型表示[依据](#参数化类型) 类型参数 `$S_1 , \ldots , S_n$`蚕食类型为$T$的结果，类型参数 `$S_1 , \ldots , S_n$`的下边界`$L_1 , \ldots , L_n$ `，上边界`U_1 , \ldots , U_n$`。
 
 ###### 例
 
@@ -482,9 +480,9 @@ empty : [A >: Nothing <: Any] List[A]
 union : [A >: Nothing <: Comparable[A]] (x: Set[A], xs: Set[A]) Set[A]
 ```
 
-### 键入构造函数
+### 类型构造函数
 
-类型构造函数在内部表示非常类似于多态方法类型。`[$\pm$ $a_1$ >: $L_1$ <: $U_1 , \ldots , \pm a_n$ >: $L_n$ <: $U_n$] $T$`表示[类型构造函数参数](04-basic-declarations-and-definitions.html#type-parameters)或与相应类型参数子句绑定的[抽象类型构造函数](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases)所期望的类型。
+类型构造函数在内部表示非常类似于多态方法类型。`[$\pm$ $a_1$ >: $L_1$ <: $U_1 , \ldots , \pm a_n$ >: $L_n$ <: $U_n$] $T$`表示一个期望是[类型构造函数参数](04-basic-declarations-and-definitions.html#type-parameters)或与相应类型参数子句绑定的[抽象类型构造函数](04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases)的类型。
 
 ###### 例
 
@@ -496,41 +494,127 @@ trait Iterable[+X] {
 }
 ```
 
-从概念上讲，类型构造函数`Iterable`是匿名类型`[+ X] Iterable [X]`的名称，它可以传递给`flatMap`中的`newType`类型构造函数参数。
+从概念上讲，类型构造函数`Iterable`是匿名类型`[+ X] Iterable [X]`的名称，它可以在`flatMap`中传递给`newType`类型构造函数参数。
 
 
-<!-- ### Overloaded Types
+## 基本类型和成员定义
 
-More than one values or methods are defined in the same scope with the
-same name, we model
+类成员的类型取决于成员的引用方式。 这里主要的是三个概念，即：
+1. $T$类型的基本类型集的概念。
+1. 从前缀类型$S$看到的某些类$C$中的类型$T$  
+1. 类型$T$的成员绑定集合
 
-An overloaded type consisting of type alternatives $T_1 \commadots T_n (n \geq 2)$ is denoted internally $T_1 \overload \ldots \overload T_n$.
+这些概念相互递归定义如下：
+1. 类型的基类型集是一组类类型，如下所示。
 
-###### Example
-```scala
-def println: Unit
-def println(s: String): Unit = $\ldots$
-def println(x: Float): Unit = $\ldots$
-def println(x: Float, width: Int): Unit = $\ldots$
-def println[A](x: A)(tostring: A => String): Unit = $\ldots$
-```
-define a single function `println` which has an overloaded
-type.
-```
-println:  => Unit $\overload$
-          (String) Unit $\overload$
-          (Float) Unit $\overload$
-          (Float, Int) Unit $\overload$
-          [A] (A) (A => String) Unit
-```
+  - 具有父类$T_1 , \ldots , T_n$的类型 $C$ 的基本类型是 $C$本身，以及复合类型`$T_1$ with … with $T_n$ { $R$ }`的基本类型。
 
-###### Example
-```scala
-def f(x: T): T = $\ldots$
-val f = 0
-```
-define a function `f} which has type `(x: T)T $\overload$ Int`.
--->
+  - 类型别名的基类型是其别名的类型的基类型。
+
+  - 抽象类型的基类型是其上限的基类型。
+
+  - 参数化类型`$C$[$T_1 , \ldots , T_n$]`的基类型是 $C$ 类型的基类型，其中 $C$ 类型的每一个类型参数 $a_i$ 都被相应的参数类型 $T_i$ 替换。
+
+  - 单例类型`$p$.type`的基类型是$p$基本类型。
+
+  - 复合类型`$T_1$ with $\ldots$ with $T_n$ { $R$ }`的基类型是所有$T_i$'的基类的 *缩减合并*。这意味着：让多集$\mathscr{S}$ 成为所有$T_i$的基类型的集合。如果$\mathscr{S}$包含同一类的几个类型实例，比如说`$S^i$#$C$[$T^i_1 , \ldots , T^i_n$]`$(i \in I)$，则所有这些实例都被其他一致的实例替换。 如果不既存这样的实例，则会出错。 由此可见，简化联合（如果既存）会产生一组类类型，其中不同类型是不同类的实例。
+
+  - 选择类型`$S$#$T$`的基类型确定如下：如果 $T$是别名或抽象类型，则前面的子句就会被应用。否则$T$必须是(合理参数化)类类型，它在某个类$B$中定义。那么`$S$#$T$`的基类型是从前缀类型$S$看到的$B$中的$T$的基本类型。
+
+  - 既存类型`$T$ forSome { $Q$ }`的基类型是所有的`$S$ forSome { $Q$ }`类型，其中$S$是$T$的基本类型。
+
+1. *只有前缀类型$S$具有类$C$的类型实例作为基类型* ,比如`$S'$#$C$[$T_1 , \ldots , T_n$]`，从某些前缀类型$S$看到的类$C$中的$T$概念才有意义。然后我们定义如下:
+    - 如果 `$S$ = $\epsilon$.type`, 那么从$S$看到的$C$中的$T$是$T$本身。
+    - 否者，如果$S$是既存类型`$S'$ forSome { $Q$ }`，从$S'$看到的$C$中的$T$将会是$T'$。那么从$S$中看到的$T$中的$C$是`$T'$ forSome {$\,Q\,$}`.
+    - 或者, 如果 $T$ 是某个类 $D$ 的第$i$个类型参数, 那么
+        - 如果 $S$ 有一个基本类型 `$D$[$U_1 , \ldots , U_n$]`, 对于`[$U_1 , \ldots , U_n$]`类型参数 , 那么$S$中看到的$C$中的$T$是$U_i$
+        - 或者，如果$C$定义在$C'$类中，那么$S$中看到的$C$的$T$与在$S'$中看到的$C'$的$T$相同。
+        - 或者，如果$C$没有在其他类中定义，那么从$S$中看到的$C$中的$T$就是$T$本身。
+    - 或者，如果$T$是某个类$D$的单例类型` $D$.this.type`，那么
+        - 如果$D$是$C$的子类，$S$的基类型中有$D$的类型实例，那么从$S$中看到$C$中的$T$就是$S$。
+        - 或者，如果$C$定义在$C'$类中，那么从$S$中到的$C$的$T$与从$S'$中看到的$C'$的$T$相同。
+        - 或者,如果$C$没有在另一个类中定义，那么从$S$中看到的$C$中的$T$就是$T$本身。
+    - 如果$T$是其他类型，则对其所有类型组件执行所描述的映射。
+
+    如果$T$是一个可能参数化的类类型，其中$T$的类在某些其他类$D$中定义，而$S$是某种前缀类型，那么我们使用"$T$ seen from $S$"作为  "$T$ in $D$ seen from $S$"的简写。
+
+1.  $T$ 类型的*成员绑定*是
+   1. 所有绑定$d$使得在$T$的基类型中既存某个类$C$的类型实例，并且在C中既存定义或声明d',使得$d’$通过从$T’$中看到的$C’$以$C’$取代每个类型$T’$而产生$d’$
+   2. 类型[修饰](#复合类型)的绑定，如果有的话。
+
+   类型映射`S#T`的定义是`S`中的类型`T`的成员绑定$d_T$。在这种情况下，我们还说`S#T`是由$d_T$定义的.
+
+## 类型之间的关系
+
+我们定义类型之间的以下关系
+
+| 名称         | 象征           | 解释                            |
+|-------------|----------------|--------------------------------|
+| 等价         | $T \equiv U$   | $T$和$U$在所有情况下都可以互换。   |
+| 一致性       | $T <: U$       | 类型$T$符合(是的子类型)类型$U$     |
+| 弱一致性      | $T <:_w U$    | 增加原始数字类型的一致性。         |
+| 兼容性       |                | 类型$T$在转换后符合类型$U$。      |
+
+### 等价
+
+类型之间的等价$（\ equiv）$是最小的一致性[^一致性]，具有一下特点：
+
+- 如果 $t$ 由类型别名 `type $t$ = $T$`定义, 那么 $t$ 等价于$T$.
+- 如果路径 $p$ 有一个单例类型 `$q$.type`, 那么 `$p$.type $\equiv q$.type`.
+- 如果 $O$ 是一个对象的定义,而且 $p$ 是一个只路径或仅包括包或对象的选择器并以$O$结尾, 那么 `$O$.this.type $\equiv p$.type`.
+- 两个[复合类型](#复合类型)等价的条件是，它们的组件的序列是相等的，并且以相同的顺序出现，并且它们的修饰也相等的。如果两个修饰绑定了同样的命名，并且每个声明的实体的修饰符，类型和边界也相等，则两个修饰是相等的。
+- 两个[方法类型](#方法类型)是等价的条件是:
+    - 都是含蓄的,或两者都不是[^含蓄的];
+    - 它们具有等效的结果类型;
+    - 它们有相同数量的参数;
+    - 相应的参数具有等价的类型。请注意，参数的名称对于方法类型的等价性无关紧要。
+- 如果两个[多态方法类型](＃多态方法类型)具有相同数量的类型参数，并且在将一组类型参数重命名为另一组之后，结果类型以及相应的下限和上限，则它们是相等的。
+- 如果两个[既存类型](#既存类型)具有相同数量的量词，并且在将一个类型量词列表重命名为另一个之后，量化类型以及相应量词的下限和上限是等价的，则他们是相等的。
+- 两个[类型构造函数](类型构造函数)是相同的，如果它们具有相同数量的类型参数，并且在将一个类型参数列表重命名为另一个之后，结果类型以及变化，相应类型的下限和上限是相等的。
+
+[^一致性]：一致性是一种等价关系下封闭环境的形成。
+[^含蓄的]：如果定义它的参数部分以`implicit`关键字开头，则方法类型是隐含的。
+
+### 一致性
+
+一致性关系$(<:)$是满足以下条件的最小传递关系。
+
+- 一致性包括等价。如果$T = U$，那么$T <: U$。
+- 对于任意值类型$T$，有`scala.Nothing <: $T$ <: scala.Any`.
+- 对于任意的类型构造函数 $T$ (具有任意数量的类型参数), 由`scala.Nothing <: $T$ <: scala.Any`.
+- 对于每个类型 $T$ ,使得 `$T$ <: scala.AnyRef` 具有 `scala.Null <: $T$`.
+- 类型变量或抽象类型 $t$ 与其上限一致，其下限与 $t$一致.
+- 类类型或参数化类型与其任何基类型一致。
+- 单例类型 `$p$.type` 和 $p$路径的类型一致。
+- 单例类型 `$p$.type` 和 `scala.Singleton`类型一致.
+- 如果$T$和$U$一致，则类型映射`$T$ T$`和`$U$ T$`一致。
+- 参数化类型`$T$[$T_1$，…，$T_n$]`与`$T$[$U_1$，…，$U_n$]`一致的条件是$i \in { 1 , \ldots , n }$:
+ 1. 如果$T$的第$i$个类型参数声明为协变，则 $T_i <: U_i$.
+ 1. 如果$T$的第$i$个类型参数声明为逆变的，那么  $U_i <: T_i$.
+ 1. 如果$T$的第$i$个类型参数既不是协变的，也不是逆变的，那么 $U_i \equiv T_i$.
+- 复合类型 `$T_1$ with $\ldots$ with $T_n$ {$R\,$}` 与其每个组件类型 $T_i$一致.
+- 如果`$U_1$ with $\ldots$ with $U_n$ {$R\,$}` 中的每一个类型或值$x$的绑定$d$都既存一个包含$d$的$T$中$x$成员绑定，则$T$与复合类型 `$U_1$ with $\ldots$ with $U_n$ {$R\,$}`一致.
+- 如果既存类型`$T$ forSome {$\,Q\,$}`的[斯柯伦化](既存类型)和 $U$一致，既存类型`$T$ forSome {$\,Q\,$}`和$U$一致.
+- 如果$T$与`$U$ forSome {$\,Q\,$}`的[类型实例](既存类型)之一一致，则$T$类型与既存类型`$U$ forSome {$\,Q\,$}`一致。
+
+- 如果 $T_i \equiv T_i'$$i \in { 1 , \ldots , n}$，$U$和$U'$一致，那么方法类型 $(p_1:T_1 , \ldots , p_n:T_n) U$和方法类型$(p_1':T_1' , \ldots , p_n':T_n') U'$一致。
+
+- 多态类型$[a_1 >: L_1 <: U_1 , \ldots , a_n >: L_n <: U_n] T$与复合多态类型$[a_1 >: L_1' <: U_1' , \ldots , a_n >: L_n' <: U_n'] T'$一致的条件是，假设$L_1' <: a_1 <: U_1' , \ldots , L_n' <: a_n <: U_n'$，$T <: T'$。$L_i <: L_i'$,$U_i' <: U_i$，$i \in \{ 1 , \ldots , n \}$.
+
+- 类型构造函数$T$ 和 $T'$ 遵循类似的规律。我们通过类型参数子句$[a_1 , \ldots , a_n]$和  $[a_1' , \ldots , a_n']$来区分$T$和$T'$，其中 $a_i$或$a_i'$可以包含差异注释，高阶类型参数子句和边界。那么，$T$和$T'$一致的条件是，如果任意列表$[t_1 , \ldots , t_n]$ --具有声明的差异，边界和高阶类型参数子句-- $T'$的有效类型参数是$T$和$T[t_1 , \ldots , t_n] <: T'[t_1 , \ldots , t_n]$的类型参数的有效列表。请注意，这需要
+    - $a_i$的边界必须弱于$a'_i$的相应边界。
+    - $a_i$的差异必须与$a'_i$的差异匹配，其中协变匹配协变，逆变匹配逆变，任何差异与无差异一致。
+    - 这些限制递归地应用于相应的高阶类型参数子句$a_i$和$a'_i$。_
+
+在以下某个条件下,类类型$C$的复合类型的声明或定义将包括另外一个类类型 $C'$的符合类型的同名声明：
+
+- 如果$T <: T'$,一个值声明或定义定义了一个类型为 $T$的命名$x$,包括一个值或者方法声明定义了类型为 $T'$的$x$。
+- 如果$T <: T'$，,一个方法声明或定义定义了一个类型为$T$的命名$x$,包括一个方法声明定义了类型为$T'$的$x$。
+
+- 如果$T \equiv T'$，则类型别名`type $t$[$T_1$ , … , $T_n$] = $T$`包含类型别名`type $t$[$T_1$ , … , $T_n$] = $T'$`。
+- 如果$L' <: L$并且 $U <: U'$，类型声明`type $t$[$T_1$ , … , $T_n$] >: $L$ <: $U$`包含类型声明`type $t$[$T_1$ , … , $T_n$] >: $L'$ <: $U'$`。
+- 只有$L <: t <: U$，绑定类型名称$t$的类型或类定义包含抽象类型声明`type t[$T_1$ , … , $T_n$] >: L <: U`。
+
 
 ## 基本类型和成员定义
 
@@ -552,15 +636,15 @@ define a function `f} which has type `(x: T)T $\overload$ Int`.
 
   - 单例类型`$p$.type`的基类型是$p$类型。
 
-  - 复合类型`$T_1$ with $\ldots$ with $T_n$ { $R$ }`的基类型是所有$T_i$'的基类的 *简化联合*。这意味着：让多集$\mathscr{S}$ 成为所有$T_i$的基类型的多集合。如果$\mathscr{S}$包含同一类的几个类型实例，比如说'$S^i$#$C$[$T^i_1 , \ldots , T^i_n$]`$(i \in I)$，则所有这些实例都被其中一个实例替换，这些实例符合所有其他实例。 如果不存在这样的实例，则会出错。 由此可见，简化联合（如果存在）会产生一组类类型，其中不同类型是不同类的实例。
+  - 复合类型`$T_1$ with $\ldots$ with $T_n$ { $R$ }`的基类型是所有$T_i$'的基类的 *简化联合*。这意味着：让多集$\mathscr{S}$ 成为所有$T_i$的基类型的多集合。如果$\mathscr{S}$包含同一类的几个类型实例，比如说`$S^i$#$C$[$T^i_1 , \ldots , T^i_n$]`$(i \in I)$，则所有这些实例都被其中一个实例替换，这些实例符合所有其他实例。 如果不既存这样的实例，则会出错。 由此可见，简化联合（如果既存）会产生一组类类型，其中不同类型是不同类的实例。
 
   - 类型选择`$S$#$T$`的基类型确定如下。如果 $T$是别名或抽象类型，则前面的条款适用。或者，$T$必须是(合理参数化)类类型，它在某个类$B$中定义。然后`$S$#$T$`的基类型是从前缀类型$S$看到的$B$中的$T$的基本类型。
 
-  - 存在类型`$T$ forSome { $Q$ }`的基类型都是`$S$ forSome { $Q$ }`类型，其中$S$是$T$的基本类型。
+  - 既存类型`$T$ forSome { $Q$ }`的基类型都是`$S$ forSome { $Q$ }`类型，其中$S$是$T$的基本类型。
 
 1. *只有前缀类型$S$具有类$C$的类型实例作为基类型* ,比如`$S'$#$C$[$T_1 , \ldots , T_n$]`，从某些前缀类型$S$看到的类$C$中的$T$概念才有意义。然后我们定义如下:
     - 如果 `$S$ = $\epsilon$.type`, 则从 $T$看到的$C$中的$T$是$T$本身。
-    - 或者，如果$S$是存在类型`$S'$ forSome { $Q$ }`，并且从 $S'$ 看到的$C$中的$T$是$T'$。那么从$S$中看到的$C$中的$T$是`$T'$ forSome {$\,Q\,$}`.
+    - 或者，如果$S$是既存类型`$S'$ forSome { $Q$ }`，并且从 $S'$ 看到的$C$中的$T$是$T'$。那么从$S$中看到的$C$中的$T$是`$T'$ forSome {$\,Q\,$}`.
     - 或者, i如果 $T$ 是某个类 $D$ 的$i$'类型参数, 那么
         - 如果 $S$ 有一个基本类型 `$D$[$U_1 , \ldots , U_n$]`, 对于某些类型参数 `[$U_1 , \ldots , U_n$]`, 那么$S$中$C$中的$T$是$U_i$
         - 或者，如果$C$定义在$C'$类中，那么$S$中$C$的$T$与$S$中$C$的$T$相同。
@@ -574,7 +658,7 @@ define a function `f} which has type `(x: T)T $\overload$ Int`.
     如果$T$是可能参数化的类类型，其中$T$'的类在某些其他类 $D$中定义，而$S$是某种前缀类型，那么我们使用"$T$ seen from $S$"作为  "$T$ in $D$ seen from $S$"的简写。
 
 1.  $T$ 类型的*成员绑定*是
-   1. 所有绑定$d$使得在$T$的基类型中存在某个类$C$的类型实例，并且在C中存在定义或声明d',使得$d’$通过从$T’$中看到的$C’$以$C’$取代每个类型$T’$而产生$d’$
+   1. 所有绑定$d$使得在$T$的基类型中既存某个类$C$的类型实例，并且在C中既存定义或声明d',使得$d’$通过从$T’$中看到的$C’$以$C’$取代每个类型$T’$而产生$d’$
    2. 类型[细化](#复合类型)的所有绑定，如果有的话。
 
    类型映射`S#T`的定义是`S`中的类型`T`的成员绑定$d_T$。在这种情况下，我们还说`S#T`是由$d_T$定义的.
@@ -604,7 +688,7 @@ define a function `f} which has type `(x: T)T $\overload$ Int`.
     - 它们有相同数量的参数; and
     - 相应的参数具有等价的类型。请注意，参数的名称对于方法类型的等价性无关紧要。
 - 如果两个[多态方法类型](＃多态方法类型)具有相同数量的类型参数，并且在将一组类型参数重命名为另一组之后，结果类型以及相应的下限和上限，则它们是等效的 类型参数是等价的。
-- 如果两个[存在类型](#存在类型)具有相同数量的量词，则它们是等价的，并且在将一个类型量词列表重命名为另一个之后，量化类型以及相应量词的下限和上限是等价的。
+- 如果两个[既存类型](#既存类型)具有相同数量的量词，则它们是等价的，并且在将一个类型量词列表重命名为另一个之后，量化类型以及相应量词的下限和上限是等价的。
 - 两个[类型构造函数](类型构造函数)是相同的，如果它们具有相同数量的类型参数，并且在将一个类型参数列表重命名为另一个之后，结果类型以及方差，相应类型的下限和上限 参数是等价的。
 
 [^congruence]：一致性是一种等价关系下封闭环境的形成。
@@ -628,9 +712,9 @@ define a function `f} which has type `(x: T)T $\overload$ Int`.
  1. 如果$T$的$i$'th类型参数声明为逆变的，那么  $U_i <: T_i$.
  1. 如果$T$的$i$'th类型参数既不是协变的，也不是逆变的，那么 $U_i \equiv T_i$.
 - 复合类型 `$T_1$ with $\ldots$ with $T_n$ {$R\,$}` `符合每个组件类型 $T_i$.
-- 如果$i \in { 1 , \ldots , n }$ 为$T <: U_i$，$R$ 中的每一个类型或值$x$的绑定$d$斗存在一个包含$d$的$T$中 $x$成员绑定，则$T$符合复合类型 `$U_1$ with $\ldots$ with $U_n$ {$R\,$}`.
-- 如果[斯柯伦化](存在类型)符合 $U$，存在类型`$T$ forSome {$\,Q\,$}`符合$U$.
-- 如果$T$符合`$U$ forSome {$\,Q\,$}`的[类型实例](存在类型)之一，则$T$类型符合存在类型`$U$ forSome {$\,Q\,$}`。
+- 如果$i \in { 1 , \ldots , n }$ 为$T <: U_i$，$R$ 中的每一个类型或值$x$的绑定$d$斗既存一个包含$d$的$T$中 $x$成员绑定，则$T$符合复合类型 `$U_1$ with $\ldots$ with $U_n$ {$R\,$}`.
+- 如果[斯柯伦化](既存类型)符合 $U$，既存类型`$T$ forSome {$\,Q\,$}`符合$U$.
+- 如果$T$符合`$U$ forSome {$\,Q\,$}`的[类型实例](既存类型)之一，则$T$类型符合既存类型`$U$ forSome {$\,Q\,$}`。
 
 - 如果$i \in { 1 , \ldots , n}$和$U$的$T_i \equiv T_i'$符合 $(p_1:T_1 , \ldots , p_n:T_n) U$ ，则方法类型$(p_1:T_1 , \ldots , p_n:T_n) U$符合$(p_1':T_1' , \ldots , p_n':T_n') U'$。
 
@@ -653,7 +737,10 @@ define a function `f} which has type `(x: T)T $\overload$ Int`.
 
 #### 最小上限和最大下线
 
-$(<:)$ 关系在类型之间形成预订,即它具有传递性和反射性。这允许我们根据该顺序定义一组类型的*最小上限*和*最大下限*。一组类型的最小上限或最大下限并不总是存在。例如，考虑类定义：
+
+#### 最小上限和最大下线
+
+$(<:)$ 关系在类型之间形成预订,即它具有传递性和反射性。这允许我们根据该顺序定义一组类型的*最小上限*和*最大下限*。一组类型的最小上限或最大下限并不总是既存。例如，考虑类定义：
 
 ```scala
 class A[+T] {}
@@ -663,7 +750,7 @@ class C extends A[C]
 
 然后类型`A[Any], A[A[Any]], A[A[A[Any]]], ...`形成`B`和`C`的上界的递减序列。 最小上限将是该序列的无限极限，它不是Scala类型。 由于这样的情况通常无法检测，因此Scala编译器可以自由地拒绝具有指定为最小上限或最大下限的类型的术语，并且该约束将比某些编译器设置限制更复杂[^ 4]。
 
-最小上限或最大下限也可能不是唯一的。 例如，`A with B`和`B with A`都是`A`和`B`的最大下界。如果存在多个最小上限或最大下限，则Scala编译器可以自由选择其中任何一个。
+最小上限或最大下限也可能不是唯一的。 例如，`A with B`和`B with A`都是`A`和`B`的最大下界。如果既存多个最小上限或最大下限，则Scala编译器可以自由选择其中任何一个。
 
 [^4]：当前的Scala编译器将这种边界中参数化的嵌套级别限制为最多比操作数类型的最大嵌套级别深两级
 
@@ -735,7 +822,7 @@ trait ToString { def convert(x: Int): String }
 
 如果路径$p$的基础类型是不稳定性的，则单例类型`$p$.type`易失性的。
 
-如果$T$是不稳定性的，则存在类型`$T$ forSome {$\,Q\,$}`是易变的。
+如果$T$是不稳定性的，则既存类型`$T$ forSome {$\,Q\,$}`是易变的。
 
 ## 类型消除
 
@@ -749,7 +836,7 @@ trait ToString { def convert(x: Int): String }
 - 单例类型`$p$.type` 的擦除是$p$类型.
 - 类型映射 `$T$#$x$` 的删除是 `|$T$|#$x$`.
 - 一个复合型的擦除`$T_1$ with $\ldots$ with $T_n$ {$R\,$}`是$T_1 , \ldots , T_n$.的交点支配的擦除。
-- 存在类型`$T$ forSome {$\,Q\,$}`的擦除是 $|T|$.
+- 既存类型`$T$ forSome {$\,Q\,$}`的擦除是 $|T|$.
 
 下面计算类型$T_1 , \ldots , T_n$列表的交集占领者。
 设$T_{i_1} , \ldots , T_{i_m}$是$T_i$类型的子序列，他们不是某些其他类型$T_j$的超类型。如果这个子序列包含一个类型指示符$T_c$ ，它指得是一个不是特征的类，则交集支配者是$T_c$。否则，交集支配者是子序列的第一个元素$T_{i_1}$.
