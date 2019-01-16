@@ -4,7 +4,7 @@ layout: default
 chapter: 5
 ---
 
-# Classes and Objects
+# 类和对象
 
 ```ebnf
 TmplDef          ::= [‘case’] ‘class’ ClassDef
@@ -12,10 +12,10 @@ TmplDef          ::= [‘case’] ‘class’ ClassDef
                   |  ‘trait’ TraitDef
 ```
 
-[Classes](#class-definitions) and [objects](#object-definitions)
-are both defined in terms of _templates_.
+[类](#类定义) 和 [对象](#对象定义)
+都是用*模板*定义的.
 
-## Templates
+## 模板
 
 ```ebnf
 ClassTemplate   ::=  [EarlyDefs] ClassParents [TemplateBody]
@@ -27,74 +27,24 @@ SelfType        ::=  id [‘:’ Type] ‘=>’
                  |   this ‘:’ Type ‘=>’
 ```
 
-A _template_ defines the type signature, behavior and initial state of a
-trait or class of objects or of a single object. Templates form part of
-instance creation expressions, class definitions, and object
-definitions.  A template
-`$sc$ with $mt_1$ with $\ldots$ with $mt_n$ { $\mathit{stats}$ }`
-consists of a constructor invocation $sc$
-which defines the template's _superclass_, trait references
-`$mt_1 , \ldots , mt_n$` $(n \geq 0)$, which define the
-template's _traits_, and a statement sequence $\mathit{stats}$ which
-contains initialization code and additional member definitions for the
-template.
+*模板* 定义了类的特征或类对象或单个对象的类型签名，行为和初始状态。模板是构成实例创建表达式，类定义和对象定义的一部分。模板`$sc$ with $mt_1$ with $\ldots$ with $mt_n$ { $\mathit{stats}$ }`包含构造函数调用$sc$,它定义了模板的超类，特征引用`$mt_1 , \ldots , mt_n$` $(n \geq 0)$，定义模板的特征。以及语句序列  $\mathit{stats}$，其中包含初始化代码和模板的其他成员定义。
 
-Each trait reference $mt_i$ must denote a [trait](#traits).
-By contrast, the superclass constructor $sc$ normally refers to a
-class which is not a trait. It is possible to write a list of
-parents that starts with a trait reference, e.g.
-`$mt_1$ with $\ldots$ with $mt_n$`. In that case the list
-of parents is implicitly extended to include the supertype of $mt_1$
-as first parent type. The new supertype must have at least one
-constructor that does not take parameters.  In the following, we will
-always assume that this implicit extension has been performed, so that
-the first parent class of a template is a regular superclass
-constructor, not a trait reference.
+每个特征引用 $mt_i$ 必须表示一个 [特征](#特征)。相比之下，超类构造函数$sc$通常是指一个不是特征的类。可以写出由特征引用开头的父类列表，例如`$mt_1$ with $\ldots$ with $mt_n$`.在这种情况下，父类列表被自动扩展为包含$mt_1$的超类。新的超类必须至少有一个无参的构造函数。在下文中，我们将始终假设以执行该自动扩展，一遍模板的第一个父类是常规超类构造函数，而不是特征引用。
 
-The list of parents of a template must be well-formed. This means that
-the class denoted by the superclass constructor $sc$ must be a
-subclass of the superclasses of all the traits $mt_1 , \ldots , mt_n$.
-In other words, the non-trait classes inherited by a template form a
-chain in the inheritance hierarchy which starts with the template's
-superclass.
+模板的父类列表必须格式正确。这意味着由超类构造函数$sc$表示的类必须是所有特征$mt_1 , \ldots , mt_n$的超类的子类。换句话说，模板继承的非特征类在继承层次结构中形成一个链，该链以模板的超类开头。
 
-The _least proper supertype_ of a template is the class type or
-[compound type](03-types.html#compound-types) consisting of all its parent
-class types.
+模板的超类的 *最低要求* 是类类型或[复合类型](03-types.html#compound-types)由其所有的父类类型构成的。
 
-The statement sequence $\mathit{stats}$ contains member definitions that
-define new members or override members in the parent classes.  If the
-template forms part of an abstract class or trait definition, then
-$\mathit{stats}$ may also contain declarations of abstract members.
-If the template forms part of a concrete class definition,
-$\mathit{stats}$ may still contain declarations of abstract type members, but
-not of abstract term members.  Furthermore, $\mathit{stats}$ may in any case
-also contain strictly evaluated expressions: these are executed in the order they are
-given as part of the initialization of a template, even if they appear in
-the definition of overridden members.
+语句序列 $\mathit{stats}$ 包含定义新成员或覆盖父类成员的成员定义。如果模板构成抽象类或特征定义的一部分，那么 $\mathit{stats}$ 也可能包含抽象成员的声明。如果模板构成实体类定义的一部分 $\mathit{stats}$ 仍然可能包含抽象类型成员的声明，但不包含抽象术语成员的声明。此外 $\mathit{stats}$ 在任何情况下都可能包含严格计算的表达式:这些表达式按照他们作为模板初始化一部分给出的顺序执行，即使他们出现在被覆盖成员的定义中。
 
-The sequence of template statements may be prefixed with a formal
-parameter definition and an arrow, e.g. `$x$ =>`, or
-`$x$:$T$ =>`.  If a formal parameter is given, it can be
-used as an alias for the reference `this` throughout the
-body of the template.
-If the formal parameter comes with a type $T$, this definition affects
-the _self type_ $S$ of the underlying class or object as follows:  Let $C$ be the type
-of the class or trait or object defining the template.
-If a type $T$ is given for the formal self parameter, $S$
-is the greatest lower bound of $T$ and $C$.
-If no type $T$ is given, $S$ is just $C$.
-Inside the template, the type of `this` is assumed to be $S$.
+模板语句的序列可以以形式参数定义和箭头为前缀，例如`$x$ =>`, 或者`$x$:$T$ =>`。如果给出了正式参数，则可以将其用作整个模板主体中的引用`this`的别名。如果正式参数带有 $T$类型，则次定义会影响基础类或对象本身的类型$S$.如下所示：设$C$是定义模板的类、特征或对象的类型。如果给定正式的自参数$T$类型，$S$是$T$和$C$的最大下限。如果没有给出$T$类型。$S$只是$C$。在模板内部，`this`的类型就是$S$.
 
-The self type of a class or object must conform to the self types of
-all classes which are inherited by the template $t$.
+类或对象的自身类型必须符合模板$t$继承的所有类的自身类型。
 
-A second form of self type annotation reads just
-`this: $S$ =>`. It prescribes the type $S$ for `this`
-without introducing an alias name for it.
+第二种形式的自身类型注释就是这样:`this: $S$ =>`。它为`this`规定了$S$类型而没有为他引入别名。
 
-###### Example
-Consider the following class definitions:
+###### 例
+考虑以下类的定义：
 
 ```scala
 class Base extends Object {}
@@ -102,98 +52,60 @@ trait Mixin extends Base {}
 object O extends Mixin {}
 ```
 
-In this case, the definition of `O` is expanded to:
+在这种情况下， `O`的定义扩展为:
 
 ```scala
 object O extends Base with Mixin {}
 ```
 
-<!-- TODO: Make all references to Java generic -->
 
-**Inheriting from Java Types** A template may have a Java class as its superclass and Java interfaces as its
-mixins.
+**继承自java类型** 模板可以将Java类作为其超类，将Java接口作为其mixins(混入)。
 
-**Template Evaluation** Consider a template `$sc$ with $mt_1$ with $mt_n$ { $\mathit{stats}$ }`.
+**模板求值** 考虑一个模板 `$sc$ with $mt_1$ with $mt_n$ { $\mathit{stats}$ }`.
 
-If this is the template of a [trait](#traits) then its _mixin-evaluation_
-consists of an evaluation of the statement sequence $\mathit{stats}$.
 
-If this is not a template of a trait, then its _evaluation_
-consists of the following steps.
+如果这是[特征](#特征)模板，则其*混入求值*包括对语句 $\mathit{stats}$的求值。
 
-- First, the superclass constructor $sc$ is
-  [evaluated](#constructor-invocations).
-- Then, all base classes in the template's [linearization](#class-linearization)
-  up to the template's superclass denoted by $sc$ are
-  mixin-evaluated. Mixin-evaluation happens in reverse order of
-  occurrence in the linearization.
-- Finally the statement sequence $\mathit{stats}\,$ is evaluated.
+如果这不是特征模板，则其 *求值* 包括以下步骤:
 
-###### Delayed Initialization
-The initialization code of an object or class (but not a trait) that follows
-the superclass
-constructor invocation and the mixin-evaluation of the template's base
-classes is passed to a special hook, which is inaccessible from user
-code. Normally, that hook simply executes the code that is passed to
-it. But templates inheriting the `scala.DelayedInit` trait
-can override the hook by re-implementing the `delayedInit`
-method, which is defined as follows:
+- 首先，对超类构造函数 $sc$ [求值](#构造函数调用)。
+- 然后，模板[线性化](##类线性化)中的所有基类，直到模板的超类(由$SC$表示)都被混合求值。在线性化过程中，混合求值的发生顺序是相反的。
+- 最后，计算语句序列$\mathit{stats}\,$ 。
+
+###### 延迟初始化
+在超类构造函数调用之后的对象或类(不能是特征)的初始化代码以及模板基类的混合求值被传递到特殊的钩子，这是用户代码无法访问的。通常，该钩子只是执行传递给它的代码。但是继承 `scala.DelayedInit` 特征的模块可以通过重新实现`delayedInit`的方法来覆盖钩子，该方法定义如下：
 
 ```scala
 def delayedInit(body: => Unit)
 ```
 
-### Constructor Invocations
+### 构造函数调用
 
 ```ebnf
 Constr  ::=  AnnotType {‘(’ [Exprs] ‘)’}
 ```
 
-Constructor invocations define the type, members, and initial state of
-objects created by an instance creation expression, or of parts of an
-object's definition which are inherited by a class or object
-definition. A constructor invocation is a function application
-`$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)`, where $x$ is a
-[stable identifier](03-types.html#paths), $c$ is a type name which either designates a
-class or defines an alias type for one, $\mathit{targs}$ is a type argument
-list, $\mathit{args}_1 , \ldots , \mathit{args}_n$ are argument lists, and there is a
-constructor of that class which is [applicable](06-expressions.html#function-applications)
-to the given arguments. If the constructor invocation uses named or
-default arguments, it is transformed into a block expression using the
-same transformation as described [here](sec:named-default).
+构造函数调用定义由实例创建表达式创建的对象和类型，成员和初始状态，或定义由类或对象定义继承的对象定义部分。构造函数调用是一个函数应用程序 `$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)`，其中$x$是一个[稳定标识符](03-types.html#paths)，$c$是一个类型名称，它指定一个类或为一个类定义一个别名类型， $\mathit{targs}$是一个类型参数列表。$\mathit{args}_1 , \ldots , \mathit{args}_n$是参数列表，并且该类的构造函数[适用](06-expressions.html#function-applications)于给定的参数。如果构造函数调用使用命名参数或默认参数，则使用[此处](sec:named-default)描述的相同转换将其转换为块表达式。
 
-The prefix `$x$.` can be omitted.  A type argument list
-can be given only if the class $c$ takes type parameters.  Even then
-it can be omitted, in which case a type argument list is synthesized
-using [local type inference](06-expressions.html#local-type-inference). If no explicit
-arguments are given, an empty list `()` is implicitly supplied.
+前缀`$x$.`可以省略。仅当类$c$接受类型参数时，才能给出类型参数列表。即使这样，它也可以省略。在这种情况下，使用[本地类型推断](06-expressions.html#local-type-inference)类型参数列表。如果没有显式的给出参数，就会默认一个空参数列表`()`.
 
-An evaluation of a constructor invocation
-`$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)`
-consists of the following steps:
+对于构造函数调用`$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)`的执行包含以下步骤:
 
-- First, the prefix $x$ is evaluated.
-- Then, the arguments $\mathit{args}_1 , \ldots , \mathit{args}_n$ are evaluated from
-  left to right.
-- Finally, the class being constructed is initialized by evaluating the
-  template of the class referred to by $c$.
+- 首先计算前缀 $x$ 。
+- 然后，从左到右计算参数 $\mathit{args}_1 , \ldots , \mathit{args}_n$ 。
+- 最后，通过计算 $c$的引用类的模板来初始化正在创建的类.
 
-### Class Linearization
+### 类的线性化
 
-The classes reachable through transitive closure of the direct
-inheritance relation from a class $C$ are called the _base classes_ of $C$.  Because of mixins, the inheritance relationship
-on base classes forms in general a directed acyclic graph. A
-linearization of this graph is defined as follows.
+通过从$C$类直接继承关系的传递闭包可到达的类称为$C$的 *基类*。由于混入，基类上的继承关系通常形成有向无环图。该图的线性化定义如下：
 
-###### Definition: linearization
-Let $C$ be a class with template
-`$C_1$ with ... with $C_n$ { $\mathit{stats}$ }`.
-The _linearization_ of $C$, $\mathcal{L}(C)$ is defined as follows:
+
+###### 线性化的定义
+设$C$是一个模板`$C_1$ with ... with $C_n$ { $\mathit{stats}$ }`的类。$C$, $\mathcal{L}(C)$的 *线性化定义* 如下：
 
 $$\mathcal{L}(C) = C, \mathcal{L}(C_n) \; \vec{+} \; \ldots \; \vec{+} \; \mathcal{L}(C_1)$$
 
-Here $\vec{+}$ denotes concatenation where elements of the right operand
-replace identical elements of the left operand:
+这里$\vec{+}$表示串接，其中右操作数的元素替换左操作数的相同元素。
 
 $$
 \begin{array}{lcll}
@@ -202,8 +114,8 @@ $$
 \end{array}
 $$
 
-###### Example
-Consider the following class definitions.
+###### 例
+请考虑以下类定义：
 
 ```scala
 abstract class AbsIterator extends AnyRef { ... }
@@ -212,96 +124,55 @@ class StringIterator extends AbsIterator { ... }
 class Iter extends StringIterator with RichIterator { ... }
 ```
 
-Then the linearization of class `Iter` is
+那么`Iter`类的线性化就是
 
 ```scala
 { Iter, RichIterator, StringIterator, AbsIterator, AnyRef, Any }
 ```
 
-Note that the linearization of a class refines the inheritance
-relation: if $C$ is a subclass of $D$, then $C$ precedes $D$ in any
-linearization where both $C$ and $D$ occur.
-[Linearization](#definition:-linearization) also satisfies the property that
-a linearization of a class always contains the linearization of its direct superclass as a suffix.
+注意，类的线性化改进了继承关系：如果$C$是$D$的子类，那么在$C$和$D$出现的任何线性化中$C$都在$D$的前面。[线性化](#定义:-线性化)还满足以下属性：类的线性化始终包含其直接超类的线性化作为后缀。
 
-For instance, the linearization of `StringIterator` is
+
+
+例如 `StringIterator` 的线性化是：
 
 ```scala
 { StringIterator, AbsIterator, AnyRef, Any }
 ```
 
-which is a suffix of the linearization of its subclass `Iter`.
-The same is not true for the linearization of mixins.
-For instance, the linearization of `RichIterator` is
+这是其子类`Iter`的线性化的后缀。对于混入的线性化，情况并非如此。例如：`RichIterator`的线性化是
+
 
 ```scala
 { RichIterator, AbsIterator, AnyRef, Any }
 ```
 
-which is not a suffix of the linearization of `Iter`.
+这不是`Iter`线性化的后缀.
 
-### Class Members
+### 类成员
 
-A class $C$ defined by a template `$C_1$ with $\ldots$ with $C_n$ { $\mathit{stats}$ }`
-can define members in its statement sequence
-$\mathit{stats}$ and can inherit members from all parent classes.  Scala
-adopts Java and C\#'s conventions for static overloading of
-methods. It is thus possible that a class defines and/or inherits
-several methods with the same name.  To decide whether a defined
-member of a class $C$ overrides a member of a parent class, or whether
-the two co-exist as overloaded variants in $C$, Scala uses the
-following definition of _matching_ on members:
+由模板`$C_1$ with $\ldots$ with $C_n$ { $\mathit{stats}$ }`定义的类$C$可以在其语句序列$\mathit{stats}$ 中定义成员，并且可以从所有父类继承成员。scala采用Java和C\# 的方法来静态重载方法。因此，类可能定义或继承具有相同名称的多个方法。为了确定类$C$的已定义成员是否覆盖父类的成员，或者两者是否作为$C$中的重载变体共存，Scala使用以下成员 *匹配* 定义：
 
-###### Definition: matching
-A member definition $M$ _matches_ a member definition $M'$, if $M$
-and $M'$ bind the same name, and one of following holds.
+###### 定义: 匹配
+成员定义$M$ *匹配* 成员定义$M'$，如果$M$和$M'$绑定相同的名称，探后符合下面给中的一条：
 
-1. Neither $M$ nor $M'$ is a method definition.
-2. $M$ and $M'$ define both monomorphic methods with equivalent argument types.
-3. $M$ defines a parameterless method and $M'$ defines a method
-   with an empty parameter list `()` or _vice versa_.
-4. $M$ and $M'$ define both polymorphic methods with
-   equal number of argument types $\overline T$, $\overline T'$
-   and equal numbers of type parameters
-   $\overline t$, $\overline t'$, say, and  $\overline T' = [\overline t'/\overline t]\overline T$.
+1. $M$和$M'$都不是方法定义。
+2. $M$ 和 $M'$ 定义具有等效参数类型的两个单态方法。
+3. $M$定义无参方法，$M'$定义具有空参数列表`()`的方法，*反之亦然*。
+4. $M$和$M'$定义两种参数类型相同数量的多态方法$\overline T$, $\overline T'$和相等数量的类型参数 $\overline t$, $\overline t'$，并且 $\overline T' = [\overline t'/\overline t]\overline T$.
 
-<!--
-every argument type
-$T_i$ of $M$ is equal to the corresponding argument type $T`_i$ of
-$M`$ where every occurrence of a type parameter $t`$ of $M`$ has been replaced by the corresponding type parameter $t$ of $M$.
--->
+成员定义分为两类：实体类和抽象类。类$C$的成员要么 *直接定义*(即他们出现在$C$的语句序列$\mathit{stats}$中)，或 *继承*。有两个规则确定一个类的成员即，每个类别对应一个:
 
-Member definitions fall into two categories: concrete and abstract.
-Members of class $C$ are either _directly defined_ (i.e. they appear in
-$C$'s statement sequence $\mathit{stats}$) or they are _inherited_.  There are two rules
-that determine the set of members of a class, one for each category:
+类$C$的 *具体成员* 是某些类$C_i \in \mathcal{L}(C)$中的任意具体定义$M$，在前置内$C_j \in \mathcal{L}(C)$ 且 $j < i直接定义一个抽象成员$M'$匹配$M$。
 
-A _concrete member_ of a class $C$ is any concrete definition $M$ in
-some class $C_i \in \mathcal{L}(C)$, except if there is a preceding class
-$C_j \in \mathcal{L}(C)$ where $j < i$ which directly defines a concrete
-member $M'$ matching $M$.
+类$C$的 *抽象成员* 是某些类$C_i \in \mathcal{L}(C)$中的任何抽象定义$M$,除非$C$已包含具体成员$M'$匹配$M$,或者前面的类$C_j \in \mathcal{L}(C)$ 并且 $j < i$直接定义一个抽象成员$M'$匹配$M$。
 
-An _abstract member_ of a class $C$ is any abstract definition $M$
-in some class $C_i \in \mathcal{L}(C)$, except if $C$ contains already a
-concrete member $M'$ matching $M$, or if there is a preceding class
-$C_j \in \mathcal{L}(C)$ where $j < i$ which directly defines an abstract
-member $M'$ matching $M$.
+此定义还确定类$C$及其父类的匹配成员之间的[重载](#覆盖)关系。首先，具体定义总是重载抽象定义。第二，对于定义$M$和$M'$,他们都是实体或抽象的，只有$M$定义的类在($C$线性化之中)$M'$所在的类的前面出现，$M$才会被重载为$M'$.
 
-This definition also determines the [overriding](#overriding) relationships
-between matching members of a class $C$ and its parents.
-First, a concrete definition always overrides an abstract definition.
-Second, for definitions $M$ and $M$' which are both concrete or both abstract,
-$M$ overrides $M'$ if $M$ appears in a class that precedes (in the
-linearization of $C$) the class in which $M'$ is defined.
+如果木匾直接定义两个匹配成员，则会出错。如果模板包含两个具有相同名称且具有相同[擦除](03-types.html#type-erasure)类型的成员，则也会出错。最后，模板不允许包含两个具有相同名称的方法（直接定义或继承），这两个方法都定义了默认参数。
 
-It is an error if a template directly defines two matching members. It
-is also an error if a template contains two members (directly defined
-or inherited) with the same name and the same [erased type](03-types.html#type-erasure).
-Finally, a template is not allowed to contain two methods (directly
-defined or inherited) with the same name which both define default arguments.
-
-###### Example
-Consider the trait definitions:
+###### 例
+考虑特征定义：
 
 ```scala
 trait A { def f: Int }
@@ -310,68 +181,37 @@ trait C extends A { override def f: Int = 4 ; def g: Int }
 trait D extends B with C { def h: Int }
 ```
 
-Then trait `D` has a directly defined abstract member `h`. It
-inherits member `f` from trait `C` and member `g` from
-trait `B`.
+特征`D`有一个直接定义的抽象成员`h`。它从特征`C`继承成员`f`，从特征`B`继承成员`g`。
 
-### Overriding
+### 覆盖
 
-<!-- TODO: Explain that classes cannot override each other -->
+$C$类的成员$M$[与](#class-members)定义的$C$的非私有成员$M'$一致可定义为 *覆盖* 该成员。在这种情况下，覆盖成员$M$的绑定必须[包含](03-types.html#conformance)被覆盖成员$M'$的绑定。此外，对修饰符的一下限制适用于$M$和$M'$。
 
-A member $M$ of class $C$ that [matches](#class-members)
-a non-private member $M'$ of a
-base class of $C$ is said to _override_ that member.  In this case
-the binding of the overriding member $M$ must [subsume](03-types.html#conformance)
-the binding of the overridden member $M'$.
-Furthermore, the following restrictions on modifiers apply to $M$ and
-$M'$:
-
-- $M'$ must not be labeled `final`.
-- $M$ must not be [`private`](#modifiers).
-- If $M$ is labeled `private[$C$]` for some enclosing class or package $C$,
-  then $M'$ must be labeled `private[$C'$]` for some class or package $C'$ where
-  $C'$ equals $C$ or $C'$ is contained in $C$.
-
-<!-- TODO: check whether this is accurate -->
-- If $M$ is labeled `protected`, then $M'$ must also be
-  labeled `protected`.
-- If $M'$ is not an abstract member, then $M$ must be labeled `override`.
-  Furthermore, one of two possibilities must hold:
-    - either $M$ is defined in a subclass of the class where is $M'$ is defined,
-    - or both $M$ and $M'$ override a third member $M''$ which is defined
-      in a base class of both the classes containing $M$ and $M'$
-- If $M'$ is [incomplete](#modifiers) in $C$ then $M$ must be
-  labeled `abstract override`.
-- If $M$ and $M'$ are both concrete value definitions, then either none
-  of them is marked `lazy` or both must be marked `lazy`.
-
-- A stable member can only be overridden by a stable member.
-  For example, this is not allowed:
+- $M'$ 不能标记为 `final`.
+- $M$ 不能是 [`private`](#修饰符).
+- 如果 $M$ 在某些封闭类或包$C$中标记为 `private[$C$]`，那么$M'$必须在类或包$C'$标记为 `private[$C'$]` ，且$C'$ 等于 $C$ 或 $C'$被包含于 $C$.
+- 如果 $M$ 标记为`protected`, 那么 $M'$ 也必须标记为 `protected`.
+- 如果$m'$不是抽象成员，则$M$必须标记为`override`。此外，必须保留一下两种可能性中的一种：
+    - 在定义了$M'$的子类中定义$M$.
+    - 或者，$M$和$M'$覆盖第三个成员$M''$，该成员在包含$M$和$M'$的两个类的基类中定义.
+- 如果$M'$在$C$中[不完整](#修饰符)，则$M$必须标记为`abstract override`。
+- 如果$M$和$M'$都是具体的值定义，那么他们中没有一个标记为`lazy`或者两者都标记为`lazy`。
+- 稳定的成员只能被稳定的成员覆盖。 例如，这是不允许的：
 
 ```scala
 class X { val stable = 1}
 class Y extends X { override var stable = 1 } // error
 ```
+另一个限制适用于抽象类型成员：具有[不稳定性类型](03-types.html#volatile-types)作为其上限的抽象类型成员可能不会覆盖不具有不稳定性上限的抽象类型成员。
 
-Another restriction applies to abstract type members: An abstract type
-member with a [volatile type](03-types.html#volatile-types) as its upper
-bound may not override an abstract type member which does not have a
-volatile upper bound.
+一个特殊的规则涉及到无参方法。如果定义为`def $f$: $T$ = ...` 或者 `def $f$ = ...`的无参方法覆盖具有空参数列表的$()T'$类型的方法，则还假定$f$具有空参数列表。
 
-A special rule concerns parameterless methods. If a parameterless
-method defined as `def $f$: $T$ = ...` or `def $f$ = ...` overrides a method of
-type $()T'$ which has an empty parameter list, then $f$ is also
-assumed to have an empty parameter list.
+重写方法从超类中的定义继承所有默认参数。通过在重写方法中指定默认参数，可以添加新的默认值（如果超类中的相应参数没有默认值）或覆盖超类的默认值（如果超类中的相应参数有默认值）。
 
-An overriding method inherits all default arguments from the definition
-in the superclass. By specifying default arguments in the overriding method
-it is possible to add new defaults (if the corresponding parameter in the
-superclass does not have a default) or to override the defaults of the
-superclass (otherwise).
 
-###### Example
+###### 例
 
-Consider the definitions:
+考虑定义：
 
 ```scala
 trait Root { type T <: Root }
@@ -379,45 +219,32 @@ trait A extends Root { type T <: A }
 trait B extends Root { type T <: B }
 trait C extends A with B
 ```
+类定义`C`的格式是错误的，因为`C`中的`T`的绑定是`type T <: B`,它无法包含类型`A`中的`T`的绑定`type T <: A`。可以通过在`C`类中添加类型`T`的覆盖定义来解决该问题。
 
-Then the class definition `C` is not well-formed because the
-binding of `T` in `C` is
-`type T <: B`,
-which fails to subsume the binding `type T <: A` of `T`
-in type `A`. The problem can be solved by adding an overriding
-definition of type `T` in class `C`:
 
 ```scala
 class C extends A with B { type T <: C }
 ```
 
-### Inheritance Closure
+### 继承闭包
 
-Let $C$ be a class type. The _inheritance closure_ of $C$ is the
-smallest set $\mathscr{S}$ of types such that
+$C$为类类型。$C$的 *继承闭包* 就是以下类型的最小集合$\mathscr{S}$：
 
-- $C$ is in $\mathscr{S}$.
-- If $T$ is in $\mathscr{S}$, then every type $T'$ which forms syntactically
-  a part of $T$ is also in $\mathscr{S}$.
-- If $T$ is a class type in $\mathscr{S}$, then all [parents](#templates)
-  of $T$ are also in $\mathscr{S}$.
+- $C$ 在 $\mathscr{S}$中.
+- 如果 $T$ 在 $\mathscr{S}$中, 那么每个类型 $T'$在语法上形成 $T$ 的一部分也在$\mathscr{S}$中.
+- 如果 $T$ 是 $\mathscr{S}$中的类型, 那么  $T$ 的所有[父类](#模板)也在 $\mathscr{S}$.
 
-It is a static error if the inheritance closure of a class type
-consists of an infinite number of types. (This restriction is
-necessary to make subtyping decidable[^kennedy]).
+如果类类型的继承闭包由无数种类型组成，那么这是一个静态错误。（这种限制对于使子类型可判定是必要的[^kennedy])。
 
-[^kennedy]: Kennedy, Pierce. [On Decidability of Nominal Subtyping with Variance.]( http://research.microsoft.com/pubs/64041/fool2007.pdf) in FOOL 2007
+[^kennedy]: Kennedy, Pierce. [ [关于具有方差的名义子类型的可判定性]( http://research.microsoft.com/pubs/64041/fool2007.pdf) in FOOL 2007
 
-### Early Definitions
+### 前置定义
 
 ```ebnf
 EarlyDefs         ::= ‘{’ [EarlyDef {semi EarlyDef}] ‘}’ ‘with’
 EarlyDef          ::=  {Annotation} {Modifier} PatVarDef
 ```
-
-A template may start with an _early field definition_ clause,
-which serves to define certain field values before the supertype
-constructor is called. In a template
+模板可以从 *前置字段定义* 子句开始，该子句用于在调用超类型构造函数之前定义某些字段值。 在模板中
 
 ```scala
 { val $p_1$: $T_1$ = $e_1$
@@ -426,33 +253,14 @@ constructor is called. In a template
 } with $sc$ with $mt_1$ with $mt_n$ { $\mathit{stats}$ }
 ```
 
-The initial pattern definitions of $p_1 , \ldots , p_n$ are called
-_early definitions_. They define fields
-which form part of the template. Every early definition must define
-at least one variable.
+$p_1 , \ldots , p_n$ 的初始模式定义称为前置定义。它们定义了构成模板一部分的字段。 每个前置定义必须至少定义一个变量。
 
-An early definition is type-checked and evaluated in the scope which
-is in effect just before the template being defined, augmented by any
-type parameters of the enclosing class and by any early definitions
-preceding the one being defined. In particular, any reference to
-`this` in the right-hand side of an early definition refers
-to the identity of `this` just outside the template. Consequently, it
-is impossible that an early definition refers to the object being
-constructed by the template, or refers to one of its fields and
-methods, except for any other preceding early definition in the same
-section. Furthermore, references to preceding early definitions
-always refer to the value that's defined there, and do not take into account
-overriding definitions. In other words, a block of early definitions
-is evaluated exactly as if it was a local bock containing a number of value
-definitions.
+前置定义在模板被定义与赋类型参数以及在此之前的任意前置定义之前做类型检查与求值,参数可以是类的任意类型参数。在前置定义的右侧对`this`的任何引用都指的是模板外部的`this` 的标识符。因此，前置定义不可能引用模板创建的对象，或者一弄其他字段与方法，除了同一段落中前面的前置定义之外。再者,对前面的前置定义的引用总是引用那里定义的值,并不牵涉到覆盖的定义。
 
-Early definitions are evaluated in the order they are being defined
-before the superclass constructor of the template is called.
+在调用模板的超类构造函数之前，按照它们的定义顺序计算前置定义。
 
-###### Example
-Early definitions are particularly useful for
-traits, which do not have normal constructor parameters. Example:
-
+###### 例
+前置定义对于没有正常构造函数参数的特征特别有用。 例：
 ```scala
 trait Greeting {
   val name: String
@@ -465,16 +273,11 @@ class C extends {
 }
 ```
 
-In the code above, the field `name` is initialized before the
-constructor of `Greeting` is called. Therefore, field `msg` in
-class `Greeting` is properly initialized to `"How are you, Bob"`.
+在上面的代码中，字段`name`在调用`Greeting`的构造函数之前被初始化。因此，`Greeting`中的字段`msg`被适当的初始化为`"How are you, Bob"`。
 
-If `name` had been initialized instead in `C`'s normal class
-body, it would be initialized after the constructor of
-`Greeting`. In that case, `msg` would be initialized to
-`"How are you, <null>"`.
+如果`name`已经在`C`的普通类体中初始化，那么它将在`Greeting`的构造函数之后初始化。在这种情况下，`msg`将被初始化为`"How are you, <null>"`。
 
-## Modifiers
+## 修饰符
 
 ```ebnf
 Modifier          ::=  LocalModifier
@@ -488,139 +291,62 @@ LocalModifier     ::=  ‘abstract’
 AccessModifier    ::=  (‘private’ | ‘protected’) [AccessQualifier]
 AccessQualifier   ::=  ‘[’ (id | ‘this’) ‘]’
 ```
-
-Member definitions may be preceded by modifiers which affect the
-accessibility and usage of the identifiers bound by them.  If several
-modifiers are given, their order does not matter, but the same
-modifier may not occur more than once.  Modifiers preceding a repeated
-definition apply to all constituent definitions.  The rules governing
-the validity and meaning of a modifier are as follows.
+成员定义之前可以有修饰符，这些修饰符会影响他们绑定的标识符的可访问性和用法。如果给出了几个修饰符，他们的顺序无关紧要，但相同的修饰符可能不会出现多次。重复定义之前的修饰符适用于所有组成定义。管理修饰符的有效性和含义的规则如下：
 
 ### `private`
-The `private` modifier can be used with any definition or
-declaration in a template.  Such members can be accessed only from
-within the directly enclosing template and its companion module or
-[companion class](#object-definitions).
+ `private` 修饰符可以与模板中的任何定义或声明一个适用。只能从直接封闭的模板及其伴随模块或[伴随类](#对象定义)中访问此类成员。
 
-A `private` modifier can be _qualified_ with an identifier $C$ (e.g.
-`private[$C$]`) that must denote a class or package enclosing the definition.
-Members labeled with such a modifier are accessible respectively only from code
-inside the package $C$ or only from code inside the class $C$ and its
-[companion module](#object-definitions).
+`private`修饰符可以 *适用* 标识符$C$(例如：`private[$C$]`)进行限定，该标识符必须包含该定义的类或包。标有这种修饰符的成员只能分别从$C$包中的代码访问，或者只能从$C$类及其[伴随类](#对象定义)中的代码访问。
 
-A different form of qualification is `private[this]`. A member
-$M$ marked with this modifier is called _object-protected_; it can be accessed only from within
-the object in which it is defined. That is, a selection $p.M$ is only
-legal if the prefix is `this` or `$O$.this`, for some
-class $O$ enclosing the reference. In addition, the restrictions for
-unqualified `private` apply.
+还有种特殊形式是`private[this]`。标有此修饰符的成员$M$被称为*受保护对象*；它只能从定义它的对象中访问。也就是说，选择$p.M$仅在前缀为`this` 和包含引用的$O$类型`$O$.this`的情况下才合法。此外，这就是没有加限定的 `private`的应用。
 
-Members marked private without a qualifier are called _class-private_,
-whereas members labeled with `private[this]`
-are called _object-private_.  A member _is private_ if it is
-either class-private or object-private, but not if it is marked
-`private[$C$]` where $C$ is an identifier; in the latter
-case the member is called _qualified private_.
+标记为私有而没有限定符的成员称为*私有类*,而标记为 `private[this]`的成员被称为*私有对象*.不管事私有类还是私有对象都被称为*私有成员*,但是`private[$C$]`不是，$C$是一个标识符，在后者该成员称为*限定私有*。
 
-Class-private or object-private members may not be abstract, and may
-not have `protected` or `override` modifiers. They are not inherited
-by subclasses and they may not override definitions in parent classes.
+私有类或私有成员可能不是抽象的，也可能没有`protected` 或 `override`修饰符。他们不是由子类继承的，他们可能不会覆盖父类中的定义。
 
 ### `protected`
-The `protected` modifier applies to class member definitions.
-Protected members of a class can be accessed from within
-  - the template of the defining class,
-  - all templates that have the defining class as a base class,
-  - the companion module of any of those classes.
+`protected` 修饰符适用与类成员定义。可以从内部访问类的受保护成员:
+  - 定义类的模板
+  - 所有将定义类作为基类的模板，
+  - 任何这些类的伴随模块。
 
-A `protected` modifier can be qualified with an identifier $C$ (e.g.
-`protected[$C$]`) that must denote a class or package enclosing the definition.
-Members labeled with such a modifier are also accessible respectively from all
-code inside the package $C$ or from all code inside the class $C$ and its
-[companion module](#object-definitions).
+`protected`修饰符可以使用标识符$C$(例如：`protected[$C$]`)进行限定，该标识符必须表示包含该定义的类或包。标有这种修饰符的成员也可以分别从$C$包中的所有代码或类$C$及[伴随模块]($对象定义)中的所有代码访问。
 
-A protected identifier $x$ may be used as a member name in a selection
-`$r$.$x$` only if one of the following applies:
-  - The access is within the template defining the member, or, if
-    a qualification $C$ is given, inside the package $C$,
-    or the class $C$, or its companion module, or
-  - $r$ is one of the reserved words `this` and
-    `super`, or
-  - $r$'s type conforms to a type-instance of the
-    class which contains the access.
+只有在满足一下条件之一时，受保护的标识符$x$才可以做选择`$r$.$x$` 中的成员名称：
 
-A different form of qualification is `protected[this]`. A member
-$M$ marked with this modifier is called _object-protected_; it can be accessed only from within
-the object in which it is defined. That is, a selection $p.M$ is only
-legal if the prefix is `this` or `$O$.this`, for some
-class $O$ enclosing the reference. In addition, the restrictions for
-unqualified `protected` apply.
+  - 访问权限在定义成员的模板内，或者，如果给定资格$C$,则在$C$包或在$C$类或其伴随模块中
+  - $r$ 是保留字 `this` 和`super`之一
+  - $r$的类型符合包含访问权的类的类型实例。
+
+不同形式的资格是`protected[this]`。标有此修饰符的成员$M$称为*保护对象*; 它只能从定义它的对象中访问。也就是说，选择 $p.M$仅在前缀为`this`或`$O$.this`时合法，对于包含引用的某些类$O$。这也就是未加限定的`protected`应用。
 
 ### `override`
-The `override` modifier applies to class member definitions or declarations.
-It is mandatory for member definitions or declarations that override some
-other concrete member definition in a parent class. If an `override`
-modifier is given, there must be at least one overridden member
-definition or declaration (either concrete or abstract).
+
+`override`修饰符适用于类成员定义或声明。成员定义或声明必须覆盖父类中的某些其他具体的成员定义。如果给出了`ocerride`修饰符，则必须至少有一个重写的成员定义或声明(具体或抽象)。
 
 ### `abstract override`
-The `override` modifier has an additional significance when
-combined with the `abstract` modifier.  That modifier combination
-is only allowed for value members of traits.
+当与`abstract`修饰符组合时，`override`修饰符具有额外的意义。该修饰符组合仅允许特征的值成员使用。
 
-We call a member $M$ of a template _incomplete_ if it is either
-abstract (i.e. defined by a declaration), or it is labeled
-`abstract` and `override` and
-every member overridden by $M$ is again incomplete.
+我们称一个模板$M$ _不完整_ 的条件是：$M$是抽象的(未被声明和定义)，或者它被标记为`abstract` 和 `override`，并且每个被$M$覆盖的成员也是不完整的。
 
-Note that the `abstract override` modifier combination does not
-influence the concept whether a member is concrete or abstract. A
-member is _abstract_ if only a declaration is given for it;
-it is _concrete_ if a full definition is given.
+请注意，`abstract override`修饰符组合不会影响成员是具体还是抽象的概念。 如果仅为其提供声明，则该成员是*抽象*的; 如果给出完整的定义，则是*具体*的。
 
 ### `abstract`
-The `abstract` modifier is used in class definitions. It is
-redundant for traits, and mandatory for all other classes which have
-incomplete members.  Abstract classes cannot be
-[instantiated](06-expressions.html#instance-creation-expressions) with a constructor invocation
-unless followed by mixins and/or a refinement which override all
-incomplete members of the class. Only abstract classes and traits can have
-abstract term members.
+`abstract`修饰符用于类定义中。它对于特征来说是多余的。对于具有不完整成员的类来说是必须的。抽象类不能通过构造器调用[初始化](06-expressions.html#instance-creation-expressions),除非后面跟覆盖了类中所有不完整成员的混入和/或修饰体。只有抽象类和特征可以由抽象术语成员。
 
-The `abstract` modifier can also be used in conjunction with
-`override` for class member definitions. In that case the
-previous discussion applies.
+`abstract`修饰符也可以与类成员定义的`override`一起使用。前面的讨论的就是这种情况。
 
 ### `final`
-The `final` modifier applies to class member definitions and to
-class definitions. A `final` class member definition may not be
-overridden in subclasses. A `final` class may not be inherited by
-a template. `final` is redundant for object definitions.  Members
-of final classes or objects are implicitly also final, so the
-`final` modifier is generally redundant for them, too. Note, however, that
-[constant value definitions](04-basic-declarations-and-definitions.html#value-declarations-and-definitions)
-do require an explicit `final` modifier,
-even if they are defined in a final class or object.
-`final` is permitted for abstract classes
-but it may not be applied to traits or incomplete members,
-and it may not be combined in one modifier list with `sealed`.
+`final`修饰符适用于类.成员定义和类定义.不能在子类中重写`final`类成员定义。 `final`类不会被模板继承。 `final`对于对象定义是多余的。 标记为`final`的类或对象的成员隐含定义为`final`的，对他们来说是多余的。 但请注意，[常量值定义](04-basic-declarations-and-definitions.html#value-declarations-and-definitions)确实需要显式`final`修饰符，即使它们是在最终类或对象中定义的。 `final`被允许用于抽象类，但它不适用于特征或不完整的成员，并且它可能不会与`sealed`组合在一个修饰符列表中。
 
 ### `sealed`
-The `sealed` modifier applies to class definitions. A
-`sealed` class may not be directly inherited, except if the inheriting
-template is defined in the same source file as the inherited class.
-However, subclasses of a sealed class can be inherited anywhere.
+`sealed`修饰符适用于类定义。 除非继承模板在与继承类相同的源文件中定义，否则不能直接继承`sealed`类。 但是，密封类的子类可以在任何地方继承。
 
 ### `lazy`
-The `lazy` modifier applies to value definitions. A `lazy`
-value is initialized the first time it is accessed (which might never
-happen at all). Attempting to access a lazy value during its
-initialization might lead to looping behavior. If an exception is
-thrown during initialization, the value is considered uninitialized,
-and a later access will retry to evaluate its right hand side.
+`lazy`修饰符适用于值定义.`lazy`值在第一次访问（可能永远不会发生）时初始化。尝试在初始化期间访问惰性值可能会导致循环行为。 如果在初始化期间抛出异常，则该值被视为未初始化，稍后的访问将重试以对其右侧求值。
 
-###### Example
-The following code illustrates the use of qualified private:
+###### 例
+以下代码说明了使用限定私有：
 
 ```scala
 package outerpkg.innerpkg
@@ -633,18 +359,10 @@ class Outer {
 }
 ```
 
-Here, accesses to the method `f` can appear anywhere within
-`Outer`, but not outside it. Accesses to method
-`g` can appear anywhere within the package
-`outerpkg.innerpkg`, as would be the case for
-package-private methods in Java. Finally, accesses to method
-`h` can appear anywhere within package `outerpkg`,
-including packages contained in it.
+在这里，对方法`f`的访问可以出现在`Outer`内的任何地方，但不能出现在它之外。 对方法`g`的访问可以出现在包`outerpkg.innerpkg`中的任何位置，就像Java中的包私有方法一样。 最后，对方法`h`的访问可以出现在包`outerpkg`中的任何位置，包括其中包含的包。
 
-###### Example
-A useful idiom to prevent clients of a class from
-constructing new instances of that class is to declare the class
-`abstract` and `sealed`:
+###### 例
+防止类的客户端构造该类的新实例的有用习惯是声明类`abstract` 和 `sealed`:
 
 ```scala
 object m {
@@ -654,21 +372,16 @@ object m {
   val empty = new C(0) {}
 }
 ```
-
-For instance, in the code above clients can create instances of class
-`m.C` only by calling the `nextC` method of an existing `m.C`
-object; it is not possible for clients to create objects of class
-`m.C` directly. Indeed the following two lines are both in error:
+例如，在上面的代码中，客户端只能通过调用现有`m.C`对象的`nextC`方法来创建类`m.C`的实例; 客户端无法直接创建类`m.C`的对象。 实际上，以下两行都是错误的：
 
 ```scala
-new m.C(0)    // **** error: C is abstract, so it cannot be instantiated.
-new m.C(0) {} // **** error: illegal inheritance from sealed class.
+new m.C(0)    // **** 错误：C是抽象的，因此无法实例化。
+new m.C(0) {} // **** 错误：密封类的非法继承。
 ```
+通过将主构造函数标记为`private`（[示例](#示例私有构造函数)），可以实现类似的访问限制。
 
-A similar access restriction can be achieved by marking the primary
-constructor `private` ([example](#example-private-constructor)).
 
-## Class Definitions
+## 类定义
 
 ```ebnf
 TmplDef           ::=  ‘class’ ClassDef
@@ -683,70 +396,40 @@ ClassParam        ::=  {Annotation} {Modifier} [(‘val’ | ‘var’)]
 ClassTemplateOpt  ::=  ‘extends’ ClassTemplate | [[‘extends’] TemplateBody]
 ```
 
-The most general form of class definition is
+最常见的类定义形式是
 
 ```scala
 class $c$[$\mathit{tps}\,$] $as$ $m$($\mathit{ps}_1$)$\ldots$($\mathit{ps}_n$) extends $t$    $\quad(n \geq 0)$.
 ```
 
-Here,
+在这里面：
 
-  - $c$ is the name of the class to be defined.
-  - $\mathit{tps}$ is a non-empty list of type parameters of the class
-    being defined.  The scope of a type parameter is the whole class
-    definition including the type parameter section itself.  It is
-    illegal to define two type parameters with the same name.  The type
-    parameter section `[$\mathit{tps}\,$]` may be omitted. A class with a type
-    parameter section is called _polymorphic_, otherwise it is called
-    _monomorphic_.
-  - $as$ is a possibly empty sequence of
-    [annotations](11-annotations.html#user-defined-annotations).
-    If any annotations are given, they apply to the primary constructor of the
-    class.
-  - $m$ is an [access modifier](#modifiers) such as
-    `private` or `protected`, possibly with a qualification.
-    If such an access modifier is given it applies to the primary constructor of the class.
-  - $(\mathit{ps}\_1)\ldots(\mathit{ps}\_n)$ are formal value parameter clauses for
-    the _primary constructor_ of the class. The scope of a formal value parameter includes
-    all subsequent parameter sections and the template $t$. However, a formal
-    value parameter may not form part of the types of any of the parent classes or members of the class template $t$.
-    It is illegal to define two formal value parameters with the same name.
+  - $c$ 是要定义的类的名称。
+  - $\mathit{tps}$是要定义的类的类型参数的非空列表。类型参数的范围是整个类定义，包括类型参数本身部分。定义具有相同名称的两个参数类型是非法的。可以省略类型参数部分 `[$\mathit{tps}\,$]`。具有类型参数部分的类称为 _多态_，否则称为 _单态_。
+  - $as$是一个可为空的[标注](11-annotations.html#user-defined-annotations)序列。如果给出任何标注，它们将应用于类的主要构造函数。
+  - $m$是一个[访问修饰符](#修饰符)， 例如`private` 或 `protected`，可能具有限定条件。如果给出这样的访问修饰符，它们应用与类的主构造函数。
+  - $(\mathit{ps}\_1)\ldots(\mathit{ps}\_n)$ 是类的 _主要构造函数_ 的正式值参数子句。正式值参数的范围包括所有后续参数部分和模板$t$。但是，正式值参数不会构成任何父类的类型或类型模板$t$的成员的一部分。定义具有相同名称的两个正式值参数是非法的。
 
-    If a class has no formal parameter section that is not implicit, an empty parameter section `()` is assumed.
+    如果一个类没有隐含正式的参数部分，则会假定有一个空参数段 `()`.
 
-    If a formal parameter declaration $x: T$ is preceded by a `val`
-    or `var` keyword, an accessor (getter) [definition](04-basic-declarations-and-definitions.html#variable-declarations-and-definitions)
-    for this parameter is implicitly added to the class.
+    如果形式参数声明$x: T$前面有`val`或 `var`关键字，则此参数的访问器(getter)[定义](04-basic-declarations-and-definitions.html#variable-declarations-and-definitions)将会自动加入类中。
 
-    The getter introduces a value member $x$ of class $c$ that is defined as an alias of the parameter.
-    If the introducing keyword is `var`, a setter accessor [`$x$_=`](04-basic-declarations-and-definitions.html#variable-declarations-and-definitions) is also implicitly added to the class.
-    In invocation of that setter  `$x$_=($e$)` changes the value of the parameter to the result of evaluating $e$.
+    getter引入了$C$类的成员值$x$,定义为参数别名。如果引入关键字是`var`,一个setter访问[`$x$_=`](04-basic-declarations-and-definitions.html#variable-declarations-and-definitions)会自动添加到该类中。在调用setter`$x$_=($e$)`时，将参数值更改为$e$的求值结果。
 
-    The formal parameter declaration may contain modifiers, which then carry over to the accessor definition(s).
-    When access modifiers are given for a parameter, but no `val` or `var` keyword, `val` is assumed.
-    A formal parameter prefixed by `val` or `var` may not at the same time be a [call-by-name parameter](04-basic-declarations-and-definitions.html#by-name-parameters).
+    形式参数声明可以包含修饰符，然后修饰符转移到访问者定义。当参数给出访问修饰符，但没有`val`或`var`关键字时，假定为`val`。以`val`或 `var`为前缀的形式参数可能不会同时是[名称调用参数](04-basic-declarations-and-definitions.html#by-name-parameters)。
 
-  - $t$ is a [template](#templates) of the form
+  - $t$ 是一个[模板](#模板)，具有一下形式
 
     ```scala
     $sc$ with $mt_1$ with $\ldots$ with $mt_m$ { $\mathit{stats}$ } // $m \geq 0$
     ```
 
-    which defines the base classes, behavior and initial state of objects of
-    the class. The extends clause
-    `extends $sc$ with $mt_1$ with $\ldots$ with $mt_m$`
-    can be omitted, in which case
-    `extends scala.AnyRef` is assumed.  The class body
-    `{ $\mathit{stats}$ }` may also be omitted, in which case the empty body
-    `{}` is assumed.
+    它定义了类的对象基类，行为和初始状态。可以省略扩展子句  `extends $sc$ with $mt_1$ with $\ldots$ with $mt_m$`，这时候假设扩展为  `extends scala.AnyRef` 。类体`{ $\mathit{stats}$ }`也可以省略，在这种情况下假定为空`{}`。
 
-This class definition defines a type `$c$[$\mathit{tps}\,$]` and a constructor
-which when applied to parameters conforming to types $\mathit{ps}$
-initializes instances of type `$c$[$\mathit{tps}\,$]` by evaluating the template
-$t$.
+此类定义定义了类型为`$c$[$\mathit{tps}\,$]`和一个构造函数，当该构造函数应用于符合类型$\mathit{ps}$时，构造函数通过计算模板$t$的值来初始化类型`$c$[$\mathit{tps}\,$]` 实例。
 
-###### Example – `val` and `var` parameters
-The following example illustrates `val` and `var` parameters of a class `C`:
+###### 示例 - `val`和`var`参数
+以下示例说明了类`C`的`val`和`var`参数：
 
 ```scala
 class C(x: Int, val y: String, var z: List[String])
@@ -754,8 +437,8 @@ val c = new C(1, "abc", List())
 c.z = c.y :: c.z
 ```
 
-###### Example – Private Constructor
-The following class can be created only from its companion module.
+###### 示例 - 私有构造函数
+只能从其配套模块创建以下类。
 
 ```scala
 object Sensitive {
@@ -768,7 +451,7 @@ class Sensitive private () {
 }
 ```
 
-### Constructor Definitions
+### 构造函数定义
 
 ```ebnf
 FunDef         ::= ‘this’ ParamClause ParamClauses
@@ -779,48 +462,15 @@ ConstrBlock    ::= ‘{’ SelfInvocation {semi BlockStat} ‘}’
 SelfInvocation ::= ‘this’ ArgumentExprs {ArgumentExprs}
 ```
 
-A class may have additional constructors besides the primary
-constructor.  These are defined by constructor definitions of the form
-`def this($\mathit{ps}_1$)$\ldots$($\mathit{ps}_n$) = $e$`.  Such a
-definition introduces an additional constructor for the enclosing
-class, with parameters as given in the formal parameter lists $\mathit{ps}_1
-, \ldots , \mathit{ps}_n$, and whose evaluation is defined by the constructor
-expression $e$.  The scope of each formal parameter is the subsequent
-parameter sections and the constructor
-expression $e$.  A constructor expression is either a self constructor
-invocation `this($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)` or a block
-which begins with a self constructor invocation. The self constructor
-invocation must construct a generic instance of the class. I.e. if the
-class in question has name $C$ and type parameters
-`[$\mathit{tps}\,$]`, then a self constructor invocation must
-generate an instance of `$C$[$\mathit{tps}\,$]`; it is not permitted
-to instantiate formal type parameters.
+除了主构造函数之外，类还有其他构造函数。这些由`def this($\mathit{ps}_1$)$\ldots$($\mathit{ps}_n$) = $e$`形式的构造函数的定义来定义。这样的定义为封闭类引入了一个额外的构造函数，其参数在形式参数列表$\mathit{ps}_1
+, \ldots , \mathit{ps}_n$中给出，其评估由构造函数表达式$e$定义。每个形式参数的范围是构造函数表达式$e$.构造函数表达式是自构造函数调用`this($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)`或以一个以构造器自调用开始的代码块。自构造函数调用必须构造该类的通用实例。例如，如果问题中的类具有名称$C$和类型参数`[$\mathit{tps}\,$]`，则自构造函数调用必须生成`$C$[$\mathit{tps}\,$]`的实例。不郧西实例化正式类型参数。
 
-The signature and the self constructor invocation of a constructor
-definition are type-checked and evaluated in the scope which is in
-effect at the point of the enclosing class definition, augmented by
-any type parameters of the enclosing class and by any
-[early definitions](#early-definitions) of the enclosing template.
-The rest of the
-constructor expression is type-checked and evaluated as a function
-body in the current class.
+构造函数定义中的签名和构造函数自调用是有类型检查的，并在类内产生作用域的地方求值，可以加该类的任何类型参数以及该模板的任何[前置定义](#前置定义)。构造函数表达式的其余部分经过类型检查并作为当前类中的函数体进行求值。
 
-If there are auxiliary constructors of a class $C$, they form together
-with $C$'s primary [constructor](#class-definitions)
-an overloaded constructor
-definition. The usual rules for
-[overloading resolution](06-expressions.html#overloading-resolution)
-apply for constructor invocations of $C$,
-including for the self constructor invocations in the constructor
-expressions themselves. However, unlike other methods, constructors
-are never inherited.  To prevent infinite cycles of constructor
-invocations, there is the restriction that every self constructor
-invocation must refer to a constructor definition which precedes it
-(i.e. it must refer to either a preceding auxiliary constructor or the
-primary constructor of the class).
+如果由一个类$C$的辅助构造函数，他们与$C$的主构造函数一起形成一个重载的[构造函数](#类定义)定义。[重载解析](06-expressions.html#overloading-resolution)的通常规则适用于$C$的构造函数调用，包括构造函数表达式本身中的自构造函数调用。但是，与其他方法不同，构造函数永远不会被继承。为了房子构造函数调用的无限循环，有一个限制是每个自构造函数调用必须引用它之前的构造函数定义(即它必须引用前面的辅助构造函数或类的主构造函数)。
 
-###### Example
-Consider the class definition
+###### 例
+考虑类定义
 
 ```scala
 class LinkedList[A]() {
@@ -832,31 +482,19 @@ class LinkedList[A]() {
 }
 ```
 
-This defines a class `LinkedList` with three constructors.  The
-second constructor constructs an singleton list, while the
-third one constructs a list with a given head and tail.
+这定义了一个带有三个结构的类`LinkedList`。 第二个构造函数构造一个单例列表，而第三个构造函数构造一个具有给定头尾的列表。
 
-### Case Classes
+### case类
 
 ```ebnf
 TmplDef  ::=  ‘case’ ‘class’ ClassDef
 ```
 
-If a class definition is prefixed with `case`, the class is said
-to be a _case class_.
+如果类定义以`case`为前缀，则该类被称为 _case类_。
 
-A case class is required to have a parameter section that is not implicit.
-The formal parameters in the first parameter section 
-are called _elements_ and are treated specially.
-First, the value of such a parameter can be extracted as a
-field of a constructor pattern. Second, a `val` prefix is
-implicitly added to such a parameter, unless the parameter already carries
-a `val` or `var` modifier. Hence, an accessor
-definition for the parameter is [generated](#class-definitions).
+case类需要有一个参数部分，而不是隐藏。第一个参数部分中的形式参数称之为 _元素_，并经过特殊处理。首先，可以将这样的参数的值提取为构造函数模式的字段，其次，该参数默认添加`val`前缀，除非该参数已经有了`val` 或 `var`修饰符。然后[生成](#类定义)参数的访问定义。
 
-A case class definition of `$c$[$\mathit{tps}\,$]($\mathit{ps}_1\,$)$\ldots$($\mathit{ps}_n$)` with type
-parameters $\mathit{tps}$ and value parameters $\mathit{ps}$ implies
-the definition of a companion object, which serves as an [extractor object](08-pattern-matching.html#extractor-patterns). It has the following shape:
+带有类型参数$\mathit{tps}$和值参数$\mathit{ps}$的case类定义`$c$[$\mathit{tps}\,$]($\mathit{ps}_1\,$)$\ldots$($\mathit{ps}_n$)`，会自动生成一个[扩展对象](08-pattern-matching.html#extractor-patterns)。定义如下：
 
 ```scala
 object $c$ {
@@ -866,66 +504,35 @@ object $c$ {
     else scala.Some($x.\mathit{xs}_{11}, \ldots , x.\mathit{xs}_{1k}$)
 }
 ```
+在这里，$\mathit{Ts}$代表类型参数部分 $\mathit{tps}$中定义的类型向量，每个$\mathit{xs}\_i$表示$\mathit{ps}\_i$的参数部分。$\mathit{xs}\_{11}, \ldots , \mathit{xs}\_{1k}$表示第一个参数段$\mathit{xs}\_1$中的所有参数明。如果类中缺少类型参数的部分，则`apply` 和 `unapply`方法中也会缺失。
 
-Here, $\mathit{Ts}$ stands for the vector of types defined in the type
-parameter section $\mathit{tps}$,
-each $\mathit{xs}\_i$ denotes the parameter names of the parameter
-section $\mathit{ps}\_i$, and
-$\mathit{xs}\_{11}, \ldots , \mathit{xs}\_{1k}$ denote the names of all parameters
-in the first parameter section $\mathit{xs}\_1$.
-If a type parameter section is missing in the class, it is also missing in the `apply` and `unapply` methods.
+如果已经定义了伴随对象$c$，则`apply`和`unapply`方法将会添加到现有对象中。如果对象$c$已具有[匹配](#匹配定义)的`apply` (或 `unapply`)成员，则不会添加新的定义。如果类$c$是`abstract`，则省略`apply`。
 
-If the companion object $c$ is already defined,
-the  `apply` and `unapply` methods are added to the existing object.
-If the object $c$ already has a [matching](#definition-matching)
-`apply` (or `unapply`) member, no new definition is added.
-The definition of `apply` is omitted if class $c$ is `abstract`.
-
-If the case class definition contains an empty value parameter list, the
-`unapply` method returns a `Boolean` instead of an `Option` type and
-is defined as follows:
+如果case类定义包含空值参数列表，则`unapply`方法返回`Boolean`而不是`Option` 类型，定义如下
 
 ```scala
 def unapply[$\mathit{tps}\,$]($x$: $c$[$\mathit{tps}\,$]) = x ne null
 ```
 
-The name of the `unapply` method is changed to `unapplySeq` if the first
-parameter section $\mathit{ps}_1$ of $c$ ends in a
-[repeated parameter](04-basic-declarations-and-definitions.html#repeated-parameters).
+如果$c$的一个参数部分$\mathit{ps}_1$以[重复参数](04-basic-declarations-and-definitions.html#repeated-parameters)结束，则`unapply`方法的名称更改为`unapplySeq`。
 
-A method named `copy` is implicitly added to every case class unless the
-class already has a member (directly defined or inherited) with that name, or the
-class has a repeated parameter. The method is defined as follows:
+除非该类已具有具有该名称的成员（直接定义或继承），或者该类具有重复参数，否则将隐式地向每个案例类添加名为`copy`的方法。 该方法定义如下：
+
 
 ```scala
 def copy[$\mathit{tps}\,$]($\mathit{ps}'_1\,$)$\ldots$($\mathit{ps}'_n$): $c$[$\mathit{tps}\,$] = new $c$[$\mathit{Ts}\,$]($\mathit{xs}_1\,$)$\ldots$($\mathit{xs}_n$)
 ```
 
-Again, `$\mathit{Ts}$` stands for the vector of types defined in the type parameter section `$\mathit{tps}$`
-and each `$xs_i$` denotes the parameter names of the parameter section `$ps'_i$`. The value
-parameters `$ps'_{1,j}$` of first parameter list have the form `$x_{1,j}$:$T_{1,j}$=this.$x_{1,j}$`,
-the other parameters `$ps'_{i,j}$` of the `copy` method are defined as `$x_{i,j}$:$T_{i,j}$`.
-In all cases `$x_{i,j}$` and `$T_{i,j}$` refer to the name and type of the corresponding class parameter
-`$\mathit{ps}_{i,j}$`.
+同样，`$\mathit{Ts}$`代表类型参数`$\mathit{tps}$`中定义的类型向量，每个`$xs_i$`代表参数部分`$ps'_i$`的参数名称。第一个参数列表的值`$ps'_{1,j}$`的格式为`$x_{1,j}$:$T_{1,j}$=this.$x_{1,j}$`，其他参数`$ps'_{i,j}$`的`copy`方法定义为`$x_{i,j}$:$T_{i,j}$`。在所有情况下，`$x_{i,j}$` 和 `$T_{i,j}$`引用相应类型参数`$\mathit{ps}_{i,j}$`的名称和类型。
 
-Every case class implicitly overrides some method definitions of class
-[`scala.AnyRef`](12-the-scala-standard-library.html#root-classes) unless a definition of the same
-method is already given in the case class itself or a concrete
-definition of the same method is given in some base class of the case
-class different from `AnyRef`. In particular:
+每个case类都默认覆盖类[`scala.AnyRef`](12-the-scala-standard-library.html#root-classes)的一些方法定义，除非在case类本身已经给出了相同方法的定义，或者在不同于`AnyRef`的case类的某个基类中给出了相同方法的具体定义。特别是
 
-- Method `equals: (Any)Boolean` is structural equality, where two
-  instances are equal if they both belong to the case class in question and they
-  have equal (with respect to `equals`) constructor arguments (restricted to the class's _elements_, i.e., the first parameter section).
-- Method `hashCode: Int` computes a hash-code. If the hashCode methods
-  of the data structure members map equal (with respect to equals)
-  values to equal hash-codes, then the case class hashCode method does
-  too.
-- Method `toString: String` returns a string representation which
-  contains the name of the class and its elements.
+- 方法`equals: (Any)Boolean`是结构相等，其中如果两个实例都属于所讨论的案例类并且他们具有相等(相对于`equals`)构造函数参数（限于类的 _元素_，即第一个参数部分),则他们相等。
+- 方法`hashCode: Int`计算哈希码。 如果数据结构成员的hashCode方法将相等（相对于等于）值映射为相等的哈希码，则case类中的hashCode方法也会这样做。
+- 方法`toString: String`返回一个字符串形式，其中包含类及其元素的名称
 
-###### Example
-Here is the definition of abstract syntax for lambda calculus:
+###### 例
+以下是lambda演算的抽象语法定义：
 
 ```scala
 class Expr
@@ -934,9 +541,8 @@ case class Apply (f: Expr, e: Expr)   extends Expr
 case class Lambda(x: String, e: Expr) extends Expr
 ```
 
-This defines a class `Expr` with case classes
-`Var`, `Apply` and `Lambda`. A call-by-value evaluator
-for lambda expressions could then be written as follows.
+这定义了一个具有案例类`Var`, `Apply` 和 `Lambda`的类`Expr`。然后可以然后可以按如下方式编写lambda表达式的值调用求值程序。
+
 
 ```scala
 type Env = String => Value
@@ -953,20 +559,15 @@ def eval(e: Expr, env: Env): Value = e match {
     Value(e, env)
 }
 ```
-
-It is possible to define further case classes that extend type
-`Expr` in other parts of the program, for instance
+例如，可以在程序的其他部分中定义扩展类型`Expr`的其他案例类
 
 ```scala
 case class Number(x: Int) extends Expr
 ```
 
-This form of extensibility can be excluded by declaring the base class
-`Expr` `sealed`; in this case, all classes that
-directly extend `Expr` must be in the same source file as
-`Expr`.
+可以通过声明基类`Expr`标记为`sealed`来移除扩展性。在这种情况下，所有直接扩展`Expr`的类必须与`Expr`位于同一个源文件中
 
-## Traits
+## 特征
 
 ```ebnf
 TmplDef          ::=  ‘trait’ TraitDef
@@ -974,28 +575,15 @@ TraitDef         ::=  id [TypeParamClause] TraitTemplateOpt
 TraitTemplateOpt ::=  ‘extends’ TraitTemplate | [[‘extends’] TemplateBody]
 ```
 
-A _trait_ is a class that is meant to be added to some other class
-as a mixin. Unlike normal classes, traits cannot have
-constructor parameters. Furthermore, no constructor arguments are
-passed to the superclass of the trait. This is not necessary as traits are
-initialized after the superclass is initialized.
+ _特征_ 是一个类，他可以作为混合添加到其他类中。与普通类不同，特征类不能具有构造函数参数。此外，没有构造函数参数传递给特征的超类。这是不必要的，因为在初始化超类后就初始化特征。
 
-Assume a trait $D$ defines some aspect of an instance $x$ of type $C$ (i.e. $D$ is a base class of $C$).
-Then the _actual supertype_ of $D$ in $x$ is the compound type consisting of all the
-base classes in $\mathcal{L}(C)$ that succeed $D$.  The actual supertype gives
-the context for resolving a [`super` reference](06-expressions.html#this-and-super) in a trait.
-Note that the actual supertype depends on the type to which the trait is added in a mixin composition;
-it is not statically known at the time the trait is defined.
 
-If $D$ is not a trait, then its actual supertype is simply its
-least proper supertype (which is statically known).
+假设特征$D$定义了$C$类型的实例$x$的某些性质(即$D$是$C$的基类)。那么$x$中的$D$的 _实际超类_ 是由$\mathcal{L}(C)$中的所有超越$D$的基类组成的符合类型。实际的超类给出了解决特征中[`super`引用](06-expressions.html#this-and-super)的上下文。要注意到实际超类型依赖于特征所添加进的混入组合,当定义特征时是无法知道的。
 
-###### Example
-The following trait defines the property
-of being comparable to objects of some type. It contains an abstract
-method `<` and default implementations of the other
-comparison operators `<=`, `>`, and
-`>=`.
+如果$D$不是特征，那么它的实际超类型就是它最小合适的超类型（实际在定义时可知）
+
+###### 例
+以下特征定义了与某种类型的对象相当的属性。 它包含一个抽象方法`<`和其他比较运算符`<=`, `>`和`>=`的默认实现。
 
 ```scala
 trait Comparable[T <: Comparable[T]] { self: T =>
@@ -1006,14 +594,9 @@ trait Comparable[T <: Comparable[T]] { self: T =>
 }
 ```
 
-###### Example
-Consider an abstract class `Table` that implements maps
-from a type of keys `A` to a type of values `B`. The class
-has a method `set` to enter a new key / value pair into the table,
-and a method `get` that returns an optional value matching a
-given key. Finally, there is a method `apply` which is like
-`get`, except that it returns a given default value if the table
-is undefined for the given key. This class is implemented as follows.
+###### 例
+
+考虑抽象类`Table`实现了由键类型`A`到值类型`B`的映射。该类有一个方法`set`来将一个新的键值对放入表中,和方法`get`来返回与给定键值匹配的可选值。最后,有和`get`方法类似的方法`apply`,除非它为给定的键未定义表时返回给定的默认值。 该类实现如下：
 
 ```scala
 abstract class Table[A, B](defaultValue: B) {
@@ -1026,7 +609,7 @@ abstract class Table[A, B](defaultValue: B) {
 }
 ```
 
-Here is a concrete implementation of the `Table` class.
+这是`Table`类的具体实现：
 
 ```scala
 class ListTable[A, B](defaultValue: B) extends Table[A, B](defaultValue) {
@@ -1036,8 +619,7 @@ class ListTable[A, B](defaultValue: B) extends Table[A, B](defaultValue) {
 }
 ```
 
-Here is a trait that prevents concurrent access to the
-`get` and `set` operations of its parent class:
+这是一个特性，可以防止并发访问其父类的`get`和`set`操作：
 
 ```scala
 trait SynchronizedTable[A, B] extends Table[A, B] {
@@ -1048,78 +630,43 @@ trait SynchronizedTable[A, B] extends Table[A, B] {
 }
 ```
 
-Note that `SynchronizedTable` does not pass an argument to
-its superclass, `Table`, even  though `Table` is defined with a
-formal parameter. Note also that the `super` calls
-in `SynchronizedTable`'s `get` and `set` methods
-statically refer to abstract methods in class `Table`. This is
-legal, as long as the calling method is labeled
-[`abstract override`](#modifiers).
+请注意，即使`Table`使用形式参数定义，`SynchronizedTable`也不会将参数传递给其超类`Table`.另请注意，在`SynchronizedTable`的`get`和`set`方法中，`super`调用静态引用类`Table`中的抽象方法。 这是合法的，只要调用方法标记为[抽象覆盖](#修饰符)。
 
-Finally, the following mixin composition creates a synchronized list
-table with strings as keys and integers as values and with a default
-value `0`:
+
+最后，以下混合组合创建一个同步列表，其中字符串作为键，整数作为值，默认值为`0`：
 
 ```scala
 object MyTable extends ListTable[String, Int](0) with SynchronizedTable
 ```
+对象`MyTable`从`SynchronizedTable`继承其`get`和`set`方法。 这些方法中的`super`调用被重新绑定以引用`ListTable`中的相应实现，这是`MyTable`中`SynchronizedTable`的实际超类型。
 
-The object `MyTable` inherits its `get` and `set`
-method from `SynchronizedTable`.  The `super` calls in these
-methods are re-bound to refer to the corresponding implementations in
-`ListTable`, which is the actual supertype of `SynchronizedTable`
-in `MyTable`.
 
-## Object Definitions
+## 对象定义
 
 ```ebnf
 ObjectDef       ::=  id ClassTemplate
 ```
 
-An _object definition_ defines a single object of a new class. Its
-most general form is
-`object $m$ extends $t$`. Here,
-$m$ is the name of the object to be defined, and
-$t$ is a [template](#templates) of the form
+_对象定义_ 定义新类型的单个对象。其最通用的形式是`object $m$ extends $t$`。这里$m$ 是要定义的对象的名称，$t$ 是一个具有一下形式的[模板](#模板)。
 
 ```scala
 $sc$ with $mt_1$ with $\ldots$ with $mt_n$ { $\mathit{stats}$ }
 ```
 
-which defines the base classes, behavior and initial state of $m$.
-The extends clause `extends $sc$ with $mt_1$ with $\ldots$ with $mt_n$`
-can be omitted, in which case
-`extends scala.AnyRef` is assumed.  The class body
-`{ $\mathit{stats}$ }` may also be omitted, in which case the empty body
-`{}` is assumed.
+它定义了$m$的基类，行为和初始状态。可以省略扩展条例`extends $sc$ with $mt_1$ with $\ldots$ with $mt_n$`，在这种情况下默认`extends scala.AnyRef` 。也可以省略`{ $\mathit{stats}$ }` ，在这种情况下默认空体`{}`.
 
-The object definition defines a single object (or: _module_)
-conforming to the template $t$.  It is roughly equivalent to the
-following definition of a lazy value:
+对象定义定义符合模板$ t $的单个对象（或：_模块_）。 它大致相当于以下值的定义：
 
 ```scala
 lazy val $m$ = new $sc$ with $mt_1$ with $\ldots$ with $mt_n$ { this: $m.type$ => $\mathit{stats}$ }
 ```
 
-Note that the value defined by an object definition is instantiated
-lazily.  The `new $m$\$cls` constructor is evaluated
-not at the point of the object definition, but is instead evaluated
-the first time $m$ is dereferenced during execution of the program
-(which might be never at all). An attempt to dereference $m$ again
-during evaluation of the constructor will lead to an infinite loop
-or run-time error.
-Other threads trying to dereference $m$ while the
-constructor is being evaluated block until evaluation is complete.
+请注意，对象定义定义的值是懒惰实例化的。`new $m$\$cls`构造函数不是在对象定义进行计算，而是在程序执行期间第一次取消引用$m$(可能根本不会)时进行计算。在评估构造函数期间尝试再次取消引用$m$将倒是无限循环或运行错误。在计算构造函数是，尝试取消引用$m的其他线程会停止，知道计算完成。
 
-The expansion given above is not accurate for top-level objects. It
-cannot be because variable and method definition cannot appear on the
-top-level outside of a [package object](09-top-level-definitions.html#package-objects). Instead,
-top-level objects are translated to static fields.
+对于顶级对象，上面给出的扩展不准确。 它不能是因为变量和方法定义不能出现在[包对象](09-top-level-definitions.html#package-objects)外部的顶层。 而是将顶级对象转换为静态字段。
 
-###### Example
-Classes in Scala do not have static members; however, an equivalent
-effect can be achieved by an accompanying object definition
-E.g.
+###### 例
+Scala中的类没有静态成员; 然而，通过伴随的对象定义可以实现等效的效果
 
 ```scala
 abstract class Point {
@@ -1131,23 +678,10 @@ object Point {
   val origin = new Point() { val x = 0.0; val y = 0.0 }
 }
 ```
+这定义了一个`Point`类和一个包含`origin`作为成员的对象`Point`。 请注意，名称`Point`的双重使用是合法的，因为类定义在类型名称空间中定义名称`Point`，而对象定义在术语名称空间中定义名称。
 
-This defines a class `Point` and an object `Point` which
-contains `origin` as a member.  Note that the double use of the
-name `Point` is legal, since the class definition defines the
-name `Point` in the type name space, whereas the object
-definition defines a name in the term namespace.
+在使用静态成员解释Java类时，Scala编译器将应用此技术。这样的$C$类在概练上被视为包含包含$C$的所有实例成员的一个Scala类，和一个包含$C$的所有静态成员的scala对象的对组合。
 
-This technique is applied by the Scala compiler when interpreting a
-Java class with static members. Such a class $C$ is conceptually seen
-as a pair of a Scala class that contains all instance members of $C$
-and a Scala object that contains all static members of $C$.
+通常，类的 _伴随模块_ 是与类具有相同名称的对象，并且在同一范围和编译单元中定义。同理，该类称为模块的 _伴随类_。
 
-Generally, a _companion module_ of a class is an object which has
-the same name as the class and is defined in the same scope and
-compilation unit. Conversely, the class is called the _companion class_
-of the module.
-
-Very much like a concrete class definition, an object definition may
-still contain declarations of abstract type members, but not of
-abstract term members.
+非常类似于具体的类定义，对象定义可能仍然包含抽象类型成员的声明，但不包含抽象术语成员的声明。
