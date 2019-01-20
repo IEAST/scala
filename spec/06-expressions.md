@@ -4,7 +4,7 @@ layout: default
 chapter: 6
 ---
 
-# Expressions
+# 表达式
 
 ```ebnf
 Expr         ::=  (Bindings | id | ‘_’) ‘=>’ Expr
@@ -47,163 +47,96 @@ Ascription   ::=  ‘:’ InfixType
                |  ‘:’ ‘_’ ‘*’
 ```
 
-Expressions are composed of operators and operands. Expression forms are
-discussed subsequently in decreasing order of precedence.
+表达式由运算符和操作数组成。 随后以递减的优先顺序讨论表达形式。
 
-## Expression Typing
+## 表达式类型
 
-The typing of expressions is often relative to some _expected type_  (which might be undefined). When we write "expression $e$ is expected to conform to type $T$", we mean:
-  1. the expected type of $e$ is $T$, and
-  2. the type of expression $e$ must conform to $T$.
+_表达式类型_ 通常与某些预期类型相关(可能是未定义的)。当我们写“表达式$e$预计符合$T$类型”时，我们的意思是：
+  1.  $e$ 的预期类型是 $T$,
+  2. 表达式 $e$ 必须符合 $T$.
 
-The following skolemization rule is applied universally for every
-expression: If the type of an expression would be an existential type
-$T$, then the type of the expression is assumed instead to be a
-[skolemization](03-types.html#existential-types) of $T$.
+以下斯科伦化规则通用于所有表达式。假定表达式的类型是存在类型 $T$，则表达式的类型被假定为$T$的[斯科伦范式](03-types.html#existential-types)。
+
+通过类型打包来逆转斯克伦范式，假设类型$T$的表达式$e$并且让$t_1[\mathit{tps}\_1] >: L_1 <: U_1 , \ldots , t_n[\mathit{tps}\_n] >: L_n <: U_n$为$e$的某些部分的斯克伦范式创建的所有类型变量，这些变量在$T$中是可以直接使用的。
 
 Skolemization is reversed by type packing. Assume an expression $e$ of
 type $T$ and let $t_1[\mathit{tps}\_1] >: L_1 <: U_1 , \ldots , t_n[\mathit{tps}\_n] >: L_n <: U_n$ be
 all the type variables created by skolemization of some part of $e$ which are free in $T$.
-Then the _packed type_ of $e$ is
+
+那么$e$的包类型是:
 
 ```scala
 $T$ forSome { type $t_1[\mathit{tps}\_1] >: L_1 <: U_1$; $\ldots$; type $t_n[\mathit{tps}\_n] >: L_n <: U_n$ }.
 ```
 
-## Literals
+## 字面值
 
 ```ebnf
 SimpleExpr    ::=  Literal
 ```
 
-Typing of literals is described along with their [lexical syntax](01-lexical-syntax.html#literals);
-their evaluation is immediate.
+描述文字的键入以及它们的[词法语法](01-lexical-syntax.html#literals);他们的求值是即时的
 
-## The _Null_ Value
+## *空* 值
 
-The `null` value is of type `scala.Null`, and thus conforms to every reference type.
-It denotes a reference value which refers to a special `null` object.
-This object implements methods in class `scala.AnyRef` as follows:
+`null`值的类型为 `scala.Null`，因此符合每个引用类型。它表示引用类型。他表示引用特殊`null`对象的参考值。该对象实现了类`scala.AnyRef`中的方法，如下所示：
 
-- `eq($x\,$)` and `==($x\,$)` return `true` iff the
-  argument $x$ is also the "null" object.
-- `ne($x\,$)` and `!=($x\,$)` return true iff the
-  argument x is not also the "null" object.
-- `isInstanceOf[$T\,$]` always returns `false`.
-- `asInstanceOf[$T\,$]` returns the [default value](04-basic-declarations-and-definitions.html#value-declarations-and-definitions) of type $T$.
-- `##` returns ``0``.
+- `eq($x\,$)` 和 `==($x\,$)` 如果参数$x$也是"null"对象，则返回 `true`.
+- `ne($x\,$)` 和 `!=($x\,$)` 如果参数 x 不是"null"对象，则返回true。
+- `isInstanceOf[$T\,$]` 总是返回 `false`.
+- `asInstanceOf[$T\,$]` 返回$T$类型的[默认值](04-basic-declarations-and-definitions.html#value-declarations-and-definitions)。
+- `##` 返回 ``0``.
 
-A reference to any other member of the "null" object causes a
-`NullPointerException` to be thrown.
+对 "null" 对象的任何成员引用会导致抛出 `NullPointerException` 。
 
-## Designators
+## 指示器
 
 ```ebnf
 SimpleExpr  ::=  Path
               |  SimpleExpr ‘.’ id
 ```
 
-A designator refers to a named term. It can be a _simple name_ or
-a _selection_.
+指示符指的是命名的术语。他可以是 _简单的名称_ 或 _选择_ 。
 
-A simple name $x$ refers to a value as specified
-[here](02-identifiers-names-and-scopes.html#identifiers,-names-and-scopes).
-If $x$ is bound by a definition or declaration in an enclosing class
-or object $C$, it is taken to be equivalent to the selection
-`$C$.this.$x$` where $C$ is taken to refer to the class containing $x$
-even if the type name $C$ is [shadowed](02-identifiers-names-and-scopes.html#identifiers,-names-and-scopes) at the
-occurrence of $x$.
+简单名称$x$指的是[此处](02-identifiers-names-and-scopes.html#identifiers,-names-and-scopes)的值。如果$x$被封闭类或对象$C$中的定义或声明绑定，则它被认为等同于选择`$C$.this.$x$` ,qizhong $C$用于应用包含$x$的类，即使类型名$C$在$x$出现时被[隐藏](02-identifiers-names-and-scopes.html#identifiers,-names-and-scopes) .
 
-If $r$ is a [stable identifier](03-types.html#paths) of type $T$, the selection $r.x$ refers
-statically to a term member $m$ of $r$ that is identified in $T$ by
-the name $x$.
+如果$r$是$T$类型[稳定标识符](03-types.html#paths),则选择 $r.x$ 静态地引用$r$的术语成员$m$,其在$T$中由名称$x$标识。
 
-<!-- There might be several such members, in which
-case overloading resolution (\sref{overloading-resolution}) is applied
-to pick a unique one.}  -->
+对于其他表达式$e$, $e.x$的输入就好像是 `{ val $y$ = $e$; $y$.$x$ }`，$y$是一个新成员。
 
-For other expressions $e$, $e.x$ is typed as
-if it was `{ val $y$ = $e$; $y$.$x$ }`, for some fresh name
-$y$.
+指示器前缀的期望类型总是未定义的。指示符的类型是它引用的实体的类型$T$,但是以下情况除外：在需要[稳定类型](03-types.html#singleton-types)的上下文中出现的[路径](03-types.html#paths)$p$的类型是单例类型`$p$.type`.
 
-The expected type of a designator's prefix is always undefined.  The
-type of a designator is the type $T$ of the entity it refers to, with
-the following exception: The type of a [path](03-types.html#paths) $p$
-which occurs in a context where a [stable type](03-types.html#singleton-types)
-is required is the singleton type `$p$.type`.
+需要稳定类型的上下文需要满足以下条件:
 
-The contexts where a stable type is required are those that satisfy
-one of the following conditions:
+1. 路径$p$作为选择的前缀出现，并且它不指定常量
+1. 期望类型 $\mathit{pt}$ 是一种稳定类型
+1. 期望类型 $\mathit{pt}$ 是一个抽象类型，其类型为稳定类型，$p$引用的实体类型$T$不符合$\mathit{pt}$。
+1. 路径$p$指定一个模块。
 
-1. The path $p$ occurs as the prefix of a selection and it does not
-designate a constant, or
-1. The expected type $\mathit{pt}$ is a stable type, or
-1. The expected type $\mathit{pt}$ is an abstract type with a stable type as lower
-   bound, and the type $T$ of the entity referred to by $p$ does not
-   conform to $\mathit{pt}$, or
-1. The path $p$ designates a module.
+选择$e.x$在限定表达式$e$第一次求值时求值，同时产生一个对象$r$,选取的结果是$r$的成员，该成员是由$m$定义或覆盖$m$的定义定义。
 
-The selection $e.x$ is evaluated by first evaluating the qualifier
-expression $e$, which yields an object $r$, say. The selection's
-result is then the member of $r$ that is either defined by $m$ or defined
-by a definition overriding $m$.
-
-## This and Super
+## This 和 Super
 
 ```ebnf
 SimpleExpr  ::=  [id ‘.’] ‘this’
               |  [id ‘.’] ‘super’ [ClassQualifier] ‘.’ id
 ```
 
-The expression `this` can appear in the statement part of a
-template or compound type. It stands for the object being defined by
-the innermost template or compound type enclosing the reference. If
-this is a compound type, the type of `this` is that compound type.
-If it is a template of a
-class or object definition with simple name $C$, the type of this
-is the same as the type of `$C$.this`.
+表达式`this`可以出现在模板或符合类型的语句部分。它表示由包含引用的最内层模板或复合类型定义的对象。如果是复合类型，则`this`的类型是该化合物类型。如果他们是具有简单名称$C$的类或对象定义的模板，则其类型与`$C$.this`类型相同。
 
-The expression `$C$.this` is legal in the statement part of an
-enclosing class or object definition with simple name $C$. It
-stands for the object being defined by the innermost such definition.
-If the expression's expected type is a stable type, or
-`$C$.this` occurs as the prefix of a selection, its type is
-`$C$.this.type`, otherwise it is the self type of class $C$.
+表达式`$C$.this`在封闭类或对象定义的语句部分是合法的，简称为$C$。它代表最内层的定义定义的对象。如果表达式的期望类型是稳定类型，或`$C$.this`作为选择的前缀出现，则其类型为`$C$.this.type`，否则它是$C$的自身类型。
 
-A reference `super.$m$` refers statically to a method or type $m$
-in the least proper supertype of the innermost template containing the
-reference.  It evaluates to the member $m'$ in the actual supertype of
-that template which is equal to $m$ or which overrides $m$.  The
-statically referenced member $m$ must be a type or a
-method.
+引用`super.$m$`静态引用包含该引用的最里层模板的最小合理超类型的方法或类型$m$。它的求值结果等于$m$或重载$m$的该模板的实际超类型中的成员$m'$。静态引用的成员$m$必须是类型或方法。
 
-<!-- explanation: so that we need not create several fields for overriding vals -->
+如果它是一个方法，那么它必须是具体的，或者包含引用的模板必须有一个成员$m'$覆盖$m$并且标记为`abstract override`.
 
-If it is
-a method, it must be concrete, or the template
-containing the reference must have a member $m'$ which overrides $m$
-and which is labeled `abstract override`.
+引用`$C$.super.$m$`静态引用一个方法或类型$m$,在最内层的封闭类或对象定义的最不合适的超类型中，它包含引用。它求值的结果是$m$或重载$m$的该类或对象的实际超类中的成员$m'$。被静态引用成员$m$必须是类型或方法。如果静态引用的成员$m$是一个方法，它必须是具体的，或者名为$C$的最内存的封闭类或对象定义必须有一个成员$m'$,它覆盖$m$并且标记为`abstract override`.
 
-A reference `$C$.super.$m$` refers statically to a method
-or type $m$ in the least proper supertype of the innermost enclosing class or
-object definition named $C$ which encloses the reference. It evaluates
-to the member $m'$ in the actual supertype of that class or object
-which is equal to $m$ or which overrides $m$. The
-statically referenced member $m$ must be a type or a
-method.  If the statically
-referenced member $m$ is a method, it must be concrete, or the innermost enclosing
-class or object definition named $C$ must have a member $m'$ which
-overrides $m$ and which is labeled `abstract override`.
+前缀`super`后面可以跟特征限定符`[$T\,$]`,例如 `$C$.super[$T\,$].$x$`。这被称为 *静态超级引用*。在这种情况下，引用的是简单名称$T$的$C$的父特征中$x$的类型或方法。该成员必须是唯一定义的。如果这是一种方法，那么该方法必须是实体的。
 
-The `super` prefix may be followed by a trait qualifier
-`[$T\,$]`, as in `$C$.super[$T\,$].$x$`. This is
-called a _static super reference_.  In this case, the reference is
-to the type or method of $x$ in the parent trait of $C$ whose simple
-name is $T$. That member must be uniquely defined. If it is a method,
-it must be concrete.
 
-###### Example
-Consider the following class definitions
+###### 例
+考虑一下类定义
 
 ```scala
 class Root { def x = "Root" }
@@ -217,9 +150,7 @@ class D extends A with B {
 }
 ```
 
-The linearization of class `C` is `{C, B, Root}` and
-the linearization of class `D` is `{D, B, A, Root}`.
-Then we have:
+ `C`类的线性化是`{C, B, Root}`，`D`类型的线性化是 `{D, B, A, Root}`。然后我们有
 
 ```scala
 (new A).superA == "Root"
@@ -232,10 +163,9 @@ Then we have:
 (new D).superD == "B"
 ```
 
-Note that the `superB` method returns different results
-depending on whether `B` is mixed in with class `Root` or `A`.
+要注意，`superB`方法返回不同的结果，具体取决于`B`是否与类 `Root`或`A`混合在一起.
 
-## Function Applications
+## 函数应用
 
 ```ebnf
 SimpleExpr    ::=  SimpleExpr1 ArgumentExprs
@@ -245,105 +175,57 @@ ArgumentExprs ::=  ‘(’ [Exprs] ‘)’
 Exprs         ::=  Expr {‘,’ Expr}
 ```
 
-An application `$f(e_1 , \ldots , e_m)$` applies the function `$f$` to the argument expressions `$e_1, \ldots , e_m$`. For this expression to be well-typed, the function must be *applicable* to its arguments, which is defined next by case analysis on $f$'s type.
+应用程序`$f(e_1 , \ldots , e_m)$` 将函数`$f$`应用于参数表达式 `$e_1, \ldots , e_m$`。为了使该表达式具有良好类型，该函数必须 *适用* 于其参数，接下来通过对$f$类型的分析来定义该函数。
 
-If $f$ has a method type `($p_1$:$T_1 , \ldots , p_n$:$T_n$)$U$`, each argument expression $e_i$ is typed with the corresponding parameter type $T_i$ as expected type. Let $S_i$ be the type of argument $e_i$ $(i = 1 , \ldots , m)$. The method $f$ must be _applicable_ to its arguments $e_1, \ldots , e_n$ of types $S_1 , \ldots , S_n$. We say that an argument expression $e_i$ is a _named_ argument if it has the form `$x_i=e'_i$` and `$x_i$` is one of the parameter names `$p_1, \ldots, p_n$`.
+如果$f$具有方法类型`($p_1$:$T_1 , \ldots , p_n$:$T_n$)$U$`，则每个参数表达式$e_i$的类型必须与对应的参数类型$T_i$一致。设$S_i$是 $e_i$ $(i = 1 , \ldots , m)$的参数类型。方法$f$必须 *适用* 于其参数s $e_1, \ldots , e_n$或类型$S_1 , \ldots , S_n$。我们说参数表达式$e_i$是一个 *命名* 参数，如果他的形式为`$x_i=e'_i$`，`$x_i$`是参数名称 `$p_1, \ldots, p_n$`之一。
 
-Once the types $S_i$ have been determined, the method $f$ of the above method type is said to be applicable if all of the following conditions hold:
-  - for every named argument $p_j=e_i'$ the type $S_i$ is [compatible](03-types.html#compatibility) with the parameter type $T_j$;
-  - for every positional argument $e_i$ the type $S_i$ is [compatible](03-types.html#compatibility) with $T_i$;
-  - if the expected type is defined, the result type $U$ is [compatible](03-types.html#compatibility) to it.
+一旦确定了类型$S_i$，如果满足以下所有条件，则认为上述方法对方法类型$f$适用：
+  - 对于每个命名参数 $p_j=e_i'$类型$S_i$与参数类型 $T_j$[兼容](03-types.html#compatibility)。
+  - 对于每个位置参数$e_i$，$S_i$类型与$T_i$[兼容](03-types.html#compatibility)。
+  - 如果定义了与其类型，则结果类型$U$与之[兼容](03-types.html#compatibility)。
+如果$f$是一个多态方法，则使用[本地类型推](#局部类型推断)断来实例化$f$的类型参数。如果类型推断可以确定可以确定类型参数，那么多态方法是适用的，以便实例化方法适用。
 
-If $f$ is a polymorphic method, [local type inference](#local-type-inference) is used to instantiate $f$'s type parameters.
-The polymorphic method is applicable if type inference can determine type arguments so that the instantiated method is applicable.
+如果$f$具有某种值类型，则应用程序等同于`$f$.apply($e_1 , \ldots , e_m$)`,即应用由$f$定义的`apply`方法。如果`$f$.apply` 适用，则 `$f$`值适用于给定的参数。
 
-If $f$ has some value type, the application is taken to be equivalent to `$f$.apply($e_1 , \ldots , e_m$)`,
-i.e. the application of an `apply` method defined by $f$. The value `$f$` is applicable to the given arguments if `$f$.apply` is applicable.
+`$f$($e_1 , \ldots , e_n$)`的求值通常必须顺序计算$f$和 $e_1 , \ldots , e_n$。每个参数表达式都转换为其相应形式的参数类型。字后，应用程序被重写到函数的右侧，实际参数替换形式参数。计算重写的右侧结果最终转换为函数声明的结果类型(如果有的话)。
 
+具有无参方法类型`=>$T$`的形式参数的情况会被特殊处理。在这种情况下，在应用程序之前不会计算相应的实际参数表达式$e$。相反，在重写规则的右侧使用形式参数需要重新计算$e$。换句话说，`=>`参数的计算顺序是*按名称调用*，而正常参数的计算顺序是*按值调用*。此外，要求$e$的[打包类型](#表达式类型化)符合参数类型$T$.如果由于named或default参数将将应用程序转换为块，则会保留by-name参数的行为。在这种情况下，该参数的本地值的格式为 `val $y_i$ = () => $e$`，传递给该函数的参数为`$y_i$()`。
 
-Evaluation of `$f$($e_1 , \ldots , e_n$)` usually entails evaluation of
-$f$ and $e_1 , \ldots , e_n$ in that order. Each argument expression
-is converted to the type of its corresponding formal parameter.  After
-that, the application is rewritten to the function's right hand side,
-with actual arguments substituted for formal parameters.  The result
-of evaluating the rewritten right-hand side is finally converted to
-the function's declared result type, if one is given.
+应用中最后一个参数可以标记为序列参数，例如`$e$: _*`。这样的参数必须与一个类型`$S$*`的[重复参数](04-basic-declarations-and-definitions.html#repeated-parameters)一致，也必须是唯一与该参数匹配的参量(即形式参数和实际参数的数量必须相同)。此外，$e$的类型必须符合`scala.Seq[$T$]`，对于符合$S$的某些类型$T$。在这种情况下，参数类型的最终形式是用其元素来替换$e$.当应用程序使用命名参数时，可变参数的参数必须有明确的指定。
 
-The case of a formal parameter with a parameterless
-method type `=>$T$` is treated specially. In this case, the
-corresponding actual argument expression $e$ is not evaluated before the
-application. Instead, every use of the formal parameter on the
-right-hand side of the rewrite rule entails a re-evaluation of $e$.
-In other words, the evaluation order for
-`=>`-parameters is _call-by-name_ whereas the evaluation
-order for normal parameters is _call-by-value_.
-Furthermore, it is required that $e$'s [packed type](#expression-typing)
-conforms to the parameter type $T$.
-The behavior of by-name parameters is preserved if the application is
-transformed into a block due to named or default arguments. In this case,
-the local value for that parameter has the form `val $y_i$ = () => $e$`
-and the argument passed to the function is `$y_i$()`.
+函数应用通常在程序运行时堆栈上分配一个新帧。但是，如果本地方法或者fina方法将自身分配为最后一个操作的化，该调用将在调用者的堆栈帧中执行。
 
-The last argument in an application may be marked as a sequence
-argument, e.g. `$e$: _*`. Such an argument must correspond
-to a [repeated parameter](04-basic-declarations-and-definitions.html#repeated-parameters) of type
-`$S$*` and it must be the only argument matching this
-parameter (i.e. the number of formal parameters and actual arguments
-must be the same). Furthermore, the type of $e$ must conform to
-`scala.Seq[$T$]`, for some type $T$ which conforms to
-$S$. In this case, the argument list is transformed by replacing the
-sequence $e$ with its elements. When the application uses named
-arguments, the vararg parameter has to be specified exactly once.
-
-A function application usually allocates a new frame on the program's
-run-time stack. However, if a local method or a final method calls
-itself as its last action, the call is executed using the stack-frame
-of the caller.
-
-###### Example
-Assume the following method which computes the sum of a
-variable number of arguments:
-
+###### 例
+假设以下方法计算可变数量的参数总和：
 ```scala
 def sum(xs: Int*) = (0 /: xs) ((x, y) => x + y)
 ```
 
-Then
+那么
 
 ```scala
 sum(1, 2, 3, 4)
 sum(List(1, 2, 3, 4): _*)
 ```
 
-both yield `10` as result. On the other hand,
+都会得到结果 `10`，然而
 
 ```scala
 sum(List(1, 2, 3, 4))
 ```
 
-would not typecheck.
+无法通过类型检查.
 
-### Named and Default Arguments
+### 命名和默认参数
 
-If an application is to use named arguments $p = e$ or default
-arguments, the following conditions must hold.
+如果应用程序要使用命名参数$p = e$或默认参数，必须满足一下条件。
+- 对于参数列表$e_1 \ldots e_m$中位置参数左侧出现的每个命名参数$p_i = e_i$，参数位置$i$与应用方法的参数列表中参数$p_i$的位置一致。
+- 所有命名参数的名称 $x_i$ 是成对不同的，并且没有命名的参数定义了由位置变量指定的参数。
+- 每个正式参数$p_j:T_j$都没有由positional或named参数指定，他有一个默认参数
 
-- For every named argument $p_i = e_i$ which appears left of a positional argument
-  in the argument list $e_1 \ldots e_m$, the argument position $i$ coincides with
-  the position of parameter $p_i$ in the parameter list of the applied method.
-- The names $x_i$ of all named arguments are pairwise distinct and no named
-  argument defines a parameter which is already specified by a
-  positional argument.
-- Every formal parameter $p_j:T_j$ which is not specified by either a positional
-  or named argument has a default argument.
+如果应用程序使用命名参数或默认参数，则使用以下转换将其转换为没有命名参数或默认参数的应用程序。
 
-If the application uses named or default
-arguments the following transformation is applied to convert it into
-an application without named or default arguments.
-
-If the method $f$
-has the form `$p.m$[$\mathit{targs}$]` it is transformed into the
-block
+如果方法 $f$的格式为 `$p.m$[$\mathit{targs}$]` 则转换为块：
 
 ```scala
 { val q = $p$
@@ -351,9 +233,7 @@ block
 }
 ```
 
-If the method $f$ is itself an application expression the transformation
-is applied recursively on $f$. The result of transforming $f$ is a block of
-the form
+如果方法$f$本身就是一个应用程序表达式，则转换将以递归的方式应用于$f$.转换$f$的结果是以下块：
 
 ```scala
 { val q = $p$
@@ -364,21 +244,9 @@ the form
 }
 ```
 
-where every argument in $(\mathit{args}\_1) , \ldots , (\mathit{args}\_l)$ is a reference to
-one of the values $x_1 , \ldots , x_k$. To integrate the current application
-into the block, first a value definition using a fresh name $y_i$ is created
-for every argument in $e_1 , \ldots , e_m$, which is initialised to $e_i$ for
-positional arguments and to $e'_i$ for named arguments of the form
-`$x_i=e'_i$`. Then, for every parameter which is not specified
-by the argument list, a value definition using a fresh name $z_i$ is created,
-which is initialized using the method computing the
-[default argument](04-basic-declarations-and-definitions.html#function-declarations-and-definitions) of
-this parameter.
+其中$(\mathit{args}\_1) , \ldots , (\mathit{args}\_l)$中的每个参数都是对$x_1 , \ldots , x_k$的引用。要将当前程序集成到块中，首先为$e_1 , \ldots , e_m$中的每个参数创建一个使用新名称$y_i$的值定义，初始化化为$e_i$用于位置参数和$e'_i$表示`$x_i=e'_i$`形式的命名参数。然后，对于参数裂变未指定的参数，将创建使用名称为 $z_i$ 的值定义，该值使用计算此参[数默认参](04-basic-declarations-and-definitions.html#function-declarations-and-definitions)数的方法进行初始化。_
 
-Let $\mathit{args}$ be a permutation of the generated names $y_i$ and $z_i$ such such
-that the position of each name matches the position of its corresponding
-parameter in the method type `($p_1:T_1 , \ldots , p_n:T_n$)$U$`.
-The final result of the transformation is a block of the form
+假设\mathit{args}$是生成的名称 $y_i$ 和 $z_i$的序列，这样每个名称的位置与与方法类型`($p_1:T_1 , \ldots , p_n:T_n$)$U$`中相应参数的位置相匹配。转换的最终结果是一个块形式：
 
 ```scala
 { val q = $p$
@@ -395,38 +263,26 @@ The final result of the transformation is a block of the form
 }
 ```
 
-### Signature Polymorphic Methods
+### 签名多态方法
 
-For invocations of signature polymorphic methods of the target platform `$f$($e_1 , \ldots , e_m$)`,
-the invoked method has a different method type `($p_1$:$T_1 , \ldots , p_n$:$T_n$)$U$` at each call
-site. The parameter types `$T_ , \ldots , T_n$` are the types of the argument expressions
-`$e_1 , \ldots , e_m$` and `$U$` is the expected type at the call site. If the expected type is
-undefined then `$U$` is `scala.AnyRef`. The parameter names `$p_1 , \ldots , p_n$` are fresh.
+对于目标平台`$f$($e_1 , \ldots , e_m$)`的签名多态方法的调用，被调用的方法在每个调用位置有不同的方法类型`($p_1$:$T_1 , \ldots , p_n$:$T_n$)$U$` 。参数类型`$T_ , \ldots , T_n$` 是参数表达式`$e_1 , \ldots , e_m$`的类型，而`$U$`是调用位置的预期的类型。如果期望的类型未定义，那么`$U$`是 `scala.AnyRef`。参数名称`$p_1 , \ldots , p_n$`是新的。
 
-###### Note
+###### 注意
 
-On the Java platform version 7 and later, the methods `invoke` and `invokeExact` in class
-`java.lang.invoke.MethodHandle` are signature polymorphic.
+在java7及更高版本中，类`java.lang.invoke.MethodHandle` 中的方法`invoke` 和`invokeExact`是签名多态。
 
-## Method Values
+## 方法值
 
 ```ebnf
 SimpleExpr    ::=  SimpleExpr1 ‘_’
 ```
 
-The expression `$e$ _` is well-formed if $e$ is of method
-type or if $e$ is a call-by-name parameter.  If $e$ is a method with
-parameters, `$e$ _` represents $e$ converted to a function
-type by [eta expansion](#eta-expansion). If $e$ is a
-parameterless method or call-by-name parameter of type
-`=>$T$`, `$e$ _` represents the function of type
-`() => $T$`, which evaluates $e$ when it is applied to the empty
-parameter list `()`.
+如果$e$是方法类型或$e$是按照名称调用参数，则表达式`$e$ _`的格式正确。如果$e$是带参数的方法，
+`$e$ _`通过[eta扩展](#eta扩展)得到函数类型$e$。如果$e$是无参方法或者类型`=>$T$`的call-by-name参数，`$e$ _`表示类型为`() => $T$`的函数，且将应用于空参数列表`()`时求$e$的值。
 
-###### Example
-The method values in the left column are each equivalent to the [eta-expanded expressions](#eta-expansion) on the right.
-
-| placeholder syntax            | eta-expansion                                                               |
+###### 例
+左列中的方法值分别等同于右侧的[eta扩展](#eta扩展)表达式。
+| placeholder syntax(占位符语法)  | eta-expansion(eta扩展表达式)                                                               |
 |------------------------------ | ----------------------------------------------------------------------------|
 |`math.sin _`                   | `x => math.sin(x)`                                                          |
 |`math.pow _`                   | `(x1, x2) => math.pow(x1, x2)`                                              |
@@ -434,114 +290,75 @@ The method values in the left column are each equivalent to the [eta-expanded ex
 |`(1 to 9).fold(z)_`            | `{ val eta1 = z; val eta2 = 1 to 9; op => eta2.fold(eta1)(op) }`            |
 |`Some(1).fold(??? : Int)_`     | `{ val eta1 = () => ???; val eta2 = Some(1); op => eta2.fold(eta1())(op) }` |
 
-Note that a space is necessary between a method name and the trailing underscore
-because otherwise the underscore would be considered part of the name.
+注意，方法名称和尾随下划线之间需要一个空格，否则下划线将被视为名称的一部分。
 
-## Type Applications
+## 类型应用
 
 ```ebnf
 SimpleExpr    ::=  SimpleExpr TypeArgs
 ```
 
-A _type application_ `$e$[$T_1 , \ldots , T_n$]` instantiates
-a polymorphic value $e$ of type
-`[$a_1$ >: $L_1$ <: $U_1, \ldots , a_n$ >: $L_n$ <: $U_n$]$S$`
-with argument types
-`$T_1 , \ldots , T_n$`.  Every argument type $T_i$ must obey
-the corresponding bounds $L_i$ and $U_i$.  That is, for each $i = 1
-, \ldots , n$, we must have $\sigma L_i <: T_i <: \sigma
-U_i$, where $\sigma$ is the substitution $[a_1 := T_1 , \ldots , a_n
-:= T_n]$.  The type of the application is $\sigma S$.
+_类型应用_`$e$[$T_1 , \ldots , T_n$]`实例化了具有类型`[$a_1$ >: $L_1$ <: $U_1, \ldots , a_n$ >: $L_n$ <: $U_n$]$S$`和参数类型`$T_1 , \ldots , T_n$`的多态$e$.每个参数类型$T_i$必须遵守相应的边界$L_i$和$U_i$。也就是说，对于每个$i = 1, \ldots , n$，我们必须有$\sigma L_i <: T_i <: \sigmaU_i$，其中$\sigma$是替换$[a_1 := T_1 , \ldots , a_n:= T_n]$。应用的类型是$\sigma S$。
 
-If the function part $e$ is of some value type, the type application
-is taken to be equivalent to
-`$e$.apply[$T_1 , \ldots ,$ T$_n$]`, i.e. the application of an `apply` method defined by
-$e$.
+如果函数部分$e$是某种值类型，该类型应用将等价于`$e$.apply[$T_1 , \ldots ,$ T$_n$]`,比如由$e$定义的`apply`方法应用。
 
-Type applications can be omitted if
-[local type inference](#local-type-inference) can infer best type parameters
-for a polymorphic method from the types of the actual method arguments
-and the expected result type.
+如果[本地类型推断](#本地类型推断)可以通过实际函数参数类型和期望结果类型来得到一个多态函数的最佳类型参数，则类型应用可以忽略。
 
-## Tuples
+## 元组
 
 ```ebnf
 SimpleExpr   ::=  ‘(’ [Exprs] ‘)’
 ```
+_元组_ 表达式`($e_1 , \ldots , e_n$)`是类实例创建`scala.Tuple$n$($e_1 , \ldots , e_n$)`的别名，其中$n \geq 2$.空元组`()`是 `scala.Unit`类型的唯一值。
 
-A _tuple expression_ `($e_1 , \ldots , e_n$)` is an alias
-for the class instance creation
-`scala.Tuple$n$($e_1 , \ldots , e_n$)`, where $n \geq 2$.
-The empty tuple
-`()` is the unique value of type `scala.Unit`.
-
-## Instance Creation Expressions
+## 实例创建表达式
 
 ```ebnf
 SimpleExpr     ::=  ‘new’ (ClassTemplate | TemplateBody)
 ```
 
-A _simple instance creation expression_ is of the form
-`new $c$`
-where $c$ is a [constructor invocation](05-classes-and-objects.html#constructor-invocations). Let $T$ be
-the type of $c$. Then $T$ must
-denote a (a type instance of) a non-abstract subclass of
-`scala.AnyRef`. Furthermore, the _concrete self type_ of the
-expression must conform to the [self type](05-classes-and-objects.html#templates) of the class denoted by
-$T$. The concrete self type is normally
-$T$, except if the expression `new $c$` appears as the
-right hand side of a value definition
+一个_简单的实例创建表达式_的形式是`new $c$`，其中$c$是一个[构造函数调用](05-classes-and-objects.html#constructor-invocations)。设$T$是$c$的类型。那么$T$必须表示`scala.AnyRef`的一个非抽象子类(的类型实例)。更进一步，表达式的_具体的自我类型_必须与$T$表示的类型的[自我类型](05-classes-and-objects.html#templates)一致。具体的自我类型通常为$T$,除非表达式`new $c$`在值定义的右侧出现：
 
 ```scala
 val $x$: $S$ = new $c$
 ```
 
-(where the type annotation `: $S$` may be missing).
-In the latter case, the concrete self type of the expression is the
-compound type `$T$ with $x$.type`.
+(类型注释`: $S$`可以缺失)。在后一种情况下，表达式的具体自我类型是复合类型`$T$ with $x$.type`。
 
-The expression is evaluated by creating a fresh
-object of type $T$ which is initialized by evaluating $c$. The
-type of the expression is $T$.
+表达式通过创建一个$T$类型的新对象来求值，该对象通过计算$C$来初始化。表达式的类型为$T$。
 
-A _general instance creation expression_ is of the form
-`new $t$` for some [class template](05-classes-and-objects.html#templates) $t$.
-Such an expression is equivalent to the block
+对于某些[类的模板](05-classes-and-objects.html#templates)$t$,_通过实例创建表达式的形式为_`new $t$` 。这样的表达式等同于块。
 
 ```scala
 { class $a$ extends $t$; new $a$ }
 ```
 
-where $a$ is a fresh name of an _anonymous class_ which is
-inaccessible to user programs.
+其中$a$是用户程序无法访问的_匿名类_的新名称。
 
-There is also a shorthand form for creating values of structural
-types: If `{$D$}` is a class body, then
-`new {$D$}` is equivalent to the general instance creation expression
-`new AnyRef{$D$}`.
+还有一种用于创建结构类型值的简写形式:如果`{$D$}`是一个类体，那么`new {$D$}` 等同于一般实例创建表达式`new AnyRef{$D$}`。
 
-###### Example
-Consider the following structural instance creation expression:
+###### 例
+请考虑一下结构实例创建表达式:
 
 ```scala
 new { def getName() = "aaron" }
 ```
 
-This is a shorthand for the general instance creation expression
+这是一般实例创建表达式的简写：
 
 ```scala
 new AnyRef{ def getName() = "aaron" }
 ```
 
-The latter is in turn a shorthand for the block
+后者又是该块的简写：
 
 ```scala
 { class anon\$X extends AnyRef{ def getName() = "aaron" }; new anon\$X }
 ```
 
-where `anon\$X` is some freshly created name.
+其中`anon\$X`是一些新创建的名称。
 
-## Blocks
+## 块
 
 ```ebnf
 BlockExpr  ::=  ‘{’ CaseClauses ‘}’
@@ -549,62 +366,35 @@ BlockExpr  ::=  ‘{’ CaseClauses ‘}’
 Block      ::=  BlockStat {semi BlockStat} [ResultExpr]
 ```
 
-A _block expression_ `{$s_1$; $\ldots$; $s_n$; $e\,$}` is
-constructed from a sequence of block statements $s_1 , \ldots , s_n$
-and a final expression $e$.  The statement sequence may not contain
-two definitions or declarations that bind the same name in the same
-namespace.  The final expression can be omitted, in which
-case the unit value `()` is assumed.
+_块表达式_`{$s_1$; $\ldots$; $s_n$; $e\,$}`由一个块语句序列$s_1 , \ldots , s_n$和一个最终表达式构$e$构成。语句序列中不能有两个定义或声明绑定到同一命名空间的同一命名上。最终表达式可忽略，默认为单元值 `()` 。
 
-The expected type of the final expression $e$ is the expected
-type of the block. The expected type of all preceding statements is
-undefined.
+最终表达式$e$的预期类型是块的预期类型。所有先前语句的预期类型都未定义。
 
-The type of a block `$s_1$; $\ldots$; $s_n$; $e$` is
-`$T$ forSome {$\,Q\,$}`, where $T$ is the type of $e$ and $Q$
-contains [existential clauses](03-types.html#existential-types)
-for every value or type name which is free in $T$
-and which is defined locally in one of the statements $s_1 , \ldots , s_n$.
-We say the existential clause _binds_ the occurrence of the value or type name.
-Specifically,
+块`$s_1$; $\ldots$; $s_n$; $e$`的类型是`$T$ forSome {$\,Q\,$}`，其中$T$是$e$的类型，$Q$包含在$T$中中的每个自由和在语句 $s_1 , \ldots , s_n$中局部定义值或类型命名的[既存类型](03-types.html#existential-types).我们说存在子句 _绑定_ 了值或类型命名，需要特别指出:
 
-- A locally defined type definition  `type$\;t = T$`
-  is bound by the existential clause `type$\;t >: T <: T$`.
-  It is an error if $t$ carries type parameters.
-- A locally defined value definition `val$\;x: T = e$` is
-  bound by the existential clause `val$\;x: T$`.
-- A locally defined class definition `class$\;c$ extends$\;t$`
-  is bound by the existential clause `type$\;c <: T$` where
-  $T$ is the least class type or refinement type which is a proper
-  supertype of the type $c$. It is an error if $c$ carries type parameters.
-- A locally defined object definition `object$\;x\;$extends$\;t$`
-  is bound by the existential clause `val$\;x: T$` where
-  $T$ is the least class type or refinement type which is a proper supertype of the type
-  `$x$.type`.
+- 一个本地定义的类型定义 `type$\;t = T$`由存在子句`type$\;t >: T <: T$`绑定，如果$t$携带参数子句，则会出错。
+- 本地定义的值定义`val$\;x: T = e$`由存在子句`val$\;x: T$`绑定。
+- 本地定义的类定义`class$\;c$ extends$\;t$`由存在子句`type$\;c <: T$`绑定，其中$T$是最小类类型或修饰类型，且他是一个适当的超类型$c$。如果$c$带有参数，则会出错。
+- 本地定义的`object$\;x\;$extends$\;t$`由存在子句`val$\;x: T$`绑定，其中$T$是最小类类型或修饰类型，他是`$x$.type`的适当超类型。
 
-Evaluation of the block entails evaluation of its
-statement sequence, followed by an evaluation of the final expression
-$e$, which defines the result of the block.
+对块的评估需要评估其语句序列，然后评估最终表达式$e$,它定义了块的结果。
 
-###### Example
-Assuming a class `Ref[T](x: T)`, the block
+###### 例
+
+假设一个类`Ref[T](x: T)`，代码块
 
 ```scala
 { class C extends B {$\ldots$} ; new Ref(new C) }
 ```
-
-has the type `Ref[_1] forSome { type _1 <: B }`.
-The block
+具有类型`Ref[_1] forSome { type _1 <: B }`，代码块
 
 ```scala
 { class C extends B {$\ldots$} ; new C }
 ```
 
-simply has type `B`, because with the rules [here](03-types.html#simplification-rules)
-the existentially quantified type
-`_1 forSome { type _1 <: B }` can be simplified to `B`.
+的类型仅是`B`，因为[这里](03-types.html#simplification-rules)的规则有存在限定类型`_1 forSome { type _1 <: B }` 可以简化为`B`。
 
-## Prefix, Infix, and Postfix Operations
+## 前缀，中缀和后缀运算
 
 ```ebnf
 PostfixExpr     ::=  InfixExpr [id [nl]]
@@ -612,39 +402,24 @@ InfixExpr       ::=  PrefixExpr
                   |  InfixExpr id [nl] InfixExpr
 PrefixExpr      ::=  [‘-’ | ‘+’ | ‘!’ | ‘~’] SimpleExpr
 ```
+表达式由运算符和操作数构成。
 
-Expressions can be constructed from operands and operators.
+### 前缀运算
 
-### Prefix Operations
+前缀运算$\mathit{op};e$ 由前缀运算符$\mathit{op}$组成，它必须是标识符‘`+`’, ‘`-`’,
+‘`!`’ 或 ‘`~`’之一。表达式 $\mathit{op};e$等同于后缀方法应用`e.unary_$\mathit{op}$`.
 
-A prefix operation $\mathit{op};e$ consists of a prefix operator $\mathit{op}$, which
-must be one of the identifiers ‘`+`’, ‘`-`’,
-‘`!`’ or ‘`~`’. The expression $\mathit{op};e$ is
-equivalent to the postfix method application
-`e.unary_$\mathit{op}$`.
+前缀运算符与普通方法应用程序的不同之处在于他们的操作数表达式不一定是原子的。例如，输入序列`-sin(x)`被解读为`-(sin(x))`，而方法应用程序`negate sin(x)`将被解析为应用中缀运算符 `sin`到操作数`negate` 和 `(x)`.
 
-<!-- TODO: Generalize to arbitrary operators -->
+### 后缀运算
 
-Prefix operators are different from normal method applications in
-that their operand expression need not be atomic. For instance, the
-input sequence `-sin(x)` is read as `-(sin(x))`, whereas the
-method application `negate sin(x)` would be parsed as the
-application of the infix operator `sin` to the operands
-`negate` and `(x)`.
+后缀运算符可以是任意标识符。后缀操作$e;\mathit{op}$被解读为$e.\mathit{op}$。
 
-### Postfix Operations
+### 中缀运算
 
-A postfix operator can be an arbitrary identifier. The postfix
-operation $e;\mathit{op}$ is interpreted as $e.\mathit{op}$.
+中缀运算符可以是任意标识符。中缀运算符的优先级和关联性定义如下：
 
-### Infix Operations
-
-An infix operator can be an arbitrary identifier. Infix operators have
-precedence and associativity defined as follows:
-
-The _precedence_ of an infix operator is determined by the operator's first
-character. Characters are listed below in increasing order of
-precedence, with characters on the same line having the same precedence.
+中缀运算的_优先级_由运算符的第一个字符决定。下面按优先级的递增顺序列出字符，同一行上的字符具有相同的优先级。
 
 ```scala
 (all letters)
@@ -659,150 +434,92 @@ precedence, with characters on the same line having the same precedence.
 (all other special characters)
 ```
 
-That is, operators starting with a letter have lowest precedence,
-followed by operators starting with ‘`|`’, etc.
+也就是说，以字母开头的运算符具有最低优先级，然后就是以‘`|`’开头的运算符。
 
-There's one exception to this rule, which concerns
-[_assignment operators_](#assignment-operators).
-The precedence of an assignment operator is the same as the one
-of simple assignment `(=)`. That is, it is lower than the
-precedence of any other operator.
+这条规则有一个例外，它涉及到[_赋值运算符_](#赋值运算符)。赋值运算符的优先级于简单赋值`(=)`的优先级相同。也就是说，它低于任何其他运算符的优先级。
 
-The _associativity_ of an operator is determined by the operator's
-last character.  Operators ending in a colon ‘`:`’ are
-right-associative. All other operators are left-associative.
+运算符的_相关性_由运算符的最后一个字符确定。由‘`:`’结尾的运算符是右相关的。其他的所有运算符是左相关的。
 
-Precedence and associativity of operators determine the grouping of
-parts of an expression as follows.
+运算符的优先级和关联性决定了表达式各部分的分组如下：
 
-- If there are several infix operations in an
-  expression, then operators with higher precedence bind more closely
-  than operators with lower precedence.
-- If there are consecutive infix
-  operations $e_0; \mathit{op}\_1; e_1; \mathit{op}\_2 \ldots \mathit{op}\_n; e_n$
-  with operators $\mathit{op}\_1 , \ldots , \mathit{op}\_n$ of the same precedence,
-  then all these operators must
-  have the same associativity. If all operators are left-associative,
-  the sequence is interpreted as
-  $(\ldots(e_0;\mathit{op}\_1;e_1);\mathit{op}\_2\ldots);\mathit{op}\_n;e_n$.
-  Otherwise, if all operators are right-associative, the
-  sequence is interpreted as
-  $e_0;\mathit{op}\_1;(e_1;\mathit{op}\_2;(\ldots \mathit{op}\_n;e_n)\ldots)$.
-- Postfix operators always have lower precedence than infix
-  operators. E.g. $e_1;\mathit{op}\_1;e_2;\mathit{op}\_2$ is always equivalent to
-  $(e_1;\mathit{op}\_1;e_2);\mathit{op}\_2$.
+- 如果表达式中有多个中缀操作，则优先级较高的运算符比优先级较低的运算符绑定的更紧密。
+- 如果有连续的中缀运算$e_0; \mathit{op}\_1; e_1; \mathit{op}\_2 \ldots \mathit{op}\_n; e_n$与运算符$\mathit{op}\_1 , \ldots , \mathit{op}\_n$具有相同的优先级，然后这些运算符必须具有相同的关联性。如果所有运算符都是左关联的，则序列被解释为$(\ldots(e_0;\mathit{op}_1;e_1);\mathit{op}_2\ldots);\mathit{op}_n;e_n$。或者，如果所有运算符都是右关联的，则序列被解释为$e_0;\mathit{op}_1;(e_1;\mathit{op}_2;(\ldots \mathit{op}_n;e_n)\ldots)$。
+- 后缀运算符的优先级始终低于中缀运算符。例如， $e_1;\mathit{op}\_1;e_2;\mathit{op}\_2$ 始终等同于$(e_1;\mathit{op}\_1;e_2);\mathit{op}\_2$.
 
-The right-hand operand of a left-associative operator may consist of
-several arguments enclosed in parentheses, e.g. $e;\mathit{op};(e_1,\ldots,e_n)$.
-This expression is then interpreted as $e.\mathit{op}(e_1,\ldots,e_n)$.
+左关联运算符的右侧操作数可能包含在括号中的几个参数，例如$e;\mathit{op};(e_1,\ldots,e_n)$。然后将此表达式解释为$e.\mathit{op}(e_1,\ldots,e_n)$。
 
-A left-associative binary
-operation $e_1;\mathit{op};e_2$ is interpreted as $e_1.\mathit{op}(e_2)$. If $\mathit{op}$ is
-right-associative and its parameter is passed by name, the same operation is interpreted as
-$e_2.\mathit{op}(e_1)$. If $\mathit{op}$ is right-associative and its parameter is passed by value,
-it is interpreted as `{ val $x$=$e_1$; $e_2$.$\mathit{op}$($x\,$) }`, where $x$ is a fresh name.
+左关联二进制运算$e_1;\mathit{op};e_2$被解释为$e_1.\mathit{op}(e_2)$。如果$\mathit{op}$ is是右侧关联的并且其参数是按名称传递的，则相同的操作将会被解释为$e_2.\mathit{op}(e_1)$。如果$\mathit{op}$是右关联的，并且其参数是按值传递的，则他被解释为`{ val $x$=$e_1$; $e_2$.$\mathit{op}$($x\,$) }`，其中$x$是一个新成员。
 
-### Assignment Operators
+### 赋值运算
 
-An _assignment operator_ is an operator symbol (syntax category
-`op` in [Identifiers](01-lexical-syntax.html#identifiers)) that ends in an equals character
-“`=`”, with the exception of operators for which one of
-the following conditions holds:
+_赋值运算_ 是一个运算符符号([标识符](01-lexical-syntax.html#identifiers)中的语法类别`op` )，以“`=`”结尾，但是其中包含一下条件之一的运算符除外：
 
-1. the operator also starts with an equals character, or
-1. the operator is one of `(<=)`, `(>=)`, `(!=)`.
+1. 运算符以等号开头
+1. 运算是其中之一 `(<=)`, `(>=)`, `(!=)`.
 
-Assignment operators are treated specially in that they
-can be expanded to assignments if no other interpretation is valid.
+则赋值运算符可以特殊处理，如果没有其他有效解释，则扩展为赋值、
 
-Let's consider an assignment operator such as `+=` in an infix
-operation `$l$ += $r$`, where $l$, $r$ are expressions.
-This operation can be re-interpreted as an operation which corresponds
-to the assignment
+我们考虑一个赋值运算符，比如`+=`。在中缀运算`$l$ += $r$`中，$l$和$r$是表达式。该运算符可以重新解释为负责赋值的运算：
 
 ```scala
 $l$ = $l$ + $r$
 ```
 
-except that the operation's left-hand-side $l$ is evaluated only once.
+除了操作的左侧$l$仅被计算一次。
 
-The re-interpretation occurs if the following two conditions are fulfilled.
+如果满足以下俩个条件，则重新计算：
+1. 左侧的$l$没有名为`+=`的成员，也无法通过[隐式转换](#隐式转换)转换为名为`+=`的成员变量。
+1. 赋值运算`$l$ = $l$ + $r$`的类型是正确的。特别此处暗含了$l$应用了一个变量或对象，且该变量或对象可以赋值，且可转变为一个具有名为`+`的成员的值。
 
-1. The left-hand-side $l$ does not have a member named
-   `+=`, and also cannot be converted by an
-   [implicit conversion](#implicit-conversions)
-   to a value with a member named `+=`.
-1. The assignment `$l$ = $l$ + $r$` is type-correct.
-   In particular this implies that $l$ refers to a variable or object
-   that can be assigned to, and that is convertible to a value with a member
-   named `+`.
-
-## Typed Expressions
+## 类型化的表达式
 
 ```ebnf
 Expr1              ::=  PostfixExpr ‘:’ CompoundType
 ```
 
-The _typed expression_ $e: T$ has type $T$. The type of
-expression $e$ is expected to conform to $T$. The result of
-the expression is the value of $e$ converted to type $T$.
+_类型化的表达式_ $e: T$的类型为$T$。表达式$e$期望符合$T$.表达式的结果是$e$的值转换为$T$类型。
 
-###### Example
-Here are examples of well-typed and ill-typed expressions.
+###### 例
+
+以下是良好类型和不良类型表达式的事例：
 
 ```scala
-1: Int               // legal, of type Int
-1: Long              // legal, of type Long
-// 1: string         // ***** illegal
+1: Int               // 合法的Int类型。
+1: Long              // 合法的Long类型。
+// 1: string         // ***** 非法
 ```
 
-## Annotated Expressions
+## 标注表达式
 
 ```ebnf
 Expr1              ::=  PostfixExpr ‘:’ Annotation {Annotation}
 ```
+_标注表达式_`$e$: @$a_1$ $\ldots$ @$a_n$`将[标注](11-annotations.html#user-defined-annotations)$a_1 , \ldots , a_n$附加到表达式$e$。
 
-An _annotated expression_ `$e$: @$a_1$ $\ldots$ @$a_n$`
-attaches [annotations](11-annotations.html#user-defined-annotations) $a_1 , \ldots , a_n$ to the
-expression $e$.
-
-## Assignments
+## 赋值
 
 ```ebnf
 Expr1        ::=  [SimpleExpr ‘.’] id ‘=’ Expr
                |  SimpleExpr1 ArgumentExprs ‘=’ Expr
 ```
 
-The interpretation of an assignment to a simple variable `$x$ = $e$`
-depends on the definition of $x$. If $x$ denotes a mutable
-variable, then the assignment changes the current value of $x$ to be
-the result of evaluating the expression $e$. The type of $e$ is
-expected to conform to the type of $x$. If $x$ is a parameterless
-method defined in some template, and the same template contains a
-setter method `$x$_=` as member, then the assignment
-`$x$ = $e$` is interpreted as the invocation
-`$x$_=($e\,$)` of that setter method.  Analogously, an
-assignment `$f.x$ = $e$` to a parameterless method $x$
-is interpreted as the invocation `$f.x$_=($e\,$)`.
+对简单变量`$x$ = $e$`的赋值的解释取决于$x$的定义。如果$x$表示一个可变变量，然后赋值将$x$的当前值更改为计算表达式$e$的结果。$e$的类型被期望与$x$的类型一致。如果$x$是在某个模板中定义的无参方法，并且该模板包含setter方法`$x$_=` 作为成员，则赋值`$x$ = $e$` 被解释为调用`$x$_=($e\,$)`这个setter方法。类似的，无参函数$x$的赋值`$f.x$ = $e$`被解释为调用`$f.x$_=($e\,$)`。
 
-An assignment `$f$($\mathit{args}\,$) = $e$` with a method application to the
-left of the ‘`=`’ operator is interpreted as
-`$f.$update($\mathit{args}$, $e\,$)`, i.e.
-the invocation of an `update` method defined by $f$.
+使用‘`=`’运算符左侧的方法应用程序赋值`$f$($\mathit{args}\,$) = $e$`被解释为`$f.$update($\mathit{args}$, $e\,$)`，即调用$f$调用的`update`方法。
 
-###### Example
-Here are some assignment expressions and their equivalent expansions.
+###### 例
+这是一些赋值表达式及其等效扩展：
 
-| assignment               | expansion            |
+| 赋值                     | 扩展                  |
 |--------------------------|----------------------|
 |`x.f = e`                 | `x.f_=(e)`           |
 |`x.f() = e`               | `x.f.update(e)`      |
 |`x.f(i) = e`              | `x.f.update(i, e)`   |
 |`x.f(i, j) = e`           | `x.f.update(i, j, e)`|
 
-###### Example Imperative Matrix Multiplication
+###### 示例矩阵乘法代码
 
-Here is the usual imperative code for matrix multiplication.
+这是矩阵乘法的常用命令代码
 
 ```scala
 def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
@@ -826,8 +543,7 @@ def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
 }
 ```
 
-Desugaring the array accesses and assignments yields the following
-expanded version:
+去掉数据访问和赋值的语法糖，就是下面这个扩展版本：
 
 ```scala
 def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
@@ -851,58 +567,41 @@ def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
 }
 ```
 
-## Conditional Expressions
+## 条件表达式
 
 ```ebnf
 Expr1          ::=  ‘if’ ‘(’ Expr ‘)’ {nl} Expr [[semi] ‘else’ Expr]
 ```
 
-The _conditional expression_ `if ($e_1$) $e_2$ else $e_3$` chooses
-one of the values of $e_2$ and $e_3$, depending on the
-value of $e_1$. The condition $e_1$ is expected to
-conform to type `Boolean`.  The then-part $e_2$ and the
-else-part $e_3$ are both expected to conform to the expected
-type of the conditional expression. The type of the conditional
-expression is the [weak least upper bound](03-types.html#weak-conformance)
-of the types of $e_2$ and
-$e_3$.  A semicolon preceding the `else` symbol of a
-conditional expression is ignored.
+_条件表达式_ `if ($e_1$) $e_2$ else $e_3$`根据$e_1$的值来选择值$e_2$或$e_3$。条件$e_1$期望与类型 `Boolean`一致。Then部分$e_2$和else部分$e_3$都期望与条件表达式的期望一致。条件表达式的类型是$e_2$和$e_3$类型[的弱最小上限](03-types.html#weak-conformance)。j将忽略条件表达式`else`字符前的分号。
 
-The conditional expression is evaluated by evaluating first
-$e_1$. If this evaluates to `true`, the result of
-evaluating $e_2$ is returned, otherwise the result of
-evaluating $e_3$ is returned.
+通过先计算$e_1$来计算条件表达式。如果此计算结果为`true`,则返回计算$e_2$的结果，否则则计算$e_3$的结果。
 
-A short form of the conditional expression eliminates the
-else-part. The conditional expression `if ($e_1$) $e_2$` is
-evaluated as if it was `if ($e_1$) $e_2$ else ()`.
+条件表达式的简短形式消除了else部分。条件表达式`if ($e_1$) $e_2$` 求值的方法为`if ($e_1$) $e_2$ else ()`.
 
-## While Loop Expressions
+## While循环表达式
 
 ```ebnf
 Expr1          ::=  ‘while’ ‘(’ Expr ‘)’ {nl} Expr
 ```
 
-The _while loop expression_ `while ($e_1$) $e_2$` is typed and
-evaluated as if it was an application of `whileLoop ($e_1$) ($e_2$)` where
-the hypothetical method `whileLoop` is defined as follows.
+_While循环表达式_ `while ($e_1$) $e_2$`的类型化求值方式类似于函数`whileLoop ($e_1$) ($e_2$)`的应用，假定函数的 `whileLoop`定义如下：
 
 ```scala
 def whileLoop(cond: => Boolean)(body: => Unit): Unit  =
   if (cond) { body ; whileLoop(cond)(body) } else {}
 ```
 
-## Do Loop Expressions
+## Do循环表达式
 
 ```ebnf
 Expr1          ::=  ‘do’ Expr [semi] ‘while’ ‘(’ Expr ‘)’
 ```
 
-The _do loop expression_ `do $e_1$ while ($e_2$)` is typed and
-evaluated as if it was the expression `($e_1$ ; while ($e_2$) $e_1$)`.
-A semicolon preceding the `while` symbol of a do loop expression is ignored.
+_do循环表达式_`do $e_1$ while ($e_2$)` 执行的输入和计算和表达式`($e_1$ ; while ($e_2$) $e_1$)`一样。do循表达式的`while`前面的分号将被忽略。
 
-## For Comprehensions and For Loops
+
+## for循环
 
 ```ebnf
 Expr1          ::=  ‘for’ (‘(’ Enumerators ‘)’ | ‘{’ Enumerators ‘}’)
@@ -912,87 +611,56 @@ Generator      ::=  Pattern1 ‘<-’ Expr {[semi] Guard | semi Pattern1 ‘=’
 Guard          ::=  ‘if’ PostfixExpr
 ```
 
-A _for loop_ `for ($\mathit{enums}\,$) $e$` executes expression $e$
-for each binding generated by the enumerators $\mathit{enums}$. 
-A _for comprehension_ `for ($\mathit{enums}\,$) yield $e$` evaluates
-expression $e$ for each binding generated by the enumerators $\mathit{enums}$
-and collects the results. An enumerator sequence always starts with a
-generator; this can be followed by further generators, value
-definitions, or guards.  A _generator_ `$p$ <- $e$`
-produces bindings from an expression $e$ which is matched in some way
-against pattern $p$. A _value definition_ `$p$ = $e$`
-binds the value name $p$ (or several names in a pattern $p$) to
-the result of evaluating the expression $e$.  A _guard_
-`if $e$` contains a boolean expression which restricts
-enumerated bindings. The precise meaning of generators and guards is
-defined by translation to invocations of four methods: `map`,
-`withFilter`, `flatMap`, and `foreach`. These methods can
-be implemented in different ways for different carrier types.
+_for循环_ `for ($\mathit{enums}\,$) $e$`对于由枚举类型$\mathit{enums}$产生的每个绑定执行表达式$e$。_for comprehension_ `for ($\mathit{enums}\,$) yield $e$` 为枚举类型
+ $\mathit{enums}$生成的每个绑定计算表达式$e$的值并搜集结果。 枚举类型序列始终以生成类型开始；后面可接其它生成器，值定义或守卫。_生成器_ `$p$ <- $e$`程表达式$e$生成绑定，它以某种方式与模式$p$匹配。_值定义_ `$p$ = $e$`将值名称$p$(或模式$p$中的多个名称)绑定到计算表达式$e$的求值结果上。_守卫_`if $e$`$e$包涵一个限制枚举类绑定的布尔表达式。生成器和防护的精确含义是通过转换为四种方法的调用来定义的:`map`,`withFilter`, `flatMap`, 和 `foreach`。这些方法可以根据不同的携带类型具有不同的实现。
 
-The translation scheme is as follows.  In a first step, every
-generator `$p$ <- $e$`, where $p$ is not [irrefutable](08-pattern-matching.html#patterns)
-for the type of $e$ is replaced by
+翻译框架如下。在第一步中，每个生成器 `$p$ <- $e$`，对于$e$的类型被替换成如下形式，$p$不是[不可反驳的](08-pattern-matching.html#patterns)。
+
 
 ```scala
-$p$ <- $e$.withFilter { case $p$ => true; case _ => false }
+$p$ <- $e$.withFilter { case $p$ => true; case _ => false }aaaaaaaaaaaa
 ```
 
-Then, the following rules are applied repeatedly until all
-comprehensions have been eliminated.
+然后，重复应用如下规则，直到所有的语段被消耗完毕为止：
 
-  - A for comprehension
-    `for ($p$ <- $e\,$) yield $e'$`
-    is translated to
-    `$e$.map { case $p$ => $e'$ }`.
-  - A for loop
+  - for comprehension `for ($p$ <- $e\,$) yield $e'$`被翻译为`$e$.map { case $p$ => $e'$ }`。
+  - for 循环
     `for ($p$ <- $e\,$) $e'$`
-    is translated to
+    被翻译为
     `$e$.foreach { case $p$ => $e'$ }`.
-  - A for comprehension
+  - for comprehension
 
     ```scala
     for ($p$ <- $e$; $p'$ <- $e'; \ldots$) yield $e''$
     ```
-
-    where `$\ldots$` is a (possibly empty)
-    sequence of generators, definitions, or guards,
-    is translated to
+    其中`$\ldots$` 是一个(可能为空的)生成器，定义或守卫序列，被翻译为
 
     ```scala
     $e$.flatMap { case $p$ => for ($p'$ <- $e'; \ldots$) yield $e''$ }
     ```
 
-  - A for loop
+  - for循环
 
     ```scala
     for ($p$ <- $e$; $p'$ <- $e'; \ldots$) $e''$
     ```
 
-    where `$\ldots$` is a (possibly empty)
-    sequence of generators, definitions, or guards,
-    is translated to
+    其中`$\ldots$` 是一个(可能为空的)生成器，定义或守卫序列，被翻译为
 
     ```scala
     $e$.foreach { case $p$ => for ($p'$ <- $e'; \ldots$) $e''$ }
     ```
 
-  - A generator `$p$ <- $e$` followed by a guard
-    `if $g$` is translated to a single generator
-    `$p$ <- $e$.withFilter(($x_1 , \ldots , x_n$) => $g\,$)` where
-    $x_1 , \ldots , x_n$ are the free variables of $p$.
-
-  - A generator `$p$ <- $e$` followed by a value definition
-    `$p'$ = $e'$` is translated to the following generator of pairs of values, where
-    $x$ and $x'$ are fresh names:
+  - 后跟守卫`if $g$`的生成器`$p$ <- $e$`翻译成单个生成器 `$p$ <- $e$.withFilter(($x_1 , \ldots , x_n$) => $g\,$)`，其中$x_1 , \ldots , x_n$是$p$的自由变量。
+  - 后跟值定义的`$p'$ = $e'$`的产生器`$p$ <- $e$`翻译为一下值的生成器，这里的  $x$ 和 $x'$是新名称：
 
     ```scala
     ($p$, $p'$) <- for ($x @ p$ <- $e$) yield { val $x' @ p'$ = $e'$; ($x$, $x'$) }
-    ```
+    ```'
 
-###### Example
-The following code produces all pairs of numbers between $1$ and $n-1$
-whose sums are prime.
+###### 例
 
+以下代码参数$1$和$n-1$之间的所有和为素数的数值对
 ```scala
 for  { i <- 1 until n
        j <- 1 until i
@@ -1000,7 +668,7 @@ for  { i <- 1 until n
 } yield (i, j)
 ```
 
-The for comprehension is translated to:
+该for comprehension 翻译为
 
 ```scala
 (1 until n)
@@ -1010,12 +678,8 @@ The for comprehension is translated to:
        .map { case j => (i, j) } }
 ```
 
-###### Example
-For comprehensions can be used to express vector
-and matrix algorithms concisely.
-For instance, here is a method to compute the transpose of a given matrix:
-
-<!-- see test/files/run/t0421.scala -->
+###### 例
+For comprehensions可以用来简洁的表达矢量和矩阵算法。例如，下列是一种计算给定矩阵的转置的方法：
 
 ```scala
 def transpose[A](xss: Array[Array[A]]) = {
@@ -1023,8 +687,7 @@ def transpose[A](xss: Array[Array[A]]) = {
     for (xs <- xss) yield xs(i)
 }
 ```
-
-Here is a method to compute the scalar product of two vectors:
+这是一种计算两个向量的无向量积的方法：
 
 ```scala
 def scalprod(xs: Array[Double], ys: Array[Double]) = {
@@ -1034,8 +697,8 @@ def scalprod(xs: Array[Double], ys: Array[Double]) = {
 }
 ```
 
-Finally, here is a method to compute the product of two matrices.
-Compare with the [imperative version](#example-imperative-matrix-multiplication).
+最后，这是一个计算两个矩阵的乘积的方法，与[命令版式](#示例矩阵乘法代码)比较
+
 
 ```scala
 def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
@@ -1045,114 +708,55 @@ def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
       scalprod(xs, yst)
 }
 ```
+上面的代码使用了`scala.Array`中以定义的成员`map`, `flatMap`,`withFilter`, 和 `foreach`为类
 
-The code above makes use of the fact that `map`, `flatMap`,
-`withFilter`, and `foreach` are defined for instances of class
-`scala.Array`.
-
-## Return Expressions
+## Return表达式
 
 ```ebnf
 Expr1      ::=  ‘return’ [Expr]
 ```
 
-A _return expression_ `return $e$` must occur inside the body of some
-enclosing user defined method. The innermost enclosing method in a
-source program, $m$, must have an explicitly declared result type, and
-the type of $e$ must conform to it.
+_return表达式_`return $e$`必须出现在闭合的用户方法的主体内。源程序中最内层的封闭方法$m$必须具有显式声明的结果类型，并且$e$的类型必须符合它。
 
-The return expression evaluates the expression $e$ and returns its
-value as the result of $m$. The evaluation of any statements or
-expressions following the return expression is omitted. The type of
-a return expression is `scala.Nothing`.
+返回表达式计算表达式$e$并返回其值作为$m$的结果。对return表达式之后的语句或表达式将会被忽略求值。return表达式的类型是`scala.Nothing`。
 
-The expression $e$ may be omitted. The return expression
-`return` is type-checked and evaluated as if it were `return ()`.
+表达式$e$可以省略。`return`以`return ()`的形式左类型检查和求值。
 
-Returning from the method from within a nested function may be
-implemented by throwing and catching a
-`scala.runtime.NonLocalReturnException`. Any exception catches
-between the point of return and the enclosing methods might see
-and catch that exception. A key comparison makes sure that this
-exception is only caught by the method instance which is terminated
-by the return.
+从嵌套函数内的方法返回可以`scala.runtime.NonLocalReturnException`来实现抛出和捕获。返回点和封闭方法之间的任何异常捕获都可能看到并捕获该异常。key确保此异常仅由返回终止的方法类型捕获。
 
-If the return expression is itself part of an anonymous function, it
-is possible that the enclosing method $m$ has already returned
-before the return expression is executed. In that case, the thrown
-`scala.runtime.NonLocalReturnException` will not be caught, and will
-propagate up the call stack.
+如果return表达式本身就是匿名函数的一部分，则在执行返回表达式之前，封闭方法$m$可能已经返回。在这种情况下，抛出的`scala.runtime.NonLocalReturnException`将不会被捕获，并将向上传播调用堆栈。
 
-## Throw Expressions
+## Throw表达式
 
 ```ebnf
 Expr1      ::=  ‘throw’ Expr
 ```
 
-A _throw expression_ `throw $e$` evaluates the expression
-$e$. The type of this expression must conform to
-`Throwable`.  If $e$ evaluates to an exception
-reference, evaluation is aborted with the thrown exception. If $e$
-evaluates to `null`, evaluation is instead aborted with a
-`NullPointerException`. If there is an active
-[`try` expression](#try-expressions) which handles the thrown
-exception, evaluation resumes with the handler; otherwise the thread
-executing the `throw` is aborted.  The type of a throw expression
-is `scala.Nothing`.
+_throw表达式_ `throw $e$`计算表达式$e$。次表达式的类型必须符合`Throwable`。如果$e$的计算结果为异常引用，则将会停止计算，抛出异常。如果$e$的计算值为`null`，则终止计算并抛出`NullPointerException`.如果此处有一个活动的[`try`表达式](#try表达式)，且要处理抛出的异常，则求值在该处理中继续执行；否则执行`throw`的线程将被终止。`throw` 表达式的类型是`scala.Nothing`。
 
-## Try Expressions
+## Try表达式
 
 ```ebnf
 Expr1 ::=  ‘try’ (‘{’ Block ‘}’ | Expr) [‘catch’ ‘{’ CaseClauses ‘}’]
            [‘finally’ Expr]
 ```
-
-A _try expression_ is of the form `try { $b$ } catch $h$`
-where the handler $h$ is a
-[pattern matching anonymous function](08-pattern-matching.html#pattern-matching-anonymous-functions)
+_try表达式_ 的形式为`try { $b$ } catch $h$`，其中处理程序$h$是是一个[匹配匿名函数的模式](08-pattern-matching.html#pattern-matching-anonymous-functions)。
 
 ```scala
 { case $p_1$ => $b_1$ $\ldots$ case $p_n$ => $b_n$ }
 ```
+通过计算块$b$来计算表达式。如果$b$的计算不会导致抛出异常，则返回$b$的结果。否则，处理程序$h$将应用于异常的抛出。如果处理程序包含一个case与抛出的异常匹配，则调用第一个该类case。如果没有与抛出的异常匹配的case，则异常被重新抛出。
 
-This expression is evaluated by evaluating the block
-$b$.  If evaluation of $b$ does not cause an exception to be
-thrown, the result of $b$ is returned. Otherwise the
-handler $h$ is applied to the thrown exception.
-If the handler contains a case matching the thrown exception,
-the first such case is invoked. If the handler contains
-no case matching the thrown exception, the exception is
-re-thrown.
+设$\mathit{pt}$是try表达式的期望类型。代码块$b$的预期符合$\mathit{pt}$。处理程序$h$预计符合`scala.PartialFunction[scala.Throwable, $\mathit{pt}\,$]`类型。try表达还是的类型是$b$类型和$h$的结果类型的[弱最小上限](03-types.html#weak-conformance)。
 
-Let $\mathit{pt}$ be the expected type of the try expression.  The block
-$b$ is expected to conform to $\mathit{pt}$.  The handler $h$
-is expected conform to type `scala.PartialFunction[scala.Throwable, $\mathit{pt}\,$]`.
-The type of the try expression is the [weak least upper bound](03-types.html#weak-conformance)
-of the type of $b$ and the result type of $h$.
+try表达式 `try { $b$ } finally $e$`计算块$b$。如果$b$的评估不会导致异常的抛出，则会计算表达式$e$。如果在计算$e$的期间抛出异常，则try表达式的求值终止且抛出异常。如果在对$e$求值的期间没有异常抛出，则返回$b$的结果作为try表达式的结果。
 
-A try expression `try { $b$ } finally $e$` evaluates the block
-$b$.  If evaluation of $b$ does not cause an exception to be
-thrown, the expression $e$ is evaluated. If an exception is thrown
-during evaluation of $e$, the evaluation of the try expression is
-aborted with the thrown exception. If no exception is thrown during
-evaluation of $e$, the result of $b$ is returned as the
-result of the try expression.
+如果在计算$b$的期间抛出异常，则还会计算finally代码块$e$。如果在计算$e$期间抛出另外一个异常$e$，则抛出异常并且终止try表达式的计算。如果在计算$e$的期间没有抛出异常，则一旦$e$的计算完成，就会重新抛出$b$中抛出的原有异常。代码块$b$应该符合try表达式的预期类型。最终表达式$e$预计符合类型`Unit`。
 
-If an exception is thrown during evaluation of $b$, the finally block
-$e$ is also evaluated. If another exception $e$ is thrown
-during evaluation of $e$, evaluation of the try expression is
-aborted with the thrown exception. If no exception is thrown during
-evaluation of $e$, the original exception thrown in $b$ is
-re-thrown once evaluation of $e$ has completed.  The block
-$b$ is expected to conform to the expected type of the try
-expression. The finally expression $e$ is expected to conform to
-type `Unit`.
+try表达式`try { $b$ } catch $e_1$ finally $e_2$`是`try { try { $b$ } catch $e_1$ } finally $e_2$`的简写。
 
-A try expression `try { $b$ } catch $e_1$ finally $e_2$`
-is a shorthand
-for  `try { try { $b$ } catch $e_1$ } finally $e_2$`.
 
-## Anonymous Functions
+## 匿名函数
 
 ```ebnf
 Expr            ::=  (Bindings | [‘implicit’] id | ‘_’) ‘=>’ Expr
@@ -1161,87 +765,72 @@ Bindings        ::=  ‘(’ Binding {‘,’ Binding} ‘)’
 Binding         ::=  (id | ‘_’) [‘:’ Type]
 ```
 
-The anonymous function of arity $n$, `($x_1$: $T_1 , \ldots , x_n$: $T_n$) => e` maps parameters $x_i$ of types $T_i$ to a result given by expression $e$. The scope of each formal parameter $x_i$ is $e$. Formal parameters must have pairwise distinct names.
+arity的匿名函数$n$，`($x_1$: $T_1 , \ldots , x_n$: $T_n$) => e`将类型$T_i$的参数$x_i$映射为由表达式$e$给出的结果。每个形式参数$x_i$的范围是$e$。形式参数必须具有两两不同的名称。
 
-In the case of a single untyped formal parameter, `($x\,$) => $e$` can be abbreviated to `$x$ => $e$`. If an anonymous function `($x$: $T\,$) => $e$` with a single typed parameter appears as the result expression of a block, it can be abbreviated to `$x$: $T$ => e`.
+在具有单个未类型化的正式参数时，`($x\,$) => $e$`可以缩写为`$x$ => $e$`。如果匿名函数`($x$: $T\,$) => $e$`有单个类型化的参数作为一个代码块的结果表达式出现，则可以缩写为`$x$: $T$ => e`.
 
-A formal parameter may also be a wildcard represented by an underscore `_`. In that case, a fresh name for the parameter is chosen arbitrarily.
+形式参数也可以是由下划线`_`表达式的通配符。在这种情况下，可以任意选择参数的一个新名称。
 
-A named parameter of an anonymous function may be optionally preceded by an `implicit` modifier. In that case the parameter is labeled [`implicit`](07-implicits.html#implicit-parameters-and-views); however the parameter section itself does not count as an [implicit parameter section](07-implicits.html#implicit-parameters). Hence, arguments to anonymous functions always have to be given explicitly.
+匿名函数的命名参数可以选择在前面加上`implicit`修饰符。在这种情况下，参数被标记为[`implicit`](07-implicits.html#implicit-parameters-and-views)。但是参数部分本身不算作[implicit 参数部分](07-implicits.html#implicit-parameters)。因此，必须明确给出匿名函数的参数。
 
-### Translation
-If the expected type of the anonymous function is of the shape `scala.Function$n$[$S_1 , \ldots , S_n$, $R\,$]`, or can be [SAM-converted](#sam-conversion) to such a function type, the type `$T_i$` of a parameter `$x_i$` can be omitted, as far as `$S_i$` is defined in the expected type, and `$T_i$ = $S_i$` is assumed. Furthermore, the expected type when type checking $e$ is $R$.
+### 解答
 
-If there is no expected type for the function literal, all formal parameter types `$T_i$` must be specified explicitly, and the expected type of $e$ is undefined. The type of the anonymous function is `scala.Function$n$[$T_1 , \ldots , T_n$, $R\,$]`, where $R$ is the [packed type](#expression-typing) of $e$. $R$ must be equivalent to a type which does not refer to any of the formal parameters $x_i$.
+如果匿名函数的期望类型具有`scala.Function$n$[$S_1 , \ldots , S_n$, $R\,$]`的形式，或则[SAM 转换](#SAM转换)为这样的函数的函数类型，则$e$的期望类型为$R$,每个参数`$x_i$`的类型`$T_i$`可以忽略，可假定 `$T_i$ = $S_i$`。
 
-The eventual run-time value of an anonymous function is determined by the expected type:
-  - a subclass of one of the builtin function types, `scala.Function$n$[$S_1 , \ldots , S_n$, $R\,$]` (with $S_i$ and $R$ fully defined),
-  - a [single-abstract-method (SAM) type](#sam-conversion);
-  - `PartialFunction[$T$, $U$]`, if the function literal is of the shape `x => x match { $\ldots$ }`
-  - some other type.
+如果匿名函数的期望类不存在，则所有正式参数的类型`$T_i$`必须明确指定，$e$的预期类型是未定义的。匿名函数的类型是 `scala.Function$n$[$T_1 , \ldots , T_n$, $R\,$]`，其中$R$是$e$的[打包类型](#表达式类型)。$R$必须等同于不引用任何形式参数$x_i$的类型。
 
-The standard anonymous function evaluates in the same way as the following instance creation expression:
+匿名函数的最终运行时值由期望类型决定：
 
+  - 一个内置函数类型的子类， `scala.Function$n$[$S_1 , \ldots , S_n$, $R\,$]` (完全定义了$S_i$ 和 $R$ ),
+  - 一个[抽象方法(SAM)类型](#SAM转换)
+  - `PartialFunction[$T$, $U$]`,如果函数形如`x => x match { $\ldots$ }`
+  - 其他一些类型
+
+标准匿名函数的计算方法与胰腺癌实例创建表达式的计算方法相同：
 ```scala
 new scala.Function$n$[$T_1 , \ldots , T_n$, $T$] {
   def apply($x_1$: $T_1 , \ldots , x_n$: $T_n$): $T$ = $e$
 }
 ```
 
-The same evaluation holds for a SAM type, except that the instantiated type is given by the SAM type, and the implemented method is the single abstract method member of this type.
+同样的计算适用于SAM类型，除了实例化类型由SAM类型给出，并且实现的方法是此类型的单个抽象成员方法。
 
-The underlying platform may provide more efficient ways of constructing these instances, such as Java 8's `invokedynamic` bytecode and `LambdaMetaFactory` class.
+底层平台可以提供构建这些实例的更有效的方法，例如java8的`invokedynamic`字节码和 `LambdaMetaFactory`类。
 
-A `PartialFunction`'s value receives an additional `isDefinedAt` member, which is derived from the pattern match in the function literal, with each case's body being replaced by `true`, and an added default (if none was given) that evaluates to `false`.
+`PartialFunction`的值接收一个额外的`isDefinedAt`成员，该成员派生自函数文字中的匹配模式。每个case的主体被替换为`true`，并且添加的默认模式(如果没有给出)计算结果为`false`。
 
-###### Example
-Examples of anonymous functions:
+###### 例
+匿名函数的示例
 
 ```scala
-x => x                             // The identity function
+x => x                             // 恒等函数
 
-f => g => x => f(g(x))             // Curried function composition
+f => g => x => f(g(x))             // 柯里化的函数组合
 
-(x: Int,y: Int) => x + y           // A summation function
+(x: Int,y: Int) => x + y           // 求和函数
 
-() => { count += 1; count }        // The function which takes an
-                                   // empty parameter list $()$,
-                                   // increments a non-local variable
-                                   // `count' and returns the new value.
+() => { count += 1; count }        // 该函数的列表为 $()$,
+                                   // 递增非局部变量`count`并返回新值。
 
-_ => 5                             // The function that ignores its argument
-                                   // and always returns 5.
+_ => 5                             // 该函数忽略楼其他参数，总是返回5
 ```
 
-### Placeholder Syntax for Anonymous Functions
+### 匿名函数的占位符语法
 
 ```ebnf
 SimpleExpr1  ::=  ‘_’
 ```
 
-An expression (of syntactic category `Expr`)
-may contain embedded underscore symbols `_` at places where identifiers
-are legal. Such an expression represents an anonymous function where subsequent
-occurrences of underscores denote successive parameters.
+表达式（语法类别为`Expr`）可以在合法的标识符位置包含嵌入的下划线符号`_`。这样的表达式表示一个下划线的后续出现表示连续的参数的匿名函数，。
 
-Define an _underscore section_ to be an expression of the form
-`_:$T$` where $T$ is a type, or else of the form `_`,
-provided the underscore does not appear as the expression part of a
-type ascription `_:$T$`.
+将 _下划线部分_ 定义为`_:$T$`形式的表达式，其中$T$是一个类型，或者形式为`_`.下划线并不是类型归属`_:$T$`的表达式部分。
 
-An expression $e$ of syntactic category `Expr` _binds_ an underscore section
-$u$, if the following two conditions hold: (1) $e$ properly contains $u$, and
-(2) there is no other expression of syntactic category `Expr`
-which is properly contained in $e$ and which itself properly contains $u$.
+如果以下两个条件成立，则句法类别是`Expr`的表达式$e$_绑定_ 下划线部分$U$:(1)$e$合理包含$u$。(2)没有其他的具有`Expr`句法归类的表达式合理包含于$e$且自身合理包含$u$.
 
-If an expression $e$ binds underscore sections $u_1 , \ldots , u_n$, in this order, it is equivalent to
-the anonymous function `($u'_1$, ... $u'_n$) => $e'$`
-where each $u_i'$ results from $u_i$ by replacing the underscore with a fresh identifier and
-$e'$ results from $e$ by replacing each underscore section $u_i$ by $u_i'$.
+如果表达式$e$按照既定顺序绑定道下划线段$u_1 , \ldots , u_n$，则等价与匿名函数`($u'_1$, ... $u'_n$) => $e'$`，每个$u_i'$是将$u_i$中下划线替换为新的标识符的结果，$e'$则是将$e$中的每个下划线段$u_i$ 替换为 $u_i'$的结果。
 
-###### Example
-The anonymous functions in the left column use placeholder
-syntax. Each of these is equivalent to the anonymous function on its right.
+###### 例
+左列中的匿名函数使用占位符语法。 这些中的每一个都相当于其右侧的匿名函数。
 
 | | |
 |---------------------------|----------------------------|
@@ -1252,21 +841,17 @@ syntax. Each of these is equivalent to the anonymous function on its right.
 |`_.map(f)`                 | `x => x.map(f)`            |
 |`_.map(_ + 1)`             | `x => x.map(y => y + 1)`   |
 
-## Constant Expressions
+## 常数表达式
 
-Constant expressions are expressions that the Scala compiler can evaluate to a constant.
-The definition of "constant expression" depends on the platform, but they
-include at least the expressions of the following forms:
+常量表达式是Scala编译器可以计算为常量的表达式。 “常量表达式”的定义取决于平台，但它们至少包括以下形式的表达式：
+- 值类的文字，例如整数
+- 字符串文字
+- 用[`Predef.classOf`](12-the-scala-standard-library.html#the-predef-object)构造的类
+- 来自底层平台的枚举元素
+- 一个文字数组，格式为`Array$(c_1 , \ldots , c_n)$`,其中所有 $c_i$本身都是常量表达式
+- [由常量值定义](04-basic-declarations-and-definitions.html#value-declarations-and-definitions)的定义标识符。.
 
-- A literal of a value class, such as an integer
-- A string literal
-- A class constructed with [`Predef.classOf`](12-the-scala-standard-library.html#the-predef-object)
-- An element of an enumeration from the underlying platform
-- A literal array, of the form `Array$(c_1 , \ldots , c_n)$`,
-  where all of the $c_i$'s are themselves constant expressions
-- An identifier defined by a [constant value definition](04-basic-declarations-and-definitions.html#value-declarations-and-definitions).
-
-## Statements
+## 语法
 
 ```ebnf
 BlockStat    ::=  Import
@@ -1281,256 +866,161 @@ TemplateStat ::=  Import
                |
 ```
 
-Statements occur as parts of blocks and templates.  A _statement_ can be
-an import, a definition or an expression, or it can be empty.
-Statements used in the template of a class definition can also be
-declarations.  An expression that is used as a statement can have an
-arbitrary value type. An expression statement $e$ is evaluated by
-evaluating $e$ and discarding the result of the evaluation.
+语句作为块和模板的一部分出现。_语句_ 可以是import，定义或表达式，也可以是空的。 类定义模板中使用的语句也可以是声明。用作语句的表达式可以具有任意值类型。表达式语句$e$的求值是对表达哈斯$e$求值然后丢弃求值的结果。
 
-<!-- Generalize to implicit coercion? -->
+代码块语句可以是在代码块中绑定本地命名的定义。代码块本地定义中允许的修饰符是`implicit`。
+在为类或对象定义定义添加前缀是，还允许使用`abstract`, `final`和 `sealed`。
 
-Block statements may be definitions which bind local names in the
-block. The only modifier allowed in all block-local definitions is
-`implicit`. When prefixing a class or object definition,
-modifiers `abstract`, `final`, and `sealed` are also
-permitted.
+对语句序列的计算需要按照它们的编写顺序计算语句。
 
-Evaluation of a statement sequence entails evaluation of the
-statements in the order they are written.
+## 隐含转换
 
-## Implicit Conversions
+隐式转换可以应用于类型与其预期类型不匹配的表达式，选择中的限定符以及未应用的方法。可用的隐式转换在接下来的两个子部分中给出。
 
-Implicit conversions can be applied to expressions whose type does not
-match their expected type, to qualifiers in selections, and to unapplied methods. The
-available implicit conversions are given in the next two sub-sections.
+### 值转换
 
-### Value Conversions
+一下七个隐式转换可以应用于表达式$e$,他具有一些值类型$T$,并且使用某些预期类型$\mathit{pt}$进行类型计算。
 
-The following seven implicit conversions can be applied to an
-expression $e$ which has some value type $T$ and which is type-checked with
-some expected type $\mathit{pt}$.
+###### 静态重载解析
+如果表达式表示类的几个可能成员，则应用[重载解析](#重载解析)来选择唯一成员。
 
-###### Static Overloading Resolution
-If an expression denotes several possible members of a class,
-[overloading resolution](#overloading-resolution)
-is applied to pick a unique member.
-
-###### Type Instantiation
-An expression $e$ of polymorphic type
+###### 类型实例化
+表达式$e$的多态类型
 
 ```scala
 [$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$T$
 ```
+并不作为类型应用的函数部分，根据类型变量`$T_1 , \ldots , T_n$`通过[本地类型推断](#本地类型推断)来确定实例类型`$T_1 , \ldots , T_n$`，并隐式将$e$嵌入[类型应用](#类型应用)`$e$[$T_1 , \ldots , T_n$]`的方式转换为$T$的类型实例。
 
-which does not appear as the function part of
-a type application is converted to a type instance of $T$
-by determining with [local type inference](#local-type-inference)
-instance types `$T_1 , \ldots , T_n$`
-for the type variables `$a_1 , \ldots , a_n$` and
-implicitly embedding $e$ in the [type application](#type-applications)
-`$e$[$T_1 , \ldots , T_n$]`.
+###### 数字扩张
 
-###### Numeric Widening
-If $e$ has a primitive number type which [weakly conforms](03-types.html#weak-conformance)
-to the expected type, it is widened to
-the expected type using one of the numeric conversion methods
-`toShort`, `toChar`, `toInt`, `toLong`,
-`toFloat`, `toDouble` defined [here](12-the-scala-standard-library.html#numeric-value-types).
+如果$e$具有[弱符合](03-types.html#weak-conformance)预期类型的原始数字类型，则使用[定义](12-the-scala-standard-library.html#numeric-value-types).的`toShort`, `toChar`, `toInt`, `toLong`,`toFloat`, `toDouble` 转换方法之一将其扩展为预期类型。
 
-###### Numeric Literal Narrowing
-If the expected type is `Byte`, `Short` or `Char`, and
-the expression $e$ is an integer literal fitting in the range of that
-type, it is converted to the same literal in that type.
+###### 数字字面值缩减
 
-###### Value Discarding
-If $e$ has some value type and the expected type is `Unit`,
-$e$ is converted to the expected type by embedding it in the
-term `{ $e$; () }`.
+如果期望的类型是 `Byte`, `Short` 或 `Char`，并且表达式$e$是符合该类型范围的整数文字，则它将转换为该类型中的同样的字面值。
 
-###### SAM conversion
-An expression `(p1, ..., pN) => body` of function type `(T1, ..., TN) => T` is sam-convertible to the expected type `S` if the following holds:
-  - the class `C` of `S` declares an abstract method `m` with signature `(p1: A1, ..., pN: AN): R`;
-  - besides `m`, `C` must not declare or inherit any other deferred value members;
-  - the method `m` must have a single argument list;
-  - there must be a type `U` that is a subtype of `S`, so that the expression
-    `new U { final def m(p1: A1, ..., pN: AN): R = body }` is well-typed (conforming to the expected type `S`);
-  - for the purpose of scoping, `m` should be considered a static member (`U`'s members are not in scope in `body`);
-  - `(A1, ..., AN) => R` is a subtype of `(T1, ..., TN) => T` (satisfying this condition drives type inference of unknown type parameters in `S`);
+###### 值丢弃
 
-Note that a function literal that targets a SAM is not necessarily compiled to the above instance creation expression. This is platform-dependent.
+如果$e$具有某种值类型且期望类型为 `Unit`，则将$e$转换为期望类型，方法是将其嵌入到术语`{ $e$; () }`.
 
-It follows that:
-  - if class `C` defines a constructor, it must be accessible and must define exactly one, empty, argument list;
-  - class `C` cannot be `final` or `sealed` (for simplicity we ignore the possibility of SAM conversion in the same compilation unit as the sealed class);
-  - `m` cannot be polymorphic;
-  - it must be possible to derive a fully-defined type `U` from `S` by inferring any unknown type parameters of `C`.
+###### SAM转换
 
-Finally, we impose some implementation restrictions (these may be lifted in future releases):
-  - `C` must not be nested or local (it must not capture its environment, as that results in a nonzero-argument constructor)
-  - `C`'s constructor must not have an implicit argument list (this simplifies type inference);
-  - `C` must not declare a self type (this simplifies type inference);
-  - `C` must not be `@specialized`.
+如果满足以下条件，则函数类型`(T1, ..., TN) => T`的表达式`(p1, ..., pN) => body`可以转换为期望的类型`S`.
+  - `S`的`C`类声明一个带有签名`(p1: A1, ..., pN: AN): R`的抽象方法`m`;
+  - 除了`m`, `C` 不得声明或继承任何其他递延价值成员;
+  - 方法`m`必须有一个参数列表;
+  - 必须有一个类型 `U` 是 `S`的子类型, 所以表达式
+    `new U { final def m(p1: A1, ..., pN: AN): R = body }` 是良好类型 (符合预期的类型`S`);
+  - 为了确定范围，`m`应该被认为是一个静态成员（`U`的成员不在体内范围内）;
+  - `(A1, ..., AN) => R`是`(T1, ..., TN) => T` 的子类型（在`S`中，满足这一条件会驱动未知类型参数的类型推断）;
 
-###### View Application
-If none of the previous conversions applies, and $e$'s type
-does not conform to the expected type $\mathit{pt}$, it is attempted to convert
-$e$ to the expected type with a [view](07-implicits.html#views).
+请注意，针对一个SAM函数文本不一定编译上述实例创建表达式。 这与平台有关。
 
-###### Selection on `Dynamic`
-If none of the previous conversions applies, and $e$ is a prefix
-of a selection $e.x$, and $e$'s type conforms to class `scala.Dynamic`,
-then the selection is rewritten according to the rules for
-[dynamic member selection](#dynamic-member-selection).
+它遵循：
+  - 如果`C`类定义了一个构造函数，它必须是可访问的，并且必须只定义一个空的参数列表;
+  - 类 `C` 不是 `final` 或 `sealed` (为简单起见，我们忽略了在与密封类相同的编译单元中进行SAM转换的可能性);
+  - `m` 不是多态的;
+  - 必须可以通过推断`C`的任何未知类型参数从`S`派生完全定义的类型`U`.
 
-### Method Conversions
+最后，我们施加了一些实施限制（这些可能会在以后的版本中解除）：
+  - `C` 不能嵌套或本地（它不能捕获其环境，因为它会导致非零参数构造函数）
+  - `C` 的构造函数不能有隐式参数列表（这简化了类型推断）;
+  - `C` 不能声明自我类型（这简化了类型推断）
+  - `C` 必须不是`@specialized`.
 
-The following four implicit conversions can be applied to methods
-which are not applied to some argument list.
+###### 视图应用
+如果以前的转换都不适用，并且$e$的类型不符合预期类型$\mathit{pt}$,则会尝试将$e$转换为带有[视图](07-implicits.html#views)的预期类型。
 
-###### Evaluation
-A parameterless method $m$ of type `=> $T$` is always converted to
-type $T$ by evaluating the expression to which $m$ is bound.
+###### `Dynamic`选择
+如果以前的转换都不适用，且$e$是选择器$e.x$的前缀，并且$e$的类型符合`scala.Dynamic`，则根据[动态成员选择](#动态成员选择)的规则重写选择。
 
-###### Implicit Application
-If the method takes only implicit parameters, implicit
-arguments are passed following the rules [here](07-implicits.html#implicit-parameters).
+### 方法转换
 
-###### Eta Expansion
-Otherwise, if the method is not a constructor,
-and the expected type $\mathit{pt}$ is a function type
-$(\mathit{Ts}') \Rightarrow T'$, [eta-expansion](#eta-expansion)
-is performed on the expression $e$.
+以下四个隐式转换可以应用于无法应用于某些参数列表的方法。
 
-###### Empty Application
-Otherwise, if $e$ has method type $()T$, it is implicitly applied to the empty
-argument list, yielding $e()$.
+###### 求值
+具有类型 `=> $T$` 的无参方法$m$总是通过对$m$绑定的表达式求值来转换道类型$T$.
 
-### Overloading Resolution
+###### 隐式应用
+如果该方法仅采用隐式参数，则遵循[此处](07-implicits.html#implicit-parameters)规则传递隐式参数。
 
-If an identifier or selection $e$ references several members of a
-class, the context of the reference is used to identify a unique
-member.  The way this is done depends on whether or not $e$ is used as
-a function. Let $\mathscr{A}$ be the set of members referenced by $e$.
+###### eta扩展
+否则，如果方法不是构造函数，并且期望类型$\mathit{pt}$是函数类型$(\mathit{Ts}') \Rightarrow T'$，则对表达式执行[eta1扩展](#eta扩展)。
 
-Assume first that $e$ appears as a function in an application, as in
-`$e$($e_1 , \ldots , e_m$)`.
+###### 空应用
+否则，如果$e$具有方法类型$()T$，则它隐式应用于空参数列表，产生$e()$。
 
-One first determines the set of functions that is potentially [applicable](#function-applications)
-based on the _shape_ of the arguments.
+### 重载解析
 
-The *shape* of an argument expression $e$, written  $\mathit{shape}(e)$, is
-a type that is defined as follows:
-  - For a function expression `($p_1$: $T_1 , \ldots , p_n$: $T_n$) => $b$: (Any $, \ldots ,$ Any) => $\mathit{shape}(b)$`,
-    where `Any` occurs $n$ times in the argument type.
-  - For a pattern-matching anonymous function definition `{ case ... }`: `PartialFunction[Any, Nothing]`.
-  - For a named argument `$n$ = $e$`: $\mathit{shape}(e)$.
-  - For all other expressions: `Nothing`.
+如果一个标识符或选择$ e$引用了类的多个成员，则将使用引用的上下文来推断唯一的成员。使用的方法将依赖与$e$是否被用作一个函数，设$\mathscr{A}$是$e$引用的成员的集合。
 
-Let $\mathscr{B}$ be the set of alternatives in $\mathscr{A}$ that are [_applicable_](#function-applications)
-to expressions $(e_1 , \ldots , e_n)$ of types $(\mathit{shape}(e_1) , \ldots , \mathit{shape}(e_n))$.
-If there is precisely one alternative in $\mathscr{B}$, that alternative is chosen.
+先假设$e$在应用程序中显示为函数，如`$e$($e_1 , \ldots , e_m$)`.
 
-Otherwise, let $S_1 , \ldots , S_m$ be the list of types obtained by typing each argument as follows.
+首先根据参数的 _模型_ 确定可能[适用](#函数的应用)的函数集。
 
-Normally, an argument is typed without an expected type, except when trying to propagate more type
-information to aid inference of higher-order function parameter types, as explained next. The intuition is
-that all arguments must be of a function-like type (`PartialFunction`, `FunctionN` or some equivalent [SAM type](#sam-conversion)),
-which in turn must define the same set of higher-order argument types, so that they can safely be used as
-the expected type of a given argument of the overloaded method, without unduly ruling out any alternatives.
-The intent is not to steer overloading resolution, but to preserve enough type information to steer type
-inference of the arguments (a function literal or eta-expanded method) to this overloaded method.
+参数表达式$e$的 *模型*，写成 $\mathit{shape}(e)$，是一种定义如下的类型：
 
-Note that the expected type drives eta-expansion (not performed unless a function-like type is expected),
-as well as inference of omitted parameter types of function literals.
+  - 对于函数表达式 `($p_1$: $T_1 , \ldots , p_n$: $T_n$) => $b$: (Any $, \ldots ,$ Any) => $\mathit{shape}(b)$`,
+    其中`Any` 在参数类型中出现了$n$次.
+  - 对于模式匹配的匿名函数定义`{ case ... }`: `PartialFunction[Any, Nothing]`.
+  - 对于命名参数`$n$ = $e$`: $\mathit{shape}(e)$.
+  - 对于所有其他表达式： `Nothing`.
 
-More precisely, an argument `$e_i$` is typed with an expected type that is derived from the `$i$`th argument
-type found in each alternative (call these `$T_{ij}$` for alternative `$j$` and argument position `$i$`) when
-all `$T_{ij}$` are function types `$(A_{1j},..., A_{nj}) => ?$` (or the equivalent `PartialFunction`, or SAM)
-of some arity `$n$`, and their argument types `$A_{kj}$` are identical across all overloads `$j$` for a
-given `$k$`. Then, the expected type for `$e_i$` is derived as follows:
-   - we use `$PartialFunction[A_{1j},..., A_{nj}, ?]$` if for some overload `$j$`, `$T_{ij}$`'s type symbol is `PartialFunction`;
-   - else, if for some `$j$`, `$T_{ij}$` is `FunctionN`, the expected type is `$FunctionN[A_{1j},..., A_{nj}, ?]$`;
-   - else, if for all `$j$`, `$T_{ij}$` is a SAM type of the same class, defining argument types `$A_{1j},..., A_{nj}$`
-     (and a potentially varying result type), the expected type encodes these argument types and the SAM class.
+让 $\mathscr{B}$ 成为 $\mathscr{A}$ 中 [_适用_](#函数的应用) 于表达式$(e_1 , \ldots , e_n)$ 类型为 $(\mathit{shape}(e_1) , \ldots , \mathit{shape}(e_n))$.
+如果 $\mathscr{B}$中只有一个替代选项，则选择该替代方案。
 
-For every member $m$ in $\mathscr{B}$ one determines whether it is applicable
-to expressions ($e_1 , \ldots , e_m$) of types $S_1, \ldots , S_m$.
+否则，让$S_1 , \ldots , S_m$成为通过键入每个参数获得的类型列表，如下所示。
 
-It is an error if none of the members in $\mathscr{B}$ is applicable. If there is one
-single applicable alternative, that alternative is chosen. Otherwise, let $\mathscr{CC}$
-be the set of applicable alternatives which don't employ any default argument
-in the application to $e_1 , \ldots , e_m$.
+通常，除非尝试传播更多类型信息以帮助推断更高阶函数参数类型，否则将在没有期望类型的情况下键入参数，如下所述。直观上，所有参数必须是一个函数样型（`PartialFunction`, `FunctionN`或一些相应的[SAM型](#SAM转换)），而这又必须定义相同的一组更高阶的参数类型的，使得它们可以安全地被用作预期重载方法的给定参数的类型，不过度排除任何替代方案。 目的不是引导重载解析，而是保留足够的类型信息来引导参数的类型推断（函数文字或eta扩展方法）到这个重载方法。
 
-It is again an error if $\mathscr{CC}$ is empty.
-Otherwise, one chooses the _most specific_ alternative among the alternatives
-in $\mathscr{CC}$, according to the following definition of being "as specific as", and
-"more specific than":
+注意，预期的类型的驱动器ETA-
+扩张（未除非函数样型预期执行），以及省略参数类型函数文本的推理。
 
-<!--
-question: given
-  def f(x: Int)
-  val f: { def apply(x: Int) }
-  f(1) // the value is chosen in our current implementation
- why?
-  - method is as specific as value, because value is applicable to method`s argument types (item 1)
-  - value is as specific as method (item 3, any other type is always as specific..)
- so the method is not more specific than the value.
--->
+更确切地说，一个参数`$e_i$`是用从每个替代中找到的第 `$i$`个参数类型派生的期望类型键入的（将`$T_ {ij}$`称为代替`$j$`和参数位置`$i$`) 当所有`$T_{ij}$`都是某个arity`$n$`的函数类型`$(A_{1j},..., A_{nj}) => ?$`（或等效的`PartialFunction`或SAM）时，它们的参数类型`$A_{kj}$` 在给定`$k$`的所有重载 `$j$`中是相同的。
 
-- A parameterized method $m$ of type `($p_1:T_1, \ldots , p_n:T_n$)$U$` is
-  _as specific as_ some other member $m'$ of type $S$ if $m'$ is [applicable](#function-applications)
-  to arguments `($p_1 , \ldots , p_n$)` of types $T_1 , \ldots , T_n$.
-- A polymorphic method of type `[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$T$` is
-  as specific as some other member of type $S$ if $T$ is as specific as $S$
-  under the assumption that for $i = 1 , \ldots , n$ each $a_i$ is an abstract type name
-  bounded from below by $L_i$ and from above by $U_i$.
-- A member of any other type is always as specific as a parameterized method or a polymorphic method.
-- Given two members of types $T$ and $U$ which are neither parameterized nor polymorphic method types,
-  the member of type $T$ is as specific as the member of type $U$ if
-  the existential dual of $T$ conforms to the existential dual of $U$.
-  Here, the existential dual of a polymorphic type
-  `[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$T$` is
-  `$T$ forSome { type $a_1$ >: $L_1$ <: $U_1$ $, \ldots ,$ type $a_n$ >: $L_n$ <: $U_n$}`.
-  The existential dual of every other type is the type itself.
+`$k$`. 最后`e_i$` 的预期类型派生如下：
+   - 我们使用 `$PartialFunction[A_{1j},..., A_{nj}, ?]$` 如果对于某些重载 `$j$`, `$T_{ij}$`的类型符号是 `PartialFunction`;
+   - 或者，如果对于某些 `$j$`, `$T_{ij}$` 是 `FunctionN`, 则预期的类型是`$FunctionN[A_{1j},..., A_{nj}, ?]$`;
+   - 或则, 如果对于所有`$j$`, `$T_{ij}$` 是同一类的SAM类型，定义参数类型 `$A_{1j},..., A_{nj}$`(以及可能变化的结果类型),期望的类型编码这些参数类型和SAM类。
 
-The _relative weight_ of an alternative $A$ over an alternative $B$ is a
-number from 0 to 2, defined as the sum of
+对于$\mathscr{B}$中的每个成员$m$确定它是否适用$S_1, \ldots , S_m$类型的表达式（$e_1 , \ldots , e_m$）。
 
-- 1 if $A$ is as specific as $B$, 0 otherwise, and
-- 1 if $A$ is defined in a class or object which is derived from the class or object defining $B$, 0 otherwise.
+如果$\mathscr{B}$中没有成员适用，则会出错。 如果有一个单一的适用替代方案，则选择该替代方案。否则，让$\mathscr{CC}$成为适用的替代方案的集合，这些替代方案不会在应用程序中使用任何默认参数$e_1 , \ldots , e_m$.
 
-A class or object $C$ is _derived_ from a class or object $D$ if one of
-the following holds:
+如果$\mathscr{CC}$为空，则再次出错。否则，在$\mathscr{CC}$中选择_最具体的_替代方案，根据以下定义为“同样具体”，“更具体”：
+- 参数话方法$m$类型`($p_1:T_1, \ldots , p_n:T_n$)$U$` _特用于_ 某些其他成员 $m'$类型$S$,如果$m'$[适用](#功能应用)于参数 `($p_1 , \ldots , p_n$)` 类型$T_1 , \ldots , T_n$。
+- 类型`[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$T$` 的多态方法与$S$类型类型的其他成员一样具体，如果$T$与$S$一样具体，假设对于$i = 1 , \ldots , n$每个$a_i$是一个抽象类型名称，由下面的$L_i$和上面的$U_i$界定。
+- 任何其他类型的成员始终与参数化方法或多态方法一样具体。
+- 给定$T$和$U$类型的两个成员既不是参数化也不是多态方法类型，$T$类型的成员与$U$类型的成员一样具体，如果$T$的存在对偶符合 $U$的存在对偶。这里，多态类型  `[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$T$` 的存在对偶是  `$T$ forSome { type $a_1$ >: $L_1$ <: $U_1$ $, \ldots ,$ type $a_n$ >: $L_n$ <: $U_n$}`。每种其他类型的存在对偶都是类型本身。
 
-- $C$ is a subclass of $D$, or
-- $C$ is a companion object of a class derived from $D$, or
-- $D$ is a companion object of a class from which $C$ is derived.
+另一个$A$代替$B$的_相对权重_是从0到2的数字，定义为的总和
 
-An alternative $A$ is _more specific_ than an alternative $B$ if
-the relative weight of $A$ over $B$ is greater than the relative
-weight of $B$ over $A$.
+- 如果$A$特定于$B$，则为1，否则为0
+- 如果$A$定义在一个类或对象中，该类或对象派生自定义$B$的类或对象,则为1，否则为0。
 
-It is an error if there is no alternative in $\mathscr{CC}$ which is more
-specific than all other alternatives in $\mathscr{CC}$.
+如果以下之一成立，则类或对象$C$_派生_ 自类或对象$D$：
 
-Assume next that $e$ appears as a function in a type application, as
-in `$e$[$\mathit{targs}\,$]`. Then all alternatives in
-$\mathscr{A}$ which take the same number of type parameters as there are type
-arguments in $\mathit{targs}$ are chosen. It is an error if no such alternative exists.
-If there are several such alternatives, overloading resolution is
-applied again to the whole expression `$e$[$\mathit{targs}\,$]`.
+- $C$ 是 $D$的子类，
+- $C$ 是从 $D$派生的类的伴随对象
+- $D$ 是一个类的伴随对象，从中派生出 $C$ .
 
-Assume finally that $e$ does not appear as a function in either an application or a type application.
-If an expected type is given, let $\mathscr{B}$ be the set of those alternatives
-in $\mathscr{A}$ which are [compatible](03-types.html#compatibility) to it.
-Otherwise, let $\mathscr{B}$ be the same as $\mathscr{A}$.
-In this last case we choose the most specific alternative among all alternatives in $\mathscr{B}$.
-It is an error if there is no alternative in $\mathscr{B}$ which is
-more specific than all other alternatives in $\mathscr{B}$.
+如果$A$相对于$B$的相对权重大于$B$相对于$A$的相对权重，则替代$A$比替代$B$_更具体_。
 
-###### Example
-Consider the following definitions:
+如果$\mathscr{CC}$中没有替代方法，那么这是一个错误，它比$\mathscr{CC}$中的所有其他选项更具体。
+
+接下来假设$e$在类型应用程序中显示为函数，如 `$e$[$\mathit{targs}\,$]`。然后选择$\mathscr{A}$中的所有替代项，它们采用与$\mathit{targs}$中的类型参数相同数量的类型参数。如果不存在这样的替代方案则是错误的。 如果有几个这样的替代方案，重载解析将再次应用于整个表达式 `$e$[$\mathit{targs}\,$]`。
+
+
+最后我们假定$e$没有在应用或类型应用中做为函数出现。如果给出了期望类型,设是$\mathscr{A}$中与其[兼容](03-types.html#compatibility)的该类可选项的集合。否则,设 B 为 A。在此情况下我们在 B 的所有可选项中选择最具体的可选项。如果 B 中没有可选项比 B 中其他所有的可选项更具体则将导致错误。
+
+
+
+最后我们假定$e$没有在应用或类型应用中做为函数出现。如果给出了期望的类型，那么让$\mathscr{B}$成为$\mathscr{A}$中与之[兼容](03-types.html#compatibility)的那些备选方案的集合。否则，让$\mathscr{B}$与$\mathscr{A}$相同。在此情况下我们在$\mathscr{B}$的所有可选项中选择最具体的可选项。 如果$\mathscr{B}$中没有可选项比$\mathscr{B}$中其他所有的可选项更具体则将导致错误。
+
+
+###### 例
+考虑以下定义：
 
 ```scala
 class A extends B {}
@@ -1539,152 +1029,79 @@ def f(x: A, y: B) = $\ldots$
 val a: A
 val b: B
 ```
+则应用`f(b, b)`指向$f$的第一个定义，应用`f(a, a)`指向第二个，假设我们添加了第三个重载定义
 
-Then the application `f(b, b)` refers to the first
-definition of $f$ whereas the application `f(a, a)`
-refers to the second.  Assume now we add a third overloaded definition
 
 ```scala
 def f(x: B, y: A) = $\ldots$
 ```
 
-Then the application `f(a, a)` is rejected for being ambiguous, since
-no most specific applicable signature exists.
+则应用程序`f(a, a)` 因模糊定义而被拒绝，因为不存在更具体的可用签名。
 
-### Local Type Inference
+### 本地类型推断
+地类型推断推断要传递给多态类型表达式的类型参数。假设$e$的类型为[$a_1$ >: $L_1$ <: $U_1, \ldots , a_n$ >: $L_n$ <: $U_n$]$T$并且没有显示类型的参数给出。
 
-Local type inference infers type arguments to be passed to expressions
-of polymorphic type. Say $e$ is of type [$a_1$ >: $L_1$ <: $U_1, \ldots , a_n$ >: $L_n$ <: $U_n$]$T$
-and no explicit type parameters are given.
+本地类型推断将此表达式转换为类型应用程序`$e$[$T_1 , \ldots , T_n$]`。类型参数 $T_1 , \ldots , T_n$的选择取决于表达式出现的上下文以及期望类型$\mathit{pt}$. 有三种情况。
 
-Local type inference converts this expression to a type
-application `$e$[$T_1 , \ldots , T_n$]`. The choice of the
-type arguments $T_1 , \ldots , T_n$ depends on the context in which
-the expression appears and on the expected type $\mathit{pt}$.
-There are three cases.
 
-###### Case 1: Selections
-If the expression appears as the prefix of a selection with a name
-$x$, then type inference is _deferred_ to the whole expression
-$e.x$. That is, if $e.x$ has type $S$, it is now treated as having
-type [$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$S$,
-and local type inference is applied in turn to infer type arguments
-for $a_1 , \ldots , a_n$, using the context in which $e.x$ appears.
+###### 第一种情况：选择
+如果表达式显示为名称为$x$的命名的前缀出现，则类型推断将_延迟_到整个表达式$e.x$。也就是说，如果$ ex $的类型为$S$,且现在处理的形式有类型[$a_1$ >: $L_1$ <: $U_1 , \ldots , a_n$ >: $L_n$ <: $U_n$]$S$,且本地类型推断应用到在$e.x$出现处的上下文中推断类型参量$a_1 , \ldots , a_n$。
 
-###### Case 2: Values
-If the expression $e$ appears as a value without being applied to
-value arguments, the type arguments are inferred by solving a
-constraint system which relates the expression's type $T$ with the
-expected type $\mathit{pt}$. Without loss of generality we can assume that
-$T$ is a value type; if it is a method type we apply
-[eta-expansion](#eta-expansion) to convert it to a function type. Solving
-means finding a substitution $\sigma$ of types $T_i$ for the type
-parameters $a_i$ such that
+###### 第二种情况：值
 
-- None of the inferred types $T_i$ is a [singleton type](03-types.html#singleton-types)
-  unless it is a singleton type corresponding to an object or a constant value
-  definition or the corresponding bound $U_i$ is a subtype of `scala.Singleton`.
-- All type parameter bounds are respected, i.e.
-  $\sigma L_i <: \sigma a_i$ and $\sigma a_i <: \sigma U_i$ for $i = 1 , \ldots , n$.
-- The expression's type conforms to the expected type, i.e.
-  $\sigma T <: \sigma \mathit{pt}$.
+如果表达式$e$显示为值而未应用于值参数，则通过求解约束系统来推断类型参数，该约束系统将表达式的类型$T$与期望类型$\mathit{pt}$相关联。不失一般性，我们可以假定$T$是一种值类型; 如果它是方法类型，我们应用[eta扩展](#eta扩展)将其转换为函数类型。求解意味着为类型参数$a_i$的一个类型$T_i$的替换$\sigma$ ，这样
 
-It is a compile time error if no such substitution exists.
-If several substitutions exist, local-type inference will choose for
-each type variable $a_i$ a minimal or maximal type $T_i$ of the
-solution space.  A _maximal_ type $T_i$ will be chosen if the type
-parameter $a_i$ appears [contravariantly](04-basic-declarations-and-definitions.html#variance-annotations) in the
-type $T$ of the expression.  A _minimal_ type $T_i$ will be chosen
-in all other situations, i.e. if the variable appears covariantly,
-non-variantly or not at all in the type $T$. We call such a substitution
-an _optimal solution_ of the given constraint system for the type $T$.
+- 推断类型$T_i$都不是[单例类型](03-types.html#singleton-types)，除非它是对应于对象或常量值定义的单例类型或相应的绑定$U_i$是`scala.Singleton`的子类型。
+- 尊重所有类型参数边界都,既$\sigma L_i <: \sigma a_i$ 和 $\sigma a_i <: \sigma U_i$ for $i = 1 , \ldots , n$.
+- 表达式的类型符合预期的类型，即$\sigma T <: \sigma \mathit{pt}$.
 
-###### Case 3: Methods
-The last case applies if the expression
-$e$ appears in an application $e(d_1 , \ldots , d_m)$. In that case
-$T$ is a method type $(p_1:R_1 , \ldots , p_m:R_m)T'$. Without loss of
-generality we can assume that the result type $T'$ is a value type; if
-it is a method type we apply [eta-expansion](#eta-expansion) to
-convert it to a function type.  One computes first the types $S_j$ of
-the argument expressions $d_j$, using two alternative schemes.  Each
-argument expression $d_j$ is typed first with the expected type $R_j$,
-in which the type parameters $a_1 , \ldots , a_n$ are taken as type
-constants.  If this fails, the argument $d_j$ is typed instead with an
-expected type $R_j'$ which results from $R_j$ by replacing every type
-parameter in $a_1 , \ldots , a_n$ with _undefined_.
+如果不存在这样的替换，则编译时会出现错误。如果存在多个替换，则本地类型推断将为每个类型变量$a_i$选择解决方案空间的最小或最大类型$T_i$。如果类型参数$a_i$在表达式的$T$类型中出现[逆变](04-basic-declarations-and-definitions.html#variance-annotations)，则将选择_最大类型_$T_i$。 在所有其他情况下，将选择_最小类型_$T_i$，即，如果变量在$T$类型中出现共变，非变化或根本不出现。 我们称这种替换是$T$类型的给定约束系统的_最优解_。
 
-In a second step, type arguments are inferred by solving a constraint
-system which relates the method's type with the expected type
-$\mathit{pt}$ and the argument types $S_1 , \ldots , S_m$. Solving the
-constraint system means
-finding a substitution $\sigma$ of types $T_i$ for the type parameters
-$a_i$ such that
+###### 第三种情况： 方法
+如果表达式$e$出现在应用程序$e(d_1 , \ldots , d_m)$中，则最后一种情况适用。在这种情况下，$T$是一种方法类型$(p_1:R_1 , \ldots , p_m:R_m)T'$。 在不失一般性的情况下，我们可以假设结果类型$T'$是一个值类型; 如果它是方法类型，我们应用[eta-扩张](#eta扩张)将其转换为函数类型。首先使用两个替代方案计算参数表达式$d_j$的$S_j$类型。首先使用期望类型$R_j$键入每个参数表达式$d_j$，其中类型参数$a_1 , \ldots , a_n$被视为类型常量。如果失败，则通过替换$a_1 , \ldots , a_n$中_未定义_的每个类型参数来输入参数$d_j$而不是预期类型$R_j'$，这是$R_j$的结果。
 
-- None of the inferred types $T_i$ is a [singleton type](03-types.html#singleton-types)
-  unless it is a singleton type corresponding to an object or a constant value
-  definition or the corresponding bound $U_i$ is a subtype of `scala.Singleton`.
-- All type parameter bounds are respected, i.e. $\sigma L_i <: \sigma a_i$ and
+在第二步中，通过求解约束系统来推断类型参数，该约束系统将方法的类型与期望类型$\mathit{pt}$和参数类型$S_1 , \ldots , S_m$相关联。 解决约束系统意味着为类型参数$a_i$找到类型$T_i$的替换$\sigma$，这样
+
+- 推断类型$T_i$都不是[单例类型](03-types.html#singleton-types)，除非它是对应于对象或常量值定义的单例类型或相应的绑定$U_i$是 `scala.Singleton`的子类型。
+- 所有类型参数边界都被尊重,即 $\sigma L_i <: \sigma a_i$ 且
   $\sigma a_i <: \sigma U_i$ for $i = 1 , \ldots , n$.
-- The method's result type $T'$ conforms to the expected type, i.e. $\sigma T' <: \sigma \mathit{pt}$.
-- Each argument type [weakly conforms](03-types.html#weak-conformance)
-  to the corresponding formal parameter
-  type, i.e. $\sigma S_j <:_w \sigma R_j$ for $j = 1 , \ldots , m$.
+- 方法的结果类型$T'$符合预期的类型，即 $\sigma T' <: \sigma \mathit{pt}$.
+- 每个参数类型[弱符合](03-types.html#weak-conformance)相应的形式参数类型。即$\sigma S_j <:_w \sigma R_j$ for $j = 1 , \ldots , m$._
 
-It is a compile time error if no such substitution exists.  If several
-solutions exist, an optimal one for the type $T'$ is chosen.
+如果不存在这样的替换，则是编译时错误。 如果存在多种解决方案，则选择$T'$类型的最佳解决方案。
 
-All or parts of an expected type $\mathit{pt}$ may be undefined. The rules for
-[conformance](03-types.html#conformance) are extended to this case by adding
-the rule that for any type $T$ the following two statements are always
-true: $\mathit{undefined} <: T$ and $T <: \mathit{undefined}$
+预期类型$\mathit{pt}$的全部或部分可能未定义
+。通在此[一致性](03-types.html#conformance)规则有所扩展，对于任意类型$T$一下两个语句都是
+正确的 $\mathit{undefined} <: T$ 和 $T <: \mathit{undefined}$。
 
-It is possible that no minimal or maximal solution for a type variable
-exists, in which case a compile-time error results. Because $<:$ is a
-pre-order, it is also possible that a solution set has several optimal
-solutions for a type. In that case, a Scala compiler is free to pick
-any one of them.
+对于给定类型变量,可能不存在最小解或最大解,这将导致编译时错误。 因为$<:$是前序的,因此一个类型的解集中可以有多个最优解。在此情况下 Scala 编译器将自由选取其中某一个。
 
-###### Example
-Consider the two methods:
+
+###### 例
+考虑一下两个方法
 
 ```scala
 def cons[A](x: A, xs: List[A]): List[A] = x :: xs
 def nil[B]: List[B] = Nil
 ```
-
-and the definition
+以及定义
 
 ```scala
 val xs = cons(1, nil)
 ```
+`cons`的应用首先由一个未定义的期望类型进行类型化。该应用程序通过本地类型推断`cons[Int](1, nil)`.这里，使用以下推理来推断类型参数`a`的类型参数`Int`：
 
-The application of `cons` is typed with an undefined expected
-type. This application is completed by local type inference to
-`cons[Int](1, nil)`.
-Here, one uses the following
-reasoning to infer the type argument `Int` for the type
-parameter `a`:
-
-First, the argument expressions are typed. The first argument `1`
-has type `Int` whereas the second argument `nil` is
-itself polymorphic. One tries to type-check `nil` with an
-expected type `List[a]`. This leads to the constraint system
+首先，输入参数表达式。第一个参数`1`具有`Int`类型，而第二个参数`nil`本身是多态的。 一个尝试使用期望的类型`List[a]`来键入`nil`。 这导致了约束系统
 
 ```scala
 List[b?] <: List[a]
 ```
-
-where we have labeled `b?` with a question mark to indicate
-that it is a variable in the constraint system.
-Because class `List` is covariant, the optimal
-solution of this constraint is
+我们在哪里标记了`b?` 用问号表示它是约束系统中的变量。 因为类`List` 是协变的，所以这个约束的最优解是
 
 ```scala
 b = scala.Nothing
 ```
-
-In a second step, one solves the following constraint system for
-the type parameter `a` of `cons`:
+在第二步中，一个解决了`cons`的类型参数`a`的以下约束系统：
 
 ```scala
 Int <: a?
@@ -1692,91 +1109,74 @@ List[scala.Nothing] <: List[a?]
 List[a?] <: $\mathit{undefined}$
 ```
 
-The optimal solution of this constraint system is
+该约束系统的最优解是
 
 ```scala
 a = Int
 ```
 
-so `Int` is the type inferred for `a`.
+因此`Int`是`a`的类型的推断结果。
 
-###### Example
+###### 例
 
-Consider now the definition
+现在考虑一下定义
 
 ```scala
 val ys = cons("abc", xs)
 ```
 
-where `xs` is defined of type `List[Int]` as before.
-In this case local type inference proceeds as follows.
+其中`xs`像以前一样定义了`List[Int]`类型。 在这种情况下，本地类型推断如下进行。
 
-First, the argument expressions are typed. The first argument
-`"abc"` has type `String`. The second argument `xs` is
-first tried to be typed with expected type `List[a]`. This fails,
-as `List[Int]` is not a subtype of `List[a]`. Therefore,
-the second strategy is tried; `xs` is now typed with expected type
-`List[$\mathit{undefined}$]`. This succeeds and yields the argument type
-`List[Int]`.
+首先，输入参数表达式。第一个参数`"abc"`具有`String`类型。第一个参数`xs`首先尝试输入预期类型`List[a]`。这失败了，因为 `List[Int]`不是`List[a]`的子类型。因此尝试第二种策略;将使用期望类型 `List[$\mathit{undefined}$]`来类型化`xs`。这成功并产生参数类型`List[Int]`.
 
-In a second step, one solves the following constraint system for
-the type parameter `a` of `cons`:
+在第二步中，一个解决了`cons`的类型参数`a`的以下约束系统：
 
 ```scala
 String <: a?
 List[Int] <: List[a?]
 List[a?] <: $\mathit{undefined}$
 ```
-
-The optimal solution of this constraint system is
+该约束系统的最优解是
 
 ```scala
 a = scala.Any
 ```
 
-so `scala.Any` is the type inferred for `a`.
+所以 `scala.Any` 就是 `a` 的类型推结果。
 
-### Eta Expansion
 
-_Eta-expansion_ converts an expression of method type to an
-equivalent expression of function type. It proceeds in two steps.
+### Eta扩展
 
-First, one identifies the maximal sub-expressions of $e$; let's
-say these are $e_1 , \ldots , e_m$. For each of these, one creates a
-fresh name $x_i$. Let $e'$ be the expression resulting from
-replacing every maximal subexpression $e_i$ in $e$ by the
-corresponding fresh name $x_i$. Second, one creates a fresh name $y_i$
-for every argument type $T_i$ of the method ($i = 1 , \ldots ,
-n$). The result of eta-conversion is then:
+_Eta扩展_ 将方法类型的表达式转换为函数类型的等效表达式。 它分两步进行。
+
+首先,标识出$e$的最大子表达式;比如 $e_1 , \ldots , e_m$。对于其中的每一项，都会创建新命名$x_i$。设设$e'$表示将$e$中的每个最大子表达式$e_i$替换为相应的新名称$x_i$。其次，为方法的每个参数类型$T_i$创建一个新名称$y_i$（$i = 1 , \ldots ,n$）。 eta转换的结果是：
 
 ```scala
 { val $x_1$ = $e_1$;
   $\ldots$
   val $x_m$ = $e_m$;
   ($y_1: T_1 , \ldots , y_n: T_n$) => $e'$($y_1 , \ldots , y_n$)
-}
+}'
 ```
+在eta扩展中保留了[按名称调用参数](#功能应用)的行为：在扩展块中不评估相应的实际参数表达式，即无参数方法类型的子表达式。
 
-The behavior of [call-by-name parameters](#function-applications)
-is preserved under eta-expansion: the corresponding actual argument expression,
-a sub-expression of parameterless method type, is not evaluated in the expanded block.
+### 动态成员选择
 
-### Dynamic Member Selection
+标准Scala库定义标记特征`scala.Dynamic`。此特征的子类能够通过定义名称 `applyDynamic`, `applyDynamicNamed`, `selectDynamic`, 和 `updateDynamic`的方法来拦截其实例上的选择和应用程序。
 
-The standard Scala library defines a marker trait `scala.Dynamic`. Subclasses of this trait are able to intercept selections and applications on their instances by defining methods of the names `applyDynamic`, `applyDynamicNamed`, `selectDynamic`, and `updateDynamic`.
+假设$e$的类型符合`scala.Dynamic`，则执行以下重写。动态，且原始表达式不按常规规则进行类型检查，详见[隐式转换](#隐式转换)相关小节:
 
-The following rewrites are performed, assuming $e$'s type conforms to `scala.Dynamic`, and the original expression does not type check under the normal rules, as specified fully in the relevant subsection of [implicit conversion](#dynamic-member-selection):
+ *  `e.m[Ti](xi)` 变成 `e.applyDynamic[Ti]("m")(xi)`
+ *  `e.m[Ti]`     变成 `e.selectDynamic[Ti]("m")`
+ *  `e.m = x`     变成 `e.updateDynamic("m")(x)`
 
- *  `e.m[Ti](xi)` becomes `e.applyDynamic[Ti]("m")(xi)`
- *  `e.m[Ti]`     becomes `e.selectDynamic[Ti]("m")`
- *  `e.m = x`     becomes `e.updateDynamic("m")(x)`
 
-If any arguments are named in the application (one of the `xi` is of the shape `arg = x`), their name is preserved as the first component of the pair passed to `applyDynamicNamed` (for missing names, `""` is used):
+如果在应用程序中命名了任何参数(其中一个`xi`的形式为`arg = x`),则它们的名称将保留为传递给`applyDynamicNamed`的对的第一个组件（对于缺少的名称，使用`""` ）：
 
- *  `e.m[Ti](argi = xi)` becomes `e.applyDynamicNamed[Ti]("m")(("argi", xi))`
+ *  `e.m[Ti](argi = xi)` 变成 `e.applyDynamicNamed[Ti]("m")(("argi", xi))`
 
-Finally:
+结果:
 
- *  `e.m(x) = y` becomes `e.selectDynamic("m").update(x, y)`
+ *  `e.m(x) = y` 变成 `e.selectDynamic("m").update(x, y)`
 
-None of these methods are actually defined in the `scala.Dynamic`, so that users are free to define them with or without type parameters, or implicit arguments.
+这些方法都不是在`scala.Dynamic`中实际定义的，因此用户可以使用或不使用类型参数或隐式参数自由定义它们。
