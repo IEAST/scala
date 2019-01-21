@@ -6,24 +6,17 @@ chapter: 7
 
 # Implicits
 
-## The Implicit Modifier
+## 隐式修饰符
 
 ```ebnf
 LocalModifier  ::= ‘implicit’
 ParamClauses   ::= {ParamClause} [nl] ‘(’ ‘implicit’ Params ‘)’
 ```
 
-Template members and parameters labeled with an `implicit`
-modifier can be passed to [implicit parameters](#implicit-parameters)
-and can be used as implicit conversions called [views](#views).
-The `implicit` modifier is illegal for all
-type members, as well as for [top-level objects](09-top-level-definitions.html#packagings).
+使用`implicit`修饰符标记的模板成员和参数可以传递给[隐式参数](#隐式参数)，并且可以在隐式转换中使用，这种情况被称为[视图](#视图)。`implicit`不能用于所有的类型成员和[顶级对象](09-top-level-definitions.html#packagings).。
 
-###### Example Monoid
-
-The following code defines an abstract class of monoids and
-two concrete implementations, `StringMonoid` and
-`IntMonoid`. The two implementations are marked implicit.
+###### Monoid事例
+下面的代码定义了一个monoids的抽象类和两个具体的实现，`StringMonoid`和`IntMonoid`。这两个实现通常标记为隐式的：
 
 ```scala
 abstract class Monoid[A] extends SemiGroup[A] {
@@ -42,64 +35,35 @@ object Monoids {
 }
 ```
 
-## Implicit Parameters
+## 隐含参数
 
-An _implicit parameter list_
-`(implicit $p_1$,$\ldots$,$p_n$)` of a method marks the parameters $p_1 , \ldots , p_n$ as
-implicit. A method or constructor can have only one implicit parameter
-list, and it must be the last parameter list given.
+_隐式参数列表_`(implicit $p_1$,$\ldots$,$p_n$)` 将参数$p_1 , \ldots , p_n$标记为隐式的。方法或构造函数只能有一个隐式参数列表，且必须是一个给定的参数列表的最后一个。
 
-A method with implicit parameters can be applied to arguments just
-like a normal method. In this case the `implicit` label has no
-effect. However, if such a method misses arguments for its implicit
-parameters, such arguments will be automatically provided.
+具有隐式参数的方法可以像普通方法一样应用于参数。在这种情况下，`implicit`标签无效。但是，如果此方法没有隐式参数的参量，则会自动提供此类参数。
 
-The actual arguments that are eligible to be passed to an implicit
-parameter of type $T$ fall into two categories. First, eligible are
-all identifiers $x$ that can be accessed at the point of the method
-call without a prefix and that denote an
-[implicit definition](#the-implicit-modifier)
-or an implicit parameter.  An eligible
-identifier may thus be a local name, or a member of an enclosing
-template, or it may be have been made accessible without a prefix
-through an [import clause](04-basic-declarations-and-definitions.html#import-clauses). If there are no eligible
-identifiers under this rule, then, second, eligible are also all
-`implicit` members of some object that belongs to the implicit
-scope of the implicit parameter's type, $T$.
+能够传递给类型$T$的隐式参数的实际参数分为两类。第一类，所有标识符$x$都符合在没有前缀的方法调用中访问，并且该方法表示[隐式定义](#隐式修饰符)或隐式参数。因此，符合条件的标识符可以是本地名称，也可以是封闭模版的一个成员，也可以是通过[import子句](04-basic-declarations-and-definitions.html#import-clauses)使其不用前缀也可以访问。如果此规则下没有符合条件的标识符，那么第二个符合条件的也就是隐式参数类型$T$的隐含作用域中的对象的`implicit`成员。
 
-The _implicit scope_ of a type $T$ consists of all [companion modules](05-classes-and-objects.html#object-definitions) of classes that are associated with the implicit parameter's type.
-Here, we say a class $C$ is _associated_ with a type $T$ if it is a [base class](05-classes-and-objects.html#class-linearization) of some part of $T$.
+$T$类型的_隐式作用域_由隐含参数的类型相关联的类的所有[伴随模块](05-classes-and-objects.html#object-definitions)构成。类$C$与类型$T$相 _关联_ 的条件条件是$C$是$T$的某个部分[基类](05-classes-and-objects.html#class-linearization)。
 
-The _parts_ of a type $T$ are:
+类型$T$的部件是：
 
-- if $T$ is a compound type `$T_1$ with $\ldots$ with $T_n$`,
-  the union of the parts of $T_1 , \ldots , T_n$, as well as $T$ itself;
-- if $T$ is a parameterized type `$S$[$T_1 , \ldots , T_n$]`,
-  the union of the parts of $S$ and $T_1 , \ldots , T_n$;
-- if $T$ is a singleton type `$p$.type`,
-  the parts of the type of $p$;
-- if $T$ is a type projection `$S$#$U$`,
-  the parts of $S$ as well as $T$ itself;
-- if $T$ is a type alias, the parts of its expansion;
-- if $T$ is an abstract type, the parts of its upper bound;
-- if $T$ denotes an implicit conversion to a type with a method with argument types $T_1 , \ldots , T_n$ and result type $U$,
-  the union of the parts of $T_1 , \ldots , T_n$ and $U$;
-- the parts of quantified (existential or universal) and annotated types are defined as the parts of the underlying types (e.g., the parts of `T forSome { ... }` are the parts of `T`);
-- in all other cases, just $T$ itself.
+- 如果$T$是复合类型`$T_1$ with $\ldots$ with $T_n$`，则是$T_1 , \ldots , T_n$的部件以及$T$自身的合集。
+- 如果$T$是参数话类型`$S$[$T_1 , \ldots , T_n$]`，则是$S$和 $T_1 , \ldots , T_n$的部件的合集。
+- 如果类型$T$是单例类型 `$p$.type`,则是$p$类型的部分。
+- 如果$T$是一个类型预测 `$S$#$U$`，则是$S$的部分以及$T$本身。
+- 如果$T$是一个类型别名，则是他的扩展部分。
+- 如果$T$是抽象类型，则是其上限部分。
+- 如果$T$表示隐式转换具参数类型为$T_1 , \ldots , T_n$和结果类型$U$的方法的类型，则是 $T_1 , \ldots , T_n$和$U$部分的合集。
+- 量化(存在或通用)和注释类型的部分被定义为基础类型的部分(例如，`T forSome { ... }`的部分是`T`部分。)
+- 在其他所有情况下，就是$T$本身。
 
-Note that packages are internally represented as classes with companion modules to hold the package members.
-Thus, implicits defined in a package object are part of the implicit scope of a type prefixed by that package.
+需要注意的是包在内部表示为包含包成员的伴随模块的类。因此，包在对象中定义的implicits是包含前缀的类型的隐式范围的一部分。
 
-If there are several eligible arguments which match the implicit
-parameter's type, a most specific one will be chosen using the rules
-of static [overloading resolution](06-expressions.html#overloading-resolution).
-If the parameter has a default argument and no implicit argument can
-be found the default argument is used.
+如果有几个符合条件的参数与隐式参数的类型匹配，则使用静态[重载解析](06-expressions.html#overloading-resolution)的规则选择最具体的一个。如果参数具有默认参数且未找到隐式参数，则使用默认参数。
 
-###### Example
-Assuming the classes from the [`Monoid` example](#example-monoid), here is a
-method which computes the sum of a list of elements using the
-monoid's `add` and `unit` operations.
+###### 例
+
+假设来自[`Monoid`示例](Monoid事例)的类，这里是一个使用monoid的`add`和`unit`操作计算元素列表总和的方法，
 
 ```scala
 def sum[A](xs: List[A])(implicit m: Monoid[A]): A =
@@ -107,23 +71,11 @@ def sum[A](xs: List[A])(implicit m: Monoid[A]): A =
   else m.add(xs.head, sum(xs.tail))
 ```
 
-The monoid in question is marked as an implicit parameter, and can therefore
-be inferred based on the type of the list.
-Consider for instance the call `sum(List(1, 2, 3))`
-in a context where `stringMonoid` and `intMonoid`
-are visible.  We know that the formal type parameter `a` of
-`sum` needs to be instantiated to `Int`. The only
-eligible object which matches the implicit formal parameter type
-`Monoid[Int]` is `intMonoid` so this object will
-be passed as implicit parameter.
+有问题的monoid被标记为隐式参数，因此可以根据列表的类型来推断。例如，考虑调用`sum(List(1,2,3))`在上下文中`stringMonoid`和`IntMonoid`都是可见的。我们知道`sum`的形式类型参数`a`需要初始化为`Int`。与隐式形式参数类型`Monoid[Int]`的唯一匹配参数是`intMmonoid`,因此该对象会被作为隐藏参数来传递。
 
-This discussion also shows that implicit parameters are inferred after
-any type arguments are [inferred](06-expressions.html#local-type-inference).
+这也同样说明了隐式参数在所有类型参数[推断](06-expressions.html#local-type-inference)之后才开始推断。
 
-Implicit methods can themselves have implicit parameters. An example
-is the following method from module `scala.List`, which injects
-lists into the `scala.Ordered` class, provided the element
-type of the list is also convertible to this type.
+隐式方法本身有隐式参数。一个例子是来自模块`scala.List`的以下方法，他将列表注入到`scala.Ordered`类中，前提是列表的元素类型也可以转换为此类型。
 
 ```scala
 implicit def list2ordered[A](x: List[A])
@@ -131,57 +83,45 @@ implicit def list2ordered[A](x: List[A])
   ...
 ```
 
-Assume in addition a method
+另外假设一种方法
 
 ```scala
 implicit def int2ordered(x: Int): Ordered[Int]
 ```
 
-that injects integers into the `Ordered` class.  We can now
-define a `sort` method over ordered lists:
+将整数注入`Ordered`类。我们可以在有序列表上定义`sort`  方法。
 
 ```scala
 def sort[A](xs: List[A])(implicit a2ordered: A => Ordered[A]) = ...
 ```
 
-We can apply `sort` to a list of lists of integers
-`yss: List[List[Int]]`
-as follows:
+我们可以将`sort`应用于整数列表`yss: List[List[Int]]`，如下所示
 
 ```scala
 sort(yss)
 ```
 
-The call above will be completed by passing two nested implicit arguments:
+上面的调用将通过传递两个嵌套的隐式参数来完成：
 
 ```scala
 sort(yss)((xs: List[Int]) => list2ordered[Int](xs)(int2ordered))
 ```
 
-The possibility of passing implicit arguments to implicit arguments
-raises the possibility of an infinite recursion.  For instance, one
-might try to define the following method, which injects _every_ type into the
-`Ordered` class:
-
+将隐式参量传递给隐式参量可能会导致死循环。例如，可以尝试定义如下方法，该方法将每种类型注入`Ordered`类：
 ```scala
 implicit def magic[A](x: A)(implicit a2ordered: A => Ordered[A]): Ordered[A] =
   a2ordered(x)
 ```
 
-Now, if one tried to apply
-`sort` to an argument `arg` of a type that did not have
-another injection into the `Ordered` class, one would obtain an infinite
-expansion:
+现在，如果有人视图将`sort`应用于没有另外注入到`Ordered`类中的参量`arg`，则将得到无限扩展：
 
 ```scala
 sort(arg)(x => magic(x)(x => magic(x)(x => ... )))
 ```
 
-Such infinite expansions should be detected and reported as errors, however to support the deliberate
-implicit construction of recursive values we allow implicit arguments to be marked as by-name. At call
-sites recursive uses of implicit values are permitted if they occur in an implicit by-name argument.
+这种无限扩展应该作为错误进行检测和报告，但是为了支持递归值的隐式构造，我们允许隐式参数按名称进行标记。在调用站点中，如果他们出现在隐式的by-name参数中，则允许递归使用隐式值。
 
-Consider the following example,
+考虑如下定义:
 
 ```scala
 trait Foo {
@@ -197,8 +137,7 @@ val foo = implicitly[Foo]
 assert(foo eq foo.next)
 ```
 
-As with the `magic` case above this diverges due to the recursive implicit argument `rec` of method
-`foo`. If we mark the implicit argument as by-name,
+与上面`magic`的情况一样，由于方法`foo`的递归隐式参数`rec`,在这种情况下有所不同.如果我们将隐式参数标记为按名称:
 
 ```scala
 trait Foo {
@@ -214,10 +153,10 @@ val foo = implicitly[Foo]
 assert(foo eq foo.next)
 ```
 
-the example compiles with the assertion successful.
+该示例编译成功。
 
-When compiled, recursive by-name implicit arguments of this sort are extracted out as val members of a
-local synthetic object at call sites as follows,
+编译时，这种类型的按名称递归隐式参数被提取出来，作为调用站点上本地合成对象的val成员，如下所示
+
 
 ```scala
 val foo: Foo = scala.Predef.implicitly[Foo](
@@ -232,56 +171,34 @@ val foo: Foo = scala.Predef.implicitly[Foo](
 )
 assert(foo eq foo.next)
 ```
+注意，`rec$1`的递归使用发生在`foo`的by-name参数中，因此被推迟。脱糖匹配程序将明确地构造这样的递归值。脱糖匹配程序将明确的构造这样的递归值。
 
-Note that the recursive use of `rec$1` occurs within the by-name argument of `foo` and is consequently
-deferred. The desugaring matches what a programmer would do to construct such a recursive value
-explicitly.
+为了避免这一类无限扩展，例如上面的`magic`示例，编译器会为当前正在搜索隐式参数创建一个"开放隐式类型"的堆栈。每当搜索道$T$类型的隐式参数时，$T$就会被添加到与产生他的隐式定义配对的堆栈中，以及是否需要慢住符名称的隐式参数。不管搜索成功还是失败，都会从堆栈中删除该类型。每次要将类型添加到堆栈时，都会根据由相同隐式定义生成的现有条目进行检查。
 
-To prevent infinite expansions, such as the `magic` example above, the compiler keeps track of a stack
-of “open implicit types” for which implicit arguments are currently being searched. Whenever an
-implicit argument for type $T$ is searched, $T$ is added to the stack paired with the implicit
-definition which produces it, and whether it was required to satisfy a by-name implicit argument or
-not. The type is removed from the stack once the search for the implicit argument either definitely
-fails or succeeds. Everytime a type is about to be added to the stack, it is checked against
-existing entries which were produced by the same implicit definition and then,
++ 如果它等同于某个已经在堆栈上的类型，并且该条目与堆栈顶部之间存在一个命名参数。在这种情况下，对该类型的搜索会立即成功，并且隐式参数将被编译为对found参数的递归引用。如果尚未添加该参数，则将其添加为合成隐式字典中的条目。
++ 或者，如果该类型的核心_主导_类型已经在堆栈上的_核心_，那么隐含扩展被称为_分歧_并且对该类型的搜索立即失败。
++ 否则它被添加到与产生它的隐式定义配对的堆栈中。 隐式解析继续使用该定义的隐式参数（如果有的话）。
 
-+ if it is equivalent to some type which is already on the stack and there is a by-name argument between
-  that entry and the top of the stack. In this case the search for that type succeeds immediately and
-  the implicit argument is compiled as a recursive reference to the found argument.  That argument is
-  added as an entry in the synthesized implicit dictionary if it has not already been added.
-+ otherwise if the _core_ of the type _dominates_ the core of a type already on the stack, then the
-  implicit expansion is said to _diverge_ and the search for that type fails immediately.
-+ otherwise it is added to the stack paired with the implicit definition which produces it.
-  Implicit resolution continues with the implicit arguments of that definition (if any).
+在这$T$的_核心类型_是$T$,其中扩展了别名，删除了顶级类型[注释](11-annotations.html#user-defined-annotations)和[优化](03-types.html#compound-types)，并且顶层存在性绑定变量的出现被其上限替换。
 
-Here, the _core type_ of $T$ is $T$ with aliases expanded,
-top-level type [annotations](11-annotations.html#user-defined-annotations) and
-[refinements](03-types.html#compound-types) removed, and occurrences of top-level existentially bound
-variables replaced by their upper bounds.
+这里一个核心类型$T$_影响_ 到一个类型$U$的情况是$T$[等价](03-types.html#equivalence)于$U$,或$T$和$U$的顶级类型构造器有共有元素且$T$比$U$更复杂,$T$和$U$的覆盖范围相等。
 
-A core type $T$ _dominates_ a type $U$ if $T$ is [equivalent](03-types.html#equivalence) to $U$,
-or if the top-level type constructors of $T$ and $U$ have a common element and $T$ is more complex
-than $U$ and the _covering sets_ of $T$ and $U$ are equal.
+类型$T$的_顶级类型构造器_集合$\mathit{ttcs}(T)$与类型的形式有关:
 
-The set of _top-level type constructors_ $\mathit{ttcs}(T)$ of a type $T$ depends on the form of
-the type:
-
-- For a type designator,  $\mathit{ttcs}(p.c) ~=~ \{c\}$;
-- For a parameterized type,  $\mathit{ttcs}(p.c[\mathit{targs}]) ~=~ \{c\}$;
+- 对于类型指示器， $\mathit{ttcs}(p.c) ~=~ \{c\}$
+- 对于参数话类型,  $\mathit{ttcs}(p.c[\mathit{targs}]) ~=~ \{c\}$;
 - For a singleton type,  $\mathit{ttcs}(p.type) ~=~ \mathit{ttcs}(T)$, provided $p$ has type $T$;
-- For a compound type, `$\mathit{ttcs}(T_1$ with $\ldots$ with $T_n)$` $~=~ \mathit{ttcs}(T_1) \cup \ldots \cup \mathit{ttcs}(T_n)$.
+- 对于复合类型, `$\mathit{ttcs}(T_1$ with $\ldots$ with $T_n)$` $~=~ \mathit{ttcs}(T_1) \cup \ldots \cup \mathit{ttcs}(T_n)$.
 
-The _complexity_ $\operatorname{complexity}(T)$ of a core type is an integer which also depends on the form of
-the type:
+核心类型的_复杂度_$\operatorname{complexity}(T)$是一个整数，它还取决于类型的形式：
 
-- For a type designator, $\operatorname{complexity}(p.c) ~=~ 1 + \operatorname{complexity}(p)$
-- For a parameterized type, $\operatorname{complexity}(p.c[\mathit{targs}]) ~=~ 1 + \Sigma \operatorname{complexity}(\mathit{targs})$
-- For a singleton type denoting a package $p$, $\operatorname{complexity}(p.type) ~=~ 0$
-- For any other singleton type, $\operatorname{complexity}(p.type) ~=~ 1 + \operatorname{complexity}(T)$, provided $p$ has type $T$;
-- For a compound type, `$\operatorname{complexity}(T_1$ with $\ldots$ with $T_n)$` $= \Sigma\operatorname{complexity}(T_i)$
+- 对于类型指示器, $\operatorname{complexity}(p.c) ~=~ 1 + \operatorname{complexity}(p)$
+- 对于参数话类型, $\operatorname{complexity}(p.c[\mathit{targs}]) ~=~ 1 + \Sigma \operatorname{complexity}(\mathit{targs})$
+- 对于表示包$P$的单例类型， $\operatorname{complexity}(p.type) ~=~ 0$
+- 对于任何其他的单例类型，$\operatorname{complexity}(p.type) ~=~ 1 + \operatorname{complexity}(T)$, provided $p$ has type $T$;
+- 对于复合类型, `$\operatorname{complexity}(T_1$ with $\ldots$ with $T_n)$` $= \Sigma\operatorname{complexity}(T_i)$
 
-The _covering set_ $\mathit{cs}(T)$ of a type $T$ is the set of type designators mentioned in a type.
-For example, given the following,
+$T$类型的_覆盖集_$\mathit{cs}(T)$是类型中提到的类型指示符集合。例如，给定以下内容：
 
 ```scala
 type A = List[(Int, Int)]
@@ -289,16 +206,14 @@ type B = List[(Int, (Int, Int))]
 type C = List[(Int, String)]
 ```
 
-the corresponding covering sets are:
+相应的覆盖集是：
 
 - $\mathit{cs}(A)$: List, Tuple2, Int
 - $\mathit{cs}(B)$: List, Tuple2, Int
 - $\mathit{cs}(C)$: List, Tuple2, Int, String
 
-###### Example
-When typing `sort(xs)` for some list `xs` of type `List[List[List[Int]]]`,
-the sequence of types for
-which implicit arguments are searched is
+###### 例
+对于某些类型为`List[List[List[Int]]]`的列表，`xs`，`sort(xs)`类型的隐含参量类型搜索序列是：
 
 ```scala
 List[List[Int]] => Ordered[List[List[Int]]],
@@ -306,20 +221,16 @@ List[Int] => Ordered[List[Int]],
 Int => Ordered[Int]
 ```
 
-All types share the common type constructor `scala.Function1`,
-but the complexity of the each new type is lower than the complexity of the previous types.
-Hence, the code typechecks.
+所有类型共享公共类型构造函数`scala.Function1`，但每种新类型的复杂性低于先前类型的复杂性。这就是代码的类型检查方式。
 
-###### Example
-Let `ys` be a list of some type which cannot be converted
-to `Ordered`. For instance:
+###### 例
+设`ys`是某些不能转变为`Ordered`类型的list，例如
 
 ```scala
 val ys = List(new IllegalArgumentException, new ClassCastException, new Error)
 ```
 
-Assume that the definition of `magic` above is in scope. Then the sequence
-of types for which implicit arguments are searched is
+假设上面`magic`的定义在范围内。则隐式参数类型搜索的序列是
 
 ```scala
 Throwable => Ordered[Throwable],
@@ -327,66 +238,38 @@ Throwable => Ordered[Throwable],
 ...
 ```
 
-Since the second type in the sequence is equal to the first, the compiler
-will issue an error signalling a divergent implicit expansion.
+由于序列中的第二种类型等于第一种类型，编译器将参数一个发散隐含扩展的错误。
 
-## Views
+## 视图
 
-Implicit parameters and methods can also define implicit conversions
-called views. A _view_ from type $S$ to type $T$ is
-defined by an implicit value which has function type
-`$S$=>$T$` or `(=>$S$)=>$T$` or by a method convertible to a value of that
-type.
+隐式参数和方法还可以定义隐式转换，称作视图。从$S$类型道$T$类型的_视图_是一个隐式值定义，该隐式值具由一个函数类型为`$S$=>$T$`或`(=>$S$)=>$T$`的隐含值或一个可以转变为该类型的值定义。
 
-Views are applied in three situations:
 
-1.  If an expression $e$ is of type $T$, and $T$ does not conform to the
-    expression's expected type $\mathit{pt}$. In this case an implicit $v$ is
-    searched which is applicable to $e$ and whose result type conforms to
-    $\mathit{pt}$.  The search proceeds as in the case of implicit parameters,
-    where the implicit scope is the one of `$T$ => $\mathit{pt}$`. If
-    such a view is found, the expression $e$ is converted to
-    `$v$($e$)`.
-1.  In a selection $e.m$ with $e$ of type $T$, if the selector $m$ does
-    not denote an accessible member of $T$.  In this case, a view $v$ is searched
-    which is applicable to $e$ and whose result contains a member named
-    $m$.  The search proceeds as in the case of implicit parameters, where
-    the implicit scope is the one of $T$.  If such a view is found, the
-    selection $e.m$ is converted to `$v$($e$).$m$`.
-1.  In a selection $e.m(\mathit{args})$ with $e$ of type $T$, if the selector
-    $m$ denotes some member(s) of $T$, but none of these members is applicable to the arguments
-    $\mathit{args}$. In this case a view $v$ is searched which is applicable to $e$
-    and whose result contains a method $m$ which is applicable to $\mathit{args}$.
-    The search proceeds as in the case of implicit parameters, where
-    the implicit scope is the one of $T$.  If such a view is found, the
-    selection $e.m$ is converted to `$v$($e$).$m(\mathit{args})$`.
+视图适用于以下三种情况:
 
-The implicit view, if it is found, can accept its argument $e$ as a
-call-by-value or as a call-by-name parameter. However, call-by-value
-implicits take precedence over call-by-name implicits.
+1.  如果表达式$e$的类型为$T$，并且$T$不符合表达式的预期类型$\mathit{pt}$。在这种情况下将会搜索一个隐含的$v$,$v$可以应用道$e$且结果类型与$\mathit{pt}$一致。搜索继续进行，如隐式参数的情况，其中隐式范围是`$T$ => $\mathit{pt}$`。如果找到这样的视图，表达式$e$将转换为`$v$($e$)`。
+1.  选择$e.m$中,$e$的类型为$T$,如果选择器$m$并不表示$T$的成员。在这种情况下，搜索视图$v$,该视图适用于$e$，其结果包含名为$m$的成员。搜索按照隐式参数的情况进行，其中隐式范围是$T$中的某一个。如果找到这样的视图。则选择器$e.m$将转换为`$v$($e$).$m$`。
+1.  在选择 $e.m(\mathit{args})$和$e$类型为$T$的情况下，如果选择器$m$表示$T$的某些成员，但这些成员都不适用于参数$\mathit{args}$。在这种情况下，搜索的视图$v$适用于$e$,其结果包含$m$的方法，适用于$\mathit{args}$。搜索按照隐式参数的情况进行，其中隐式范围是$T$中的一个。如果找到这样的视图，则选择器$e.m$将转换为`$v$($e$).$m(\mathit{args})$`。
 
-As for implicit parameters, overloading resolution is applied
-if there are several possible candidates (of either the call-by-value
-or the call-by-name category).
+隐式视图(如果找到)可以接受其参数$e$作为按值调用或按名称调用参数。但是，按值调用的含义优先于按名称调用的含义。
 
-###### Example Ordered
+对于隐式参数，如果存在多个可能的候选(按值调用或按名称调用类别)，则应用重载解析，
 
-Class `scala.Ordered[A]` contains a method
+###### 有序示例
+
+类`scala.Ordered[A]`包含一个方法
 
 ```scala
   def <= [B >: A](that: B)(implicit b2ordered: B => Ordered[B]): Boolean
 ```
 
-Assume two lists `xs` and `ys` of type `List[Int]`
-and assume that the `list2ordered` and `int2ordered`
-methods defined [here](#implicit-parameters) are in scope.
-Then the operation
+假设两个类表类型为`List[Int]`的`xs` 和 `ys`，并假设[此](#隐含参数)处定义的`list2ordered`和`int2ordered`方法在作用域内。那么操作
 
 ```scala
   xs <= ys
 ```
 
-is legal, and is expanded to:
+是合法的，并扩展为：
 
 ```scala
   list2ordered(xs)(int2ordered).<=
@@ -394,79 +277,57 @@ is legal, and is expanded to:
     (xs => list2ordered(xs)(int2ordered))
 ```
 
-The first application of `list2ordered` converts the list
-`xs` to an instance of class `Ordered`, whereas the second
-occurrence is part of an implicit parameter passed to the `<=`
-method.
+`list2ordered`的第一个应用程序将将列表`xs`转变为类`Ordered`的一个实例，第二个则是传递给`<=`方法的隐含参数的一部分。
 
-## Context Bounds and View Bounds
+## 上下文边界和视图边界
 
 ```ebnf
   TypeParam ::= (id | ‘_’) [TypeParamClause] [‘>:’ Type] [‘<:’ Type]
                 {‘<%’ Type} {‘:’ Type}
 ```
 
-A type parameter $A$ of a method or non-trait class may have one or more view
-bounds `$A$ <% $T$`. In this case the type parameter may be
-instantiated to any type $S$ which is convertible by application of a
-view to the bound $T$.
+方法或非特征的类型参数$A$可能有一个或多个视图边界`$A$ <% $T$`。在这种情况下，类型参数可以实例化为任何类型$S$，可以通过视图应用于绑定的$T$来转换。
 
-A type parameter $A$ of a method or non-trait class may also have one
-or more context bounds `$A$ : $T$`. In this case the type parameter may be
-instantiated to any type $S$ for which _evidence_ exists at the
-instantiation point that $S$ satisfies the bound $T$. Such evidence
-consists of an implicit value with type $T[S]$.
+方法或非特征类的类型参数$A$也可能有一个或多个上下文边界`$A$ : $T$`。在这种情况下，类型参数可以实例化为任何类型$S$,只要实例化点上有_证据_表明$S$满足绑定的$T$。这些由$T[S]$类型的隐含值组成。
 
-A method or class containing type parameters with view or context bounds is treated as being
-equivalent to a method with implicit parameters. Consider first the case of a
-single parameter with view and/or context bounds such as:
+包含具有视图或上下文边界的类型参数的方法或类被视为等效于具有隐式参数的方法。首先考虑具有视图和/或上下文边界的单个参数的情况，例如：
 
 ```scala
 def $f$[$A$ <% $T_1$ ... <% $T_m$ : $U_1$ : $U_n$]($\mathit{ps}$): $R$ = ...
 ```
 
-Then the method definition above is expanded to
+然后将上面的方法定义扩展为
 
 ```scala
 def $f$[$A$]($\mathit{ps}$)(implicit $v_1$: $A$ => $T_1$, ..., $v_m$: $A$ => $T_m$,
                        $w_1$: $U_1$[$A$], ..., $w_n$: $U_n$[$A$]): $R$ = ...
 ```
 
-where the $v_i$ and $w_j$ are fresh names for the newly introduced implicit parameters. These
-parameters are called _evidence parameters_.
+其中$v_i$ 和 $w_j$是新引入的隐式参数的新名称。这些参数称为_证据参数_。
 
-If a class or method has several view- or context-bounded type parameters, each
-such type parameter is expanded into evidence parameters in the order
-they appear and all the resulting evidence parameters are concatenated
-in one implicit parameter section.  Since traits do not take
-constructor parameters, this translation does not work for them.
-Consequently, type-parameters in traits may not be view- or context-bounded.
+如果类或方法具有多个视图或上下文绑定类型参数，则每个这样的类型参数按他们出现的顺序扩展为证据参数，并且所有的得到的证据参数在一个隐式参数部分中连接。由于traits不采用构造函数参数，因此该转换对他们不起作用。因此，特征中的类型参数可能不是视图或上下文限制的。
 
-Evidence parameters are prepended to the existing implicit parameter section, if one exists.
+证据参数前置于现有隐式参数部分（如果存在）。
 
-For example:
+举个例子:
 
 ```scala
 def foo[A: M](implicit b: B): C
-// expands to:
+// 扩展为
 // def foo[A](implicit evidence$1: M[A], b: B): C
 ```
 
-###### Example
-The `<=` method from the [`Ordered` example](#example-ordered) can be declared
-more concisely as follows:
+###### 例子
+
+可以更简洁的声明[`Ordered`示例](#ordered实例)中的`<=`方法，如下所示
 
 ```scala
 def <= [B >: A <% Ordered[B]](that: B): Boolean
 ```
 
-## Manifests
+## 清单
 
-Manifests are type descriptors that can be automatically generated by
-the Scala compiler as arguments to implicit parameters. The Scala
-standard library contains a hierarchy of four manifest classes,
-with `OptManifest`
-at the top. Their signatures follow the outline below.
+清单是类型描述符，可以有Scala编译器自动生成，作为隐式参数的参数。Scala标准库包含四个清单类型的层次结构`OptManifest`位于顶部。他们的签名遵循一下大纲。
 
 ```scala
 trait OptManifest[+T]
@@ -475,52 +336,17 @@ trait ClassManifest[T] extends OptManifest[T]
 trait Manifest[T] extends ClassManifest[T]
 ```
 
-If an implicit parameter of a method or constructor is of a subtype $M[T]$ of
-class `OptManifest[T]`, _a manifest is determined for $M[S]$_,
-according to the following rules.
+如果方法或构造函数的隐式参数属于类`OptManifest[T]`的子类型$M[T]$，则更具一下规则 _确定清单$M[S]$_。
 
-First if there is already an implicit argument that matches $M[T]$, this
-argument is selected.
+首先，如果已经存在与$M[T]$匹配的隐式参数，则选择此参数。
 
-Otherwise, let $\mathit{Mobj}$ be the companion object `scala.reflect.Manifest`
-if $M$ is trait `Manifest`, or be
-the companion object `scala.reflect.ClassManifest` otherwise. Let $M'$ be the trait
-`Manifest` if $M$ is trait `Manifest`, or be the trait `OptManifest` otherwise.
-Then the following rules apply.
+否则，如果$M$是特征`Manifest`，$\mathit{Mobj}$是`scala.reflect.Manifest`的伴随对象，否则是 `scala.reflect.ClassManifest`的伴随对象。如果$M$是特征`Manifest`，那么$M'$成为特征`Manifest`,否则就是特征`OptManifest`。然后适用于以下规则
 
-1.  If $T$ is a value class or one of the classes `Any`, `AnyVal`, `Object`,
-    `Null`, or `Nothing`,
-    a manifest for it is generated by selecting
-    the corresponding manifest value `Manifest.$T$`, which exists in the
-    `Manifest` module.
-1.  If $T$ is an instance of `Array[$S$]`, a manifest is generated
-    with the invocation `$\mathit{Mobj}$.arrayType[S](m)`, where $m$ is the manifest
-    determined for $M[S]$.
-1.  If $T$ is some other class type $S$#$C[U_1, \ldots, U_n]$ where the prefix
-    type $S$ cannot be statically determined from the class $C$,
-    a manifest is generated with the invocation `$\mathit{Mobj}$.classType[T]($m_0$, classOf[T], $ms$)`
-    where $m_0$ is the manifest determined for $M'[S]$ and $ms$ are the
-    manifests determined for $M'[U_1], \ldots, M'[U_n]$.
-1.  If $T$ is some other class type with type arguments $U_1 , \ldots , U_n$,
-    a manifest is generated
-    with the invocation `$\mathit{Mobj}$.classType[T](classOf[T], $ms$)`
-    where $ms$ are the
-    manifests determined for $M'[U_1] , \ldots , M'[U_n]$.
-1.  If $T$ is a singleton type `$p$.type`, a manifest is generated with
-    the invocation `$\mathit{Mobj}$.singleType[T]($p$)`
-1.  If $T$ is a refined type $T' \{ R \}$, a manifest is generated for $T'$.
-    (That is, refinements are never reflected in manifests).
-1.  If $T$ is an intersection type
-    `$T_1$ with $, \ldots ,$ with $T_n$`
-    where $n > 1$, the result depends on whether a full manifest is
-    to be determined or not.
-    If $M$ is trait `Manifest`, then
-    a manifest is generated with the invocation
-    `Manifest.intersectionType[T]($ms$)` where $ms$ are the manifests
-    determined for $M[T_1] , \ldots , M[T_n]$.
-    Otherwise, if $M$ is trait `ClassManifest`,
-    then a manifest is generated for the [intersection dominator](03-types.html#type-erasure)
-    of the types $T_1 , \ldots , T_n$.
-1.  If $T$ is some other type, then if $M$ is trait `OptManifest`,
-    a manifest is generated from the designator `scala.reflect.NoManifest`.
-    If $M$ is a type different from `OptManifest`, a static error results.
+1.  如果$T$是一个值类或者是`Any`, `AnyVal`, `Object`,`Null`, 或 `Nothing`其中之一，则通过选择`Manifest`模块中存在的相应清单值`Manifest.$T$`。
+1.  如果$T$是`Array[$S$]`的实例，则使用调用`$\mathit{Mobj}$.arrayType[S](m)`生成清单，其中$m$是为$M[S]$确定的清单。
+1.  如果$T$是其他类类型$S$#$C[U_1, \ldots, U_n]$，其中前缀类型$S$不能从$C$中静态确认，则使用调用`$\mathit{Mobj}$.classType[T]($m_0$, classOf[T], $ms$)`生成清单，其中$m_0$是为$M'[S]$确认的清单，和$ms$是为 $M'[U_1], \ldots, M'[U_n]$确定的清单。
+1.  如果$T$是类型参数$U_1 , \ldots , U_n$的其他类类型，则使用调用 `$\mathit{Mobj}$.classType[T](classOf[T], $ms$)`生成清单，其中$ms$是为$M'[U_1] , \ldots , M'[U_n]$确认的清单。
+1.  如果$T$是单例类型`$p$.type`，则使用调用`$\mathit{Mobj}$.singleType[T]($p$)`生成清单。
+1.  如果$T$是精炼类型$T' \{ R \}$，则为$T'$生成清单，（也就是说，改进从未反映在清单中）。
+1.  如果$T$是交叉类型`$T_1$ with $, \ldots ,$ with $T_n$`，其中$n>1$,结果取决于是否要确定完整清单。如果$M$是特征`Manifest`,则使用调用`Manifest.intersectionType[T]($ms$)`生成清单，其中$ms$是为$M[T_1] , \ldots , M[T_n]$确定的清单。否则，如果$m$是特征 `ClassManifest`，则为$T_1 , \ldots , T_n$类型的[交集支配](03-types.html#type-erasure)生成清单。
+1.  如果$T$是其他类型，那么如果$M$是特征 `OptManifest`，则从指示符 `scala.reflect.NoManifest`生成清单。如果$M$是与`OptManifest`不同的类型，则会参生静态错误。
