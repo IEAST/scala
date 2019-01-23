@@ -4,118 +4,74 @@ layout: default
 chapter: 11
 ---
 
-# Annotations
+# 标注
 
 ```ebnf
   Annotation       ::=  ‘@’ SimpleType {ArgumentExprs}
   ConstrAnnotation ::=  ‘@’ SimpleType ArgumentExprs
 ```
 
-## Definition
+## 定义
 
-Annotations associate meta-information with definitions.
-A simple annotation has the form `@$c$` or `@$c(a_1 , \ldots , a_n)$`.
-Here, $c$ is a constructor of a class $C$, which must conform
-to the class `scala.Annotation`.
+标注将元信息与定义相关联。一个简单的标注具有`@$c$`或`@$c(a_1 , \ldots , a_n)$`的形式。这里$c$是类$C$的构造函数，它必须符合类`scala.Annotation`。
 
-Annotations may apply to definitions or declarations, types, or
-expressions.  An annotation of a definition or declaration appears in
-front of that definition.  An annotation of a type appears after
-that type. An annotation of an expression $e$ appears after the
-expression $e$, separated by a colon. More than one annotation clause
-may apply to an entity. The order in which these annotations are given
-does not matter.
 
-Examples:
+标注可以应用在定义或声明，类型或表达式上。定义或声明的标注出现在该定义的前面，类型的标注在该类型之后。表达式$e$的标注出现在表达式$e$之后，用冒号分隔。对一个实体可应用多个标注。标注给出的顺序没有意义。
+
+例:
 
 ```scala
-@deprecated("Use D", "1.0") class C { ... } // Class annotation
-@transient @volatile var m: Int             // Variable annotation
-String @local                               // Type annotation
-(e: @unchecked) match { ... }               // Expression annotation
+@deprecated("Use D", "1.0") class C { ... } // Class 标注
+@transient @volatile var m: Int             // Variable 标注
+String @local                               // Type 标注
+(e: @unchecked) match { ... }               // Expression 标注
 ```
 
-## Predefined Annotations
+## 预定义的标注
 
-### Java Platform Annotations
+### Java平台标注
 
-The meaning of annotation clauses is implementation-dependent. On the
-Java platform, the following annotations have a standard meaning.
+标注子句的含义取决于实现。在java平台上，一下标注具有标准含义：
 
-  * `@transient` Marks a field to be non-persistent; this is
-    equivalent to the `transient`
-    modifier in Java.
+  * `@transient`将字段标记为非持久性；这相当于java中的`transient`修饰符。  
 
-  * `@volatile` Marks a field which can change its value
-    outside the control of the program; this
-    is equivalent to the `volatile`
-    modifier in Java.
+  * `@volatile`标记一个可以在程序控制之外改变其值的字段，这相当于java中的`volatile`修饰符。
 
-  * `@SerialVersionUID(<longlit>)` Attaches a serial version identifier (a
-    `long` constant) to a class.
-    This is equivalent to a the following field
-    definition in Java:
+  * `@SerialVersionUID(<longlit>)`将序列版本标识符(`long`常量)附加道类。这相当于java中的以下字段
 
     ```java
     private final static SerialVersionUID = <longlit>
     ```
 
-  * `@throws(<classlit>)` A Java compiler checks that a program contains handlers for checked exceptions
-    by analyzing which checked exceptions can result from execution of a method or
-    constructor. For each checked exception which is a possible result, the
-    `throws`
-    clause for the method or constructor must mention the class of that exception
-    or one of the superclasses of the class of that exception.
+  * `@throws(<classlit>)` java编译器会通过分析一个方法或构造器是否会导致已检查异常来检查程序是否包含已检查异常的处理器。对于每个可能的已检查异常，方法或构造其的`throws`子句必须要说明该异常的类或该异常的类的一个超类。
 
-### Java Beans Annotations
+### Java Bean标注
 
-  * `@scala.beans.BeanProperty` When prefixed to a definition of some variable `X`, this
-    annotation causes getter and setter methods `getX`, `setX`
-    in the Java bean style to be added in the class containing the
-    variable. The first letter of the variable appears capitalized after
-    the `get` or `set`. When the annotation is added to the
-    definition of an immutable value definition `X`, only a getter is
-    generated. The construction of these methods is part of
-    code-generation; therefore, these methods become visible only once a
-    classfile for the containing class is generated.
+  * `@scala.beans.BeanProperty` 当作为定义或某个变量`X`的前缀时，该标注将使java bean 生成的getter 和setter方法`getX`和`setX`添加到该变量所在的类中。`get`和`set`后变量的第一个字母将变为大小写。当该标注加在一个不可变值的定义`X`上时则只产生getter。这些方法的构建是代码生成的一部分;因此这些方法只有在对应的class文件生成后才可见。
 
-  * `@scala.beans.BooleanBeanProperty` This annotation is equivalent to `scala.reflect.BeanProperty`, but
-    the generated getter method is named `isX` instead of `getX`.
+  * `@scala.beans.BooleanBeanProperty` 此标注等同于`scala.reflect.BeanProperty`，单生成的getter方法名为`isX`而不是`getX`。
 
-### Deprecation Annotations
+### 弃用标注
 
   * `@deprecated(message: <stringlit>, since: <stringlit>)`<br/>
-    Marks a definition as deprecated. Accesses to the
-    defined entity will then cause a deprecated warning mentioning the
-    _message_ `<stringlit>` to be issued from the compiler.
-    The argument _since_ documents since when the definition should be considered deprecated.<br/>
-    Deprecated warnings are suppressed in code that belongs itself to a definition
-    that is labeled deprecated.
+将定义标记为弃用。对已定义实体的访问将导致一个不赞成的警告，提示编译器将发出_消息_`<stringlit>`。_自文_ 档依赖的参数，因为该定义应被视为已弃用。  
+  已弃用的警告在代码中被禁止，该代码属于标记为已弃用的定义。
 
   * `@deprecatedName(name: <stringlit>, since: <stringlit>)`<br/>
-    Marks a formal parameter name as deprecated. Invocations of this entity
-    using named parameter syntax referring to the deprecated parameter name cause a deprecation warning.
+    将正式参数名称标记为已弃用。使用引用已弃用参数名称的命名参数语法对此实体进行调用会导致警告。
 
-### Scala Compiler Annotations
+### Scala编译器标注
 
-  * `@unchecked` When applied to the selector of a `match` expression,
-    this attribute suppresses any warnings about non-exhaustive pattern
-    matches which would otherwise be emitted. For instance, no warnings
-    would be produced for the method definition below.
-
+  * `@unchecked` 当引用于`match`表达式的选择器时，此属性会抑制所有有关不完全的匹配模式匹配的警告，这些匹配将会被忽略。比如一下方式定义不会参数警告。
     ```scala
     def f(x: Option[Int]) = (x: @unchecked) match {
     case Some(y) => y
     }
     ```
+    如果没有`@unchecked`标注，Scala编译器就会指出模式匹配是不完整的，并参生一个警告(因为`Option`是一个`sealed`类)。
 
-    Without the `@unchecked` annotation, a Scala compiler could
-    infer that the pattern match is non-exhaustive, and could produce a
-    warning because `Option` is a `sealed` class.
-
-  * `@uncheckedStable` When applied a value declaration or definition, it allows the defined
-    value to appear in a path, even if its type is [volatile](03-types.html#volatile-types).
-    For instance, the following member definitions are legal:
+  *
+  `@uncheckedStable`当应用与一个值声明或定义时，则运行定义的值出现在一个路径中，即使其类型是[易变的](03-types.html#volatile-types)。例如，以下定义是合法的：
 
     ```scala
     type A { type T }
@@ -123,22 +79,11 @@ Java platform, the following annotations have a standard meaning.
     @uncheckedStable val x: A with B // volatile type
     val y: x.T                       // OK since `x' is still a path
     ```
+    如果没有`$uncheckedStable`标记，则指示符`x`将不是路径，因为其类型`A with B`是易失性的。继而引用`x.T`是格式错误的。
 
-    Without the `@uncheckedStable` annotation, the designator `x`
-    would not be a path since its type `A with B` is volatile. Hence,
-    the reference `x.T` would be malformed.
+    当应用于非可变类型的值声明或定义时，该标注没有作用。
 
-    When applied to value declarations or definitions that have non-volatile
-    types, the annotation has no effect.
-
-  * `@specialized` When applied to the definition of a type parameter, this annotation causes
-    the compiler
-    to generate specialized definitions for primitive types. An optional list of
-    primitive
-    types may be given, in which case specialization takes into account only
-    those types.
-    For instance, the following code would generate specialized traits for
-    `Unit`, `Int` and `Double`
+  * `@specialized` 当应用于类型参数的定义时，此批注会使编译器为基本类型生成专用定义。可以给出可选的基本类型列表，在这种情况下，专业化仅考虑那些类型。例如，以下代码将会`Unit`, `Int` 和 `Double`生成专门的特征。
 
     ```scala
     trait Function0[@specialized(Unit, Int, Double) T] {
@@ -146,31 +91,17 @@ Java platform, the following annotations have a standard meaning.
     }
     ```
 
-    Whenever the static type of an expression matches a specialized variant of
-    a definition, the compiler will instead use the specialized version.
-    See the [specialization sid](http://docs.scala-lang.org/sips/completed/scala-specialization.html) for more details of the implementation.
-    
+    只要表达式的静态类型与定义的特定变体匹配，编译器就会使用专用版本。有关实现的更多详细信息，请参阅[specialization sid](http://docs.scala-lang.org/sips/completed/scala-specialization.html)。
 
-## User-defined Annotations
 
-Other annotations may be interpreted by platform- or application-dependent
-tools. The class `scala.annotation.Annotation` is the base class for
-user-defined annotations. It has two sub-traits:
-- `scala.annotation.StaticAnnotation`: Instances of a subclass of this trait
-  will be stored in the generated class files, and therefore accessible to
-  runtime reflection and later compilation runs.
-- `scala.annotation.ConstantAnnotation`: Instances of a subclass of this trait
-  may only have arguments which are
-  [constant expressions](06-expressions.html#constant-expressions), and are
-  also stored in the generated class files.
-- If an annotation class inherits from neither `scala.ConstantAnnotation` nor
-  `scala.StaticAnnotation`, its instances are visible only locally during the
-  compilation run that analyzes them.
+## 用户定义的标注
 
-## Host-platform Annotations
+其他标注可以由平台或应用程序相关工具解释。类`scala.annotation.Annotation`是用户定义的标注的基类。它有两个子特征：
 
-The host platform may define its own annotation format. These annotations do not
-extend any of the classes in the `scala.annotation` package, but can generally
-be used in the same way as Scala annotations. The host platform may impose
-additional restrictions on the expressions which are valid as annotation
-arguments.
+- `scala.annotation.StaticAnnotation`:此特征的子类的实例将存储在生成的类文件中，因此可供运行时反射和以后的编译运行访问。
+- `scala.annotation.ConstantAnnotation`: 此特征的子类的实例可能只有[常量表达式](06-expressions.html#constant-expressions)的参数，并且也存储在生成的类文件中。
+- 如果标注类既不继承`scala.ConstantAnnotation` 也不继承  `scala.StaticAnnotation`, 则其实例仅在分析它们的编译运行期间在本地可见。
+
+## 主机平台标注
+
+主机平台可以定义其自己的标注格式。 这些标注不会扩展`scala.annotation`包中的任何类，但通常可以像Scala标注一样使用。主机平台会对作为标注参数有效的表达式施加额外限制。
