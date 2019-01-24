@@ -4,67 +4,53 @@ layout: default
 chapter: 12
 ---
 
-# The Scala Standard Library
+# Scala标准库
 
-The Scala standard library consists of the package `scala` with a
-number of classes and modules. Some of these classes are described in
-the following.
+Scala标注库包括包`scala`和一些类与模块。下面描述了其中一些类
+
 
 ![Class hierarchy of Scala](public/images/classhierarchy.png)
 
-## Root Classes
+## 跟类
 
-The root of this hierarchy is formed by class `Any`.
-Every class in a Scala execution environment inherits directly or
-indirectly from this class.  Class `Any` has two direct
-subclasses: `AnyRef` and `AnyVal`.
+此层次结构的跟是由`Any`类创建。Scala执行环境中的每个类都直接或间接地从此类继承。`Any`类有两个直接子类：`AnyRef` 和 `AnyVal`
 
-The subclass `AnyRef` represents all values which are represented
-as objects in the underlying host system. Classes written in other languages
-inherit from `scala.AnyRef`.
+子类`AnyRef`表示在底层主机系统中表示为对象的所有值。用其他语言编写的类继承自`scala.AnyRef`。
 
-The predefined subclasses of class `AnyVal` describe
-values which are not implemented as objects in the underlying host
-system.
+`AnyVal`类的预定义子类描述了在底层主机系统中没有作为对象实现的值。
 
-User-defined Scala classes which do not explicitly inherit from
-`AnyVal` inherit directly or indirectly from `AnyRef`. They can
-not inherit from both `AnyRef` and `AnyVal`.
+未确定从`AnyVal`继承的用户定义的Scala类直接或间接地从`AnyRef`继承。它不能同时继承`AnyRef`和`AnyVal`。
 
-Classes `AnyRef` and `AnyVal` are required to provide only
-the members declared in class `Any`, but implementations may add
-host-specific methods to these classes (for instance, an
-implementation may identify class `AnyRef` with its own root
-class for objects).
+类`AnyRef`和`AnyVal`只需要提供在类`Any`中声明的成员，但实现可能会向这些类添加特定与主机的方法(例如，实现可以使自己的对象root类来标识`AnyRef`)。
 
-The signatures of these root classes are described by the following
-definitions.
+这些根类的签名由以下定义描述:
+
 
 ```scala
 package scala
-/** The universal root class */
+/** 通用根类 */
 abstract class Any {
 
-  /** Defined equality; abstract here */
+  /** 定义相等，在这里是抽象的 */
   def equals(that: Any): Boolean
 
-  /** Semantic equality between values */
+  /** 值的语意相等 */
   final def == (that: Any): Boolean  =
     if (null eq this) null eq that else this equals that
 
-  /** Semantic inequality between values */
+  /** 值的语义不等 */
   final def != (that: Any): Boolean  =  !(this == that)
 
-  /** Hash code; abstract here */
+  /** Hash code; 在这里是抽象的 */
   def hashCode: Int = $\ldots$
 
-  /** Textual representation; abstract here */
+  /** 文本表示，在这里是抽象的 */
   def toString: String = $\ldots$
 
-  /** Type test; needs to be inlined to work as given */
+  /** 类型测试，需要按照下面的方式内联 */
   def isInstanceOf[a]: Boolean
 
-  /** Type cast; needs to be inlined to work as given */ */
+  /** 类型转换，需要按照下面的方式内联 */ */
   def asInstanceOf[A]: A = this match {
     case x: A => x
     case _ => if (this eq null) this
@@ -72,62 +58,45 @@ abstract class Any {
   }
 }
 
-/** The root class of all value types */
+/** T所有值类型的根类 */
 final class AnyVal extends Any
 
-/** The root class of all reference types */
+/** 所有引用类型的根类 */
 class AnyRef extends Any {
   def equals(that: Any): Boolean      = this eq that
-  final def eq(that: AnyRef): Boolean = $\ldots$ // reference equality
+  final def eq(that: AnyRef): Boolean = $\ldots$ // 引用相等
   final def ne(that: AnyRef): Boolean = !(this eq that)
 
-  def hashCode: Int = $\ldots$     // hashCode computed from allocation address
-  def toString: String  = $\ldots$ // toString computed from hashCode and class name
+  def hashCode: Int = $\ldots$     // 由内存地址计算得来
+  def toString: String  = $\ldots$ // 由hashcode和类名得来
 
-  def synchronized[T](body: => T): T // execute `body` in while locking `this`.
+  def synchronized[T](body: => T): T // 在锁定`this`时执行`body`
 }
 ```
 
-The type test `$x$.isInstanceOf[$T$]` is equivalent to a typed
-pattern match
+类型测试 `$x$.isInstanceOf[$T$]` 等同于类型化模式匹配
 
 ```scala
 $x$ match {
   case _: $T'$ => true
   case _ => false
-}
+} //'
 ```
 
-where the type $T'$ is the same as $T$ except if $T$ is
-of the form $D$ or $D[\mathit{tps}]$ where $D$ is a type member of some outer class $C$.
-In this case $T'$ is `$C$#$D$` (or `$C$#$D[tps]$`, respectively), whereas $T$ itself would expand to `$C$.this.$D[tps]$`.
-In other words, an `isInstanceOf` test does not check that types have the same enclosing instance.
+其中$T'$的类型和$T$相同，除非$T$的格式为$D$或者$D[\mathit{tps}]$，其中$D$是某些外类$C$的类型成员。在这种情况下，$T'$分别是`$C$#$D$`(或`$C$#$D[tps]$`)，而$T$本身将扩展为`$C$.this.$D[tps]$`。换句话说， `isInstanceOf`测试不会检查类是是否具有相同的封闭实例。
 
-The test `$x$.asInstanceOf[$T$]` is treated specially if $T$ is a
-[numeric value type](#value-classes). In this case the cast will
-be translated to an application of a [conversion method](#numeric-value-types)
-`x.to$T$`. For non-numeric values $x$ the operation will raise a
-`ClassCastException`.
+如果$T$是[数值类型](#值类)，则特别处理测试`$x$.asInstanceOf[$T$]`。在这种情况下，广播将被翻译成一种x.to$T$的[转换方法](#数字值类型)应用。
 
-## Value Classes
 
-Value classes are classes whose instances are not represented as
-objects by the underlying host system.  All value classes inherit from
-class `AnyVal`. Scala implementations need to provide the
-value classes `Unit`, `Boolean`, `Double`, `Float`,
-`Long`, `Int`, `Char`, `Short`, and `Byte`
-(but are free to provide others as well).
-The signatures of these classes are defined in the following.
+## 值类
 
-### Numeric Value Types
+值类是其实例为由底层主机系统表示为对象的值。所有的值类都继承自`AnyVal`类。Scala实现需要提供值类`Unit`, `Boolean`, `Double`, `Float`,`Long`, `Int`, `Char`, `Short`, 和 `Byte`(但也可以自由提供其他类)。
+这些类的签名定义如下：
 
-Classes `Double`, `Float`,
-`Long`, `Int`, `Char`, `Short`, and `Byte`
-are together called _numeric value types_. Classes `Byte`,
-`Short`, or `Char` are called _subrange types_.
-Subrange types, as well as `Int` and `Long` are called _integer types_, whereas `Float` and `Double` are called _floating point types_.
+### 数字值类型
+类`Double`, `Float`,`Long`, `Int`, `Char`, `Short`, 和 `Byte`一起被称为_数字值类型_。类`Byte`,`Short`, 或 `Char`被称为_子范围类型_，而 `Int` 和 `Long`被称为_整数类型_，而`Float` 和`Double`被称为_浮点类型_。
 
-Numeric value types are ranked in the following partial order:
+数值类型的级别为以下排序：
 
 ```scala
 Byte - Short
@@ -137,81 +106,26 @@ Byte - Short
         Char
 ```
 
-`Byte` and `Short` are the lowest-ranked types in this order,
-whereas `Double` is the highest-ranked.  Ranking does _not_
-imply a [conformance relationship](03-types.html#conformance); for
-instance `Int` is not a subtype of `Long`.  However, object
-[`Predef`](#the-predef-object) defines [views](07-implicits.html#views)
-from every numeric value type to all higher-ranked numeric value types.
-Therefore, lower-ranked types are implicitly converted to higher-ranked types
-when required by the [context](06-expressions.html#implicit-conversions).
+`Byte`和`Short`是此顺序中级别最低的类型，而`Double`是级别最高的类型。级别并_不是_指[一致性](03-types.html#conformance)关系。例如，`Int`不是`Long`的子类型。但是，对象[`Predef`](#Predef对象)定义类从每个数字值类型到其他高级数字值类型的[视图](07-implicits.html#views)。因此，如果在[上下文](07-implicits.html#views)中有需求，低级的类型可以隐式的转换为高级的类型。
 
-Given two numeric value types $S$ and $T$, the _operation type_ of
-$S$ and $T$ is defined as follows: If both $S$ and $T$ are subrange
-types then the operation type of $S$ and $T$ is `Int`.  Otherwise
-the operation type of $S$ and $T$ is the larger of the two types wrt
-ranking. Given two numeric values $v$ and $w$ the operation type of
-$v$ and $w$ is the operation type of their run-time types.
+给定连个数值类型$S$和$T$，$S$和$T$的_操作类型_定义如下:如果$S$和$T$都是子范围类型，那么$S$和$T$的操作类型是`Int`。否则$S$和$T$的操作类型是相对排名中较大的一个。给定两个数字值类型$v$和$w$,他们的操作类型就是他们运行时的类型。
 
-Any numeric value type $T$ supports the following methods.
+任何数值类型$T$都支持以下方法
 
-  * Comparison methods for equals (`==`), not-equals (`!=`),
-    less-than (`<`), greater-than (`>`), less-than-or-equals
-    (`<=`), greater-than-or-equals (`>=`), which each exist in 7
-    overloaded alternatives. Each alternative takes a parameter of some
-    numeric value type. Its result type is type `Boolean`. The
-    operation is evaluated by converting the receiver and its argument to
-    their operation type and performing the given comparison operation of
-    that type.
-  * Arithmetic methods addition (`+`), subtraction (`-`),
-    multiplication (`*`), division (`/`), and remainder
-    (`%`), which each exist in 7 overloaded alternatives. Each
-    alternative takes a parameter of some numeric value type $U$.  Its
-    result type is the operation type of $T$ and $U$. The operation is
-    evaluated by converting the receiver and its argument to their
-    operation type and performing the given arithmetic operation of that
-    type.
-  * Parameterless arithmetic methods identity (`+`) and negation
-    (`-`), with result type $T$.  The first of these returns the
-    receiver unchanged, whereas the second returns its negation.
-  * Conversion methods `toByte`, `toShort`, `toChar`,
-    `toInt`, `toLong`, `toFloat`, `toDouble` which
-    convert the receiver object to the target type, using the rules of
-    Java's numeric type cast operation. The conversion might truncate the
-    numeric value (as when going from `Long` to `Int` or from
-    `Int` to `Byte`) or it might lose precision (as when going
-    from `Double` to `Float` or when converting between
-    `Long` and `Float`).
+  * 比较方法，比如全等(`==`),不等(`!=`),小于(`<`),大于(`>`),小于等于(`<=`)，大于等于(`>=`),每个方法豆存在7个重载的可选项。每个可选项有一个数字值类型的参数。结果类型为`Boolean`。操作形式为接受者和参量变为其操作类型，并在此类型上做比较。
+  * 算数运算加(`+`),减(`-`),乘(`*`)，除(`/`)和求余(`%`),每个方法都存在7个重载的可选项。每个可选项有一个类型为$U$的数字值类型的参数。结果类型是$T$和$U$的操作类型。操作形式为将接收者和参量变为其操作类型，并在此类型上做算数操作。
+  * 无参数算术方法正(`+`)和负(`-`)的结果类型为$T$.第一个返回其自身，第二个返回其负值。
+  * 转换方法`toByte`, `toShort`, `toChar`,    `toInt`, `toLong`, `toFloat`, `toDouble`将对应的对象变为目标类型，规则是java数值类型转换操作。转换可能截取数字值(比如从`Long`到`Int`或者从`Int`到`Byte`)或丢失精度(比如从`Double` 到 `Float`或者`Long`和`Float`之间的转换)。
 
-Integer numeric value types support in addition the following operations:
+整形数字值也支持以下的操作：
 
-  * Bit manipulation methods bitwise-and (`&`), bitwise-or
-    {`|`}, and bitwise-exclusive-or (`^`), which each exist in 5
-    overloaded alternatives. Each alternative takes a parameter of some
-    integer numeric value type. Its result type is the operation type of
-    $T$ and $U$. The operation is evaluated by converting the receiver and
-    its argument to their operation type and performing the given bitwise
-    operation of that type.
+  * 位操作方法按位与(`&`)，按位或{`|`}，和按位异(`^`)，每个方法斗存在5鸽重载的可选项。每个可选项都有一个整数值类型的参数。结果类型是$T$和$U$的操作类型。操作形式为将接收者和参量变为其操作类型，并在此类型上做对应的位运算操作。
+  * 无参方法按位取反(`~`)。结果类型是接受者的类型$T$或`Int`中的较大者。操作方式是将接受者变为结果类型并按位取反。
+  * 移位操作。包括左移(`<<`)，算数右移(`>>`)和无符号右移(`>>>`)。每个方法有两个重载的可选项。并有一个类型为`Int`或`Long`的参数$n$.操作的结果类型就是接受者的同类型$T$或`Int`中的较大者。操作形式为将接受者变为结果类型并移动$n$位。
 
-  * A parameterless bit-negation method (`~`). Its result type is
-    the receiver type $T$ or `Int`, whichever is larger.
-    The operation is evaluated by converting the receiver to the result
-    type and negating every bit in its value.
-  * Bit-shift methods left-shift (`<<`), arithmetic right-shift
-    (`>>`), and unsigned right-shift (`>>>`). Each of these
-    methods has two overloaded alternatives, which take a parameter $n$
-    of type `Int`, respectively `Long`. The result type of the
-    operation is the receiver type $T$, or `Int`, whichever is larger.
-    The operation is evaluated by converting the receiver to the result
-    type and performing the specified shift by $n$ bits.
+数值类型还实现`Any`类中的操作`equals`,`hashCode`, 和 `toString`。
 
-Numeric value types also implement operations `equals`,
-`hashCode`, and `toString` from class `Any`.
-
-The `equals` method tests whether the argument is a numeric value
-type. If this is true, it will perform the `==` operation which
-is appropriate for that type. That is, the `equals` method of a
-numeric value type can be thought of being defined as follows:
+`equals`方法测试参数是否为数值类型。如果为`true`的话则执行对应类型的`==`操作。也就是说，可以认为数值类型的`equals`方法定义如下：
 
 ```scala
 def equals(other: Any): Boolean = other match {
@@ -226,68 +140,63 @@ def equals(other: Any): Boolean = other match {
 }
 ```
 
-The `hashCode` method returns an integer hashcode that maps equal
-numeric values to equal results. It is guaranteed to be the identity for
-for type `Int` and for all subrange types.
+`hashCode`方法返回一个整数哈希码，它将相等的数值映射到相等的结果。它保证是`Int`类型和所有子范围类型的标识符。
+接受者的`toString`方法将显示为一个整数或浮点数。
 
-The `toString` method displays its receiver as an integer or
-floating point number.
+###### 例
 
-###### Example
-
-This is the signature of the numeric value type `Int`:
+这是数值类型`Int`的签名：
 
 ```scala
 package scala
 abstract sealed class Int extends AnyVal {
-  def == (that: Double): Boolean  // double equality
-  def == (that: Float): Boolean   // float equality
-  def == (that: Long): Boolean    // long equality
-  def == (that: Int): Boolean     // int equality
-  def == (that: Short): Boolean   // int equality
-  def == (that: Byte): Boolean    // int equality
-  def == (that: Char): Boolean    // int equality
+  def == (that: Double): Boolean  // double 相等
+  def == (that: Float): Boolean   // float 相等
+  def == (that: Long): Boolean    // long 相等
+  def == (that: Int): Boolean     // int 相等
+  def == (that: Short): Boolean   // int 相等
+  def == (that: Byte): Boolean    // int 相等
+  def == (that: Char): Boolean    // int 相等
   /* analogous for !=, <, >, <=, >= */
 
-  def + (that: Double): Double    // double addition
-  def + (that: Float): Double     // float addition
-  def + (that: Long): Long        // long addition
-  def + (that: Int): Int          // int addition
-  def + (that: Short): Int        // int addition
-  def + (that: Byte): Int         // int addition
-  def + (that: Char): Int         // int addition
+  def + (that: Double): Double    // double 加
+  def + (that: Float): Double     // float 加
+  def + (that: Long): Long        // long 加
+  def + (that: Int): Int          // int 加
+  def + (that: Short): Int        // int 加
+  def + (that: Byte): Int         // int 加
+  def + (that: Char): Int         // int 加
   /* analogous for -, *, /, % */
 
-  def & (that: Long): Long        // long bitwise and
-  def & (that: Int): Int          // int bitwise and
-  def & (that: Short): Int        // int bitwise and
-  def & (that: Byte): Int         // int bitwise and
-  def & (that: Char): Int         // int bitwise and
+  def & (that: Long): Long        // long 按位与
+  def & (that: Int): Int          // int 按位与
+  def & (that: Short): Int        // int 按位与
+  def & (that: Byte): Int         // int 按位与
+  def & (that: Char): Int         // int 按位与
   /* analogous for |, ^ */
 
-  def << (cnt: Int): Int          // int left shift
-  def << (cnt: Long): Int         // long left shift
+  def << (cnt: Int): Int          // int 左移
+  def << (cnt: Long): Int         // long 右移
   /* analogous for >>, >>> */
 
-  def unary_+ : Int               // int identity
-  def unary_- : Int               // int negation
-  def unary_~ : Int               // int bitwise negation
+  def unary_+ : Int               // int 正
+  def unary_- : Int               // int 负
+  def unary_~ : Int               // int 按位取反
 
-  def toByte: Byte                // convert to Byte
-  def toShort: Short              // convert to Short
-  def toChar: Char                // convert to Char
-  def toInt: Int                  // convert to Int
-  def toLong: Long                // convert to Long
-  def toFloat: Float              // convert to Float
-  def toDouble: Double            // convert to Double
+  def toByte: Byte                // 变为 Byte
+  def toShort: Short              // 变为 Short
+  def toChar: Char                // 变为 Char
+  def toInt: Int                  // 变为 Int
+  def toLong: Long                // 变为 Long
+  def toFloat: Float              // 变为 Float
+  def toDouble: Double            // 变为 Double
 }
 ```
 
-### Class `Boolean`
+###  `Boolean`类
 
-Class `Boolean` has only two values: `true` and
-`false`. It implements operations as given in the following
-class definition.
+`Boolean`类只有两个值： `true` 和
+`false`. 它实现了以下类定义中给出的操作.
 
 ```scala
 package scala
@@ -308,53 +217,34 @@ abstract sealed class Boolean extends AnyVal {
     if (this) false else true
 }
 ```
+该类椰实现了`Any`类中的 `equals`, `hashCode`,和 `toString`操作。
 
-The class also implements operations `equals`, `hashCode`,
-and `toString` from class `Any`.
+如果参数与接收者的布尔值相同，则`equals`方法返回`true`,否则就返回`false`。`hashcode`方法在调用`true`时返回一个固定的，特定于实现的哈希代码，并在`false`时调用另一个固定的，特定于实现的哈希代码。`toString`方法将接受者变为一个字符串，例如`"true"` 或 `"false"`
 
-The `equals` method returns `true` if the argument is the
-same boolean value as the receiver, `false` otherwise.  The
-`hashCode` method returns a fixed, implementation-specific hash-code when invoked on `true`,
-and a different, fixed, implementation-specific hash-code when invoked on `false`. The `toString` method
-returns the receiver converted to a string, i.e. either `"true"` or `"false"`.
+### `Unit`类
 
-### Class `Unit`
+`Unit`类只有一个值`()`，它只实现了`Any`类中的三个方法`equals`, `hashCode`, 和 `toString`。
 
-Class `Unit` has only one value: `()`. It implements only
-the three methods `equals`, `hashCode`, and `toString`
-from class `Any`.
+如果参量是值`()`则`equal`方法返回`true`，否则返回`false`。`hashCode`方法返回一个固定的与实现有关的hash-code值。`toString`方法返回`"()"`.
 
-The `equals` method returns `true` if the argument is the
-unit value `()`, `false` otherwise.  The
-`hashCode` method returns a fixed, implementation-specific hash-code,
-The `toString` method returns `"()"`.
 
-## Standard Reference Classes
+## 标准引用类
 
-This section presents some standard Scala reference classes which are
-treated in a special way by the Scala compiler – either Scala provides
-syntactic sugar for them, or the Scala compiler generates special code
-for their operations. Other classes in the standard Scala library are
-documented in the Scala library documentation by HTML pages.
+本节介绍了一些标准的Scala引用类，他们由Scala编译器以特殊方式处理-或者Scala为他们提供语法糖，或者Scala编译器为他们的操作生成特殊代码。Scala标准库中的其他类的文档在Scala库文档的HTML页中。
 
-### Class `String`
+### `String`类
 
-Scala's `String` class is usually derived from the standard String
-class of the underlying host system (and may be identified with
-it). For Scala clients the class is taken to support in each case a
-method
+Scala的`String`类通常派生自底层地同的String类(可能有所不同)。对于Scala客户的来说该类在每种情况喜爱斗支持一种方法
 
 ```scala
 def + (that: Any): String
 ```
 
-which concatenates its left operand with the textual representation of its
-right operand.
+它将其左操作数与其右操作数的文本表示连接起来。
 
-### The `Tuple` classes
+### `Tuple`类
 
-Scala defines tuple classes `Tuple$n$` for $n = 2 , \ldots , 22$.
-These are defined as follows.
+Scala 为$n = 2 , \ldots , 22$定义了元组类 `Tuple$n$`。这些定义如下
 
 ```scala
 package scala
@@ -363,10 +253,9 @@ case class Tuple$n$[+T_1, ..., +T_n](_1: T_1, ..., _$n$: T_$n$) {
 }
 ```
 
-### The `Function` Classes
+### `Function`类
 
-Scala defines function classes `Function$n$` for $n = 1 , \ldots , 22$.
-These are defined as follows.
+Scala 定义了 `Function$n$` 类函数 $n = 1 , \ldots , 22$.这些定义如下
 
 ```scala
 package scala
@@ -376,23 +265,20 @@ trait Function$n$[-T_1, ..., -T_$n$, +R] {
 }
 ```
 
-The `PartialFunction` subclass of `Function1` represents functions that (indirectly) specify their domain.
-Use the `isDefined` method to query whether the partial function is defined for a given input (i.e., whether the input is part of the function's domain).
+`Function1`的`PartialFunction`子类表示(间接)指其域的函数。使用`isDefined`方法查询是否为给定输入定义了部分函数。(即，输入是否是函数域的一部分)
+
 
 ```scala
 class PartialFunction[-A, +B] extends Function1[A, B] {
   def isDefinedAt(x: A): Boolean
 }
 ```
+隐式导入的[`predef`]((#Predef对象))对象将名称`Function`定义为`Function1`的别名。
 
-The implicitly imported [`Predef`](#the-predef-object) object defines the name
-`Function` as an alias of `Function1`.
+### `Array`类
 
-### Class `Array`
+阵列上所有操作都涉及底层平台的相应操作。因此，以下类定义仅供参考：
 
-All operations on arrays desugar to the corresponding operations of the
-underlying platform. Therefore, the following class definition is given for
-informational purposes only:
 
 ```scala
 final class Array[T](_length: Int)
@@ -404,20 +290,13 @@ extends java.io.Serializable with java.lang.Cloneable {
 }
 ```
 
-If $T$ is not a type parameter or abstract type, the type `Array[T]`
-is represented as the array type `|T|[]` in the
-underlying host system, where `|T|` is the erasure of `T`.
-If $T$ is a type parameter or abstract type, a different representation might be
-used (it is `Object` on the Java platform).
+如果$T$不是类型参数或抽象类型，则类型`Array[T]`表示底层主机系统中的原生数组类型`|T|[]`，其中`|T|`是`T`的擦除。如果$T$不是类型参数或抽象类型，则可以使用不同的表示(相当于java平台的`Object`)。
 
-#### Operations
+#### 操作
 
-`length` returns the length of the array, `apply` means subscripting,
-and `update` means element update.
+`length`返回数组的长度，`apply`表示下标，`update`表示元素更新。
 
-Because of the syntactic sugar for `apply` and `update` operations,
-we have the following correspondences between Scala and Java code for
-operations on an array `xs`:
+由于`apply`和`update`操作的语法糖，我们在Scala和Java代码之间具有以下对于关系，用于对数组`xs`进行操作:
 
 |_Scala_           |_Java_      |
 |------------------|------------|
@@ -425,35 +304,17 @@ operations on an array `xs`:
 |`xs(i)`           |`xs[i]`     |
 |`xs(i) = e`       |`xs[i] = e` |
 
-Two implicit conversions exist in `Predef` that are frequently applied to arrays:
-a conversion to `scala.collection.mutable.ArrayOps` and a conversion to
-`scala.collection.mutable.ArraySeq` (a subtype of `scala.collection.Seq`).
+`Predef`中存在两个经常引用于数组的隐式转换：转化为`scala.collection.mutable.ArrayOps`和转换为`scala.collection.mutable.ArraySeq`(`scala.collection.Seq`的子类型)
 
-Both types make many of the standard operations found in the Scala
-collections API available. The conversion to `ArrayOps` is temporary, as all operations
-defined on `ArrayOps` return a value of type `Array`, while the conversion to `ArraySeq`
-is permanent as all operations return a value of type `ArraySeq`.
-The conversion to `ArrayOps` takes priority over the conversion to `ArraySeq`.
+这两种类型都可以使用scala集合API中的多标准操作。转换为`ArrayOps`是临时的，因为在`ArrayOps`上定义的所有操作都返回`Array`类型的值。而转移为`ArraySeq`是永久性的，因为所有操作都返回`ArraySeq`类型的值。转换为`ArrayOps`优先与转换为`ArraySeq`。
 
-Because of the tension between parametrized types in Scala and the ad-hoc
-implementation of arrays in the host-languages, some subtle points
-need to be taken into account when dealing with arrays. These are
-explained in the following.
+由于Scala中的参数化类型和宿主语言中的数组的特殊实现之间的紧张关系，在处理数组时需要考虑一些微妙的问题。下面将对此进行解释。
 
-#### Variance
+#### 变性
 
-Unlike arrays in Java, arrays in Scala are _not_
-co-variant; That is, $S <: T$ does not imply
-`Array[$S$] $<:$ Array[$T$]` in Scala.
-However, it is possible to cast an array
-of $S$ to an array of $T$ if such a cast is permitted in the host
-environment.
+与java中的数组不同，Scala中的数组_不是_共变体。也就是说，$S <: T$并不意味着Scala中的数组`Array[$S$] $<:$ Array[$T$]` 。但是，如果在主机环境中允许这样的强制转换，则可以将$S$数组转换为$T$数组。
 
-For instance `Array[String]` does not conform to
-`Array[Object]`, even though `String` conforms to `Object`.
-However, it is possible to cast an expression of type
-`Array[String]` to `Array[Object]`, and this
-cast will succeed without raising a `ClassCastException`. Example:
+例如，`Array[String]`不符合`Array[Object]`,即使`String `符合`Object`。但是，可以将`Array[String]`类型的表达式转换为`Array[Object]`，并且此转换将成功，而且不会引发`ClassCastException`。例如：
 
 ```scala
 val xs = new Array[String](2)
@@ -461,14 +322,8 @@ val xs = new Array[String](2)
 val ys: Array[Object] = xs.asInstanceOf[Array[Object]] // OK
 ```
 
-The instantiation of an array with a polymorphic element type $T$ requires
-information about type $T$ at runtime.
-This information is synthesized by adding a [context bound](07-implicits.html#context-bounds-and-view-bounds)
-of `scala.reflect.ClassTag` to type $T$.
-An example is the
-following implementation of method `mkArray`, which creates
-an array of an arbitrary type $T$, given a sequence of $T$`s which
-defines its elements:
+具有多态元素类型$T$的数组的实例化在运行时需要有关类型$T$的信息。通过将`scala.reflect.ClassTag`的[上下文绑定](07-implicits.html#context-bounds-and-view-bounds)添加到$T$类型来合成此信息。例如方法`mkArray`的以下实现，它创建一个任意类型$T$的数组，给定一个定义其元素的$T$序列：
+
 
 ```scala
 import reflect.ClassTag
@@ -482,94 +337,84 @@ def mkArray[T : ClassTag](elems: Seq[T]): Array[T] = {
   result
 }
 ```
+如果类型$T$是主机平台提供专用数组表示的类型，则使用此方法。
 
-If type $T$ is a type for which the host platform offers a specialized array
-representation, this representation is used.
 
-###### Example
-On the Java Virtual Machine, an invocation of `mkArray(List(1,2,3))`
-will return a primitive array of `int`s, written as `int[]` in Java.
+###### 例
+在java虚拟机中，调用`mkArray(List(1,2,3))`将返回一个原始的`int`组，在java中写为`int[]`。
 
-#### Companion object
+#### 伴随对象
 
-`Array`'s companion object provides various factory methods for the
-instantiation of single- and multi-dimensional arrays, an extractor method
-[`unapplySeq`](08-pattern-matching.html#extractor-patterns) which enables pattern matching
-over arrays and additional utility methods:
-
+`Array`的伴随对象为单维和多维数组的实例化提供类各种工厂方法，一个提取器方法是[`unapplySeq`](08-pattern-matching.html#extractor-patterns)，他支持数组上的模式匹配和其他使用的工具方法：
 ```scala
 package scala
 object Array {
-  /** copies array elements from `src` to `dest`. */
+  /** 从 `src`复制元素到`dest`. */
   def copy(src: AnyRef, srcPos: Int,
            dest: AnyRef, destPos: Int, length: Int): Unit = $\ldots$
 
-  /** Returns an array of length 0 */
+  /** 返回长度为0的数组 */
   def empty[T: ClassTag]: Array[T] =
 
-  /** Create an array with given elements. */
+  /** 用给定元素创建一个数组. */
   def apply[T: ClassTag](xs: T*): Array[T] = $\ldots$
 
-  /** Creates array with given dimensions */
+  /** 创建具有给定大小的数组 */
   def ofDim[T: ClassTag](n1: Int): Array[T] = $\ldots$
-  /** Creates a 2-dimensional array */
+  /** 创建一个二维数组 */
   def ofDim[T: ClassTag](n1: Int, n2: Int): Array[Array[T]] = $\ldots$
   $\ldots$
 
-  /** Concatenate all argument arrays into a single array. */
+  /** 将参数中所有数组合并一个新的数组. */
   def concat[T: ClassTag](xss: Array[T]*): Array[T] = $\ldots$
 
-  /** Returns an array that contains the results of some element computation a number
-    * of times. */
+  /** 如果一个数组，其中包含多次元素计算的结果. */
   def fill[T: ClassTag](n: Int)(elem: => T): Array[T] = $\ldots$
-  /** Returns a two-dimensional array that contains the results of some element
-    * computation a number of times. */
+  /** 返回一个二维数组，其中包含多次元素计算的结果. */
   def fill[T: ClassTag](n1: Int, n2: Int)(elem: => T): Array[Array[T]] = $\ldots$
   $\ldots$
 
-  /** Returns an array containing values of a given function over a range of integer
-    * values starting from 0. */
+  /** 返回一个数组，该数组包含从0开始的整数值范围内给定函数的值. */
   def tabulate[T: ClassTag](n: Int)(f: Int => T): Array[T] = $\ldots$
-  /** Returns a two-dimensional array containing values of a given function
-    * over ranges of integer values starting from `0`. */
+  /** 返回一个二维数组，其中包含从`0`开始的整数值范围内给定函数的值. */
   def tabulate[T: ClassTag](n1: Int, n2: Int)(f: (Int, Int) => T): Array[Array[T]] = $\ldots$
   $\ldots$
 
-  /** Returns an array containing a sequence of increasing integers in a range. */
+  /** 返回一个数组，其中包含一个范围内递增整数的序列。. */
   def range(start: Int, end: Int): Array[Int] = $\ldots$
-  /** Returns an array containing equally spaced values in some integer interval. */
+  /** 返回一个包含某个整数间隔内等间距值的数组 */
   def range(start: Int, end: Int, step: Int): Array[Int] = $\ldots$
 
-  /** Returns an array containing repeated applications of a function to a start value. */
+  /** 返回一个包含函数重复应用于起始值的数组 */
   def iterate[T: ClassTag](start: T, len: Int)(f: T => T): Array[T] = $\ldots$
 
-  /** Enables pattern matching over arrays */
+  /** 启用数组上的模式匹配 */
   def unapplySeq[A](x: Array[A]): Option[IndexedSeq[A]] = Some(x)
 }
 ```
 
-## Class Node
+## Node类型
 
 ```scala
 package scala.xml
 
 trait Node {
 
-  /** the label of this node */
+  /** 此节点的标签 */
   def label: String
 
-  /** attribute axis */
+  /** 属性轴 */
   def attribute: Map[String, String]
 
-  /** child axis (all children of this node) */
+  /** 子节点轴（此节点的所有子节点） */
   def child: Seq[Node]
 
-  /** descendant axis (all descendants of this node) */
+  /** 下属节点轴(此节点的所有下属节点) */
   def descendant: Seq[Node] = child.toList.flatMap {
     x => x::x.descendant.asInstanceOf[List[Node]]
   }
 
-  /** descendant axis (all descendants of this node) */
+  /** 下属节点轴(此节点的所有下属节点) */
   def descendant_or_self: Seq[Node] = this::child.toList.flatMap {
     x => x::x.descendant.asInstanceOf[List[Node]]
   }
@@ -582,8 +427,7 @@ trait Node {
     case _ => false
   }
 
- /** XPath style projection function. Returns all children of this node
-  *  that are labeled with 'that'. The document order is preserved.
+ /** XPath形式的投影函数，返回该节点所有标签为`that`的子节点。保留他们在文档中的顺序
   */
     def \(that: Symbol): NodeSeq = {
       new NodeSeq({
@@ -599,8 +443,7 @@ trait Node {
       })
     }
 
- /** XPath style projection function. Returns all nodes labeled with the
-  *  name 'that' from the 'descendant_or_self' axis. Document order is preserved.
+ /** XPath形式的投影函数，返回该节点的`descendant_or_self`中所有标签为`that`的子节点。保留他们在文档中的顺序
   */
   def \\(that: Symbol): NodeSeq = {
     new NodeSeq(
@@ -611,23 +454,19 @@ trait Node {
       })
   }
 
-  /** hashcode for this XML node */
+  /** 该XML节点的hashcode  */
   override def hashCode =
     Utility.hashCode(label, attribute.toList.hashCode, child)
 
-  /** string representation of this node */
+  /** 该节点的字符串表现形式 */
   override def toString = Utility.toXML(this)
 
 }
 ```
 
-## The `Predef` Object
+## `Predef`对象
 
-The `Predef` object defines standard functions and type aliases
-for Scala programs. It is implicitly imported, as described in
-[the chapter on name binding](02-identifiers-names-and-scopes.html),
-so that all its defined members are available without qualification.
-Its definition for the JVM environment conforms to the following signature:
+`Predef`对象为Scala程序定义类标准函数和类型别名。 它是隐式导入的，如[关于名称绑定的章节](02-identifiers-names-and-scopes.html)所述，因此所有定义的成员都可以不受限制地使用。他在JVM环境中的定义与一下签名一致：
 
 ```scala
 package scala
@@ -635,15 +474,15 @@ object Predef {
 
   // classOf ---------------------------------------------------------
 
-  /** Returns the runtime representation of a class type. */
+  /** 返回累类类型的运行时表示. */
   def classOf[T]: Class[T] = null
-   // this is a dummy, classOf is handled by compiler.
+   // 这是一个虚拟，classOf由编译器处理。
 
   // valueOf -----------------------------------------------------------
 
-  /** Retrieve the single value of a type with a unique inhabitant. */
+  /** 检索具有唯一居民的类型的单个值. */
   @inline def valueOf[T](implicit vt: ValueOf[T]): T {} = vt.value
-   // instances of the ValueOf type class are provided by the compiler.
+   // 值类型的实例由编译器提供。
 
   // Standard type aliases ---------------------------------------------
 
@@ -725,31 +564,20 @@ object Predef {
 }
 ```
 
-### Predefined Implicit Definitions
+### 预定义的隐式定义
 
-The `Predef` object also contains a number of implicit definitions, which are available by default (because `Predef` is implicitly imported).
-Implicit definitions come in two priorities. High-priority implicits are defined in the `Predef` class itself whereas low priority implicits are defined in a class inherited by `Predef`. The rules of
-static [overloading resolution](06-expressions.html#overloading-resolution)
-stipulate that, all other things being equal, implicit resolution
-prefers high-priority implicits over low-priority ones.
+`Predef`对象还包含许多隐式定义，这是默认提供的(因为隐式导入了`Predef`)。隐式定义有两个重点。高优先级的implicits是在`Predef`类本身中定义的，而低优先级的implicits是在`Predef`继承的类中定义的。静态[重载解析](06-expressions.html#overloading-resolution)规则规定，在其他条件相同的情况下，隐式解析更喜欢高优先级的影响，而不是低优先级的影响。
 
-The available low-priority implicits include definitions falling into the following categories.
+可用的低优先级影响包括以下类别的定义。
 
-1.  For every primitive type, a wrapper that takes values of that type
-    to instances of a `runtime.Rich*` class. For instance, values of type `Int`
-    can be implicitly converted to instances of class `runtime.RichInt`.
+1.  对于每个基本类型，一个包装器，他将该类型的值带到`runtime.Rich*`类的实例。例如，`Int`类型的值可以隐式转换为类`runtime.RichInt`的值。
+1.  对于既有基本类型元素的每个数组类型，将该类型的数组作为`ArraySeq`类的实例的包装器。例如，`Array[Float]`类型的值可以隐式转换为`ArraySeq[Float]`类的实例。还有通过数组包装器，它将`Array[T]`类型的元素用于任意`T`到`ArraySeq`.
+1.  从`String`到`WrappedString`的隐式转换。
 
-1.  For every array type with elements of primitive type, a wrapper that
-    takes the arrays of that type to instances of a `ArraySeq` class. For instance, values of type `Array[Float]` can be implicitly converted to instances of class `ArraySeq[Float]`.
-    There are also generic array wrappers that take elements
-    of type `Array[T]` for arbitrary `T` to `ArraySeq`s.
+可用的高优先级含义包括属于以下类别的定义。
 
-1.  An implicit conversion from `String` to `WrappedString`.
 
-The available high-priority implicits include definitions falling into the following categories.
-
-  * An implicit wrapper that adds `ensuring` methods
-    with the following overloaded variants to type `Any`.
+  * 一个隐式包装器，它使用以下重载变量添加`Any`的方法以键入`ensuring`。
 
     ```scala
     def ensuring(cond: Boolean): A = { assert(cond); x }
@@ -758,30 +586,22 @@ The available high-priority implicits include definitions falling into the follo
     def ensuring(cond: A => Boolean, msg: Any): A = { assert(cond(x), msg); x }
     ```
 
-  * An implicit wrapper that adds a `->` method with the following implementation
-    to type `Any`.
+  * 一个隐式包装器，它使用以下实现添加`->`方法来键入`Any`。
 
     ```scala
     def -> [B](y: B): (A, B) = (x, y)
     ```
 
-  * For every array type with elements of primitive type, a wrapper that
-    takes the arrays of that type to instances of a `runtime.ArrayOps`
-    class. For instance, values of type `Array[Float]` can be implicitly
-    converted to instances of class `runtime.ArrayOps[Float]`.  There are
-    also generic array wrappers that take elements of type `Array[T]` for
-    arbitrary `T` to `ArrayOps`s.
+  * 对于具有基本类型元素的每个数组类型，一个包装器，将该类型的数组转换为`runtime.ArrayOps`类的实例。例如，`Array[Float]`类型的值可以隐式转换为类`runtime.ArrayOps[Float]`的实例。还有通用数组包装器，它将 `Array[T]` 类型的元素用于任意`T`到`ArrayOps`。
 
-  * An implicit wrapper that adds `+` and `formatted` method with the following
-    implementations to type `Any`.
+  * 一个隐式包装器，它使用以下实现添加`+`和`format`方法以键入`Any`。
 
     ```scala
     def +(other: String) = String.valueOf(self) + other
     def formatted(fmtstr: String): String = fmtstr format self
     ```
 
-  * Numeric primitive conversions that implement the transitive closure of the
-    following mappings:
+  * 实现以下映射的传递闭包的数字基元转换：
 
     ```
     Byte  -> Short
@@ -792,8 +612,7 @@ The available high-priority implicits include definitions falling into the follo
     Float -> Double
     ```
 
-  * Boxing and unboxing conversions between primitive types and their boxed
-    versions:
+  * 原始类型与其盒装版本之间的装箱和拆箱转换：
 
     ```
     Byte    <-> java.lang.Byte
@@ -806,11 +625,11 @@ The available high-priority implicits include definitions falling into the follo
     Boolean <-> java.lang.Boolean
     ```
 
-  * An implicit definition that generates instances of type `T <:< T`, for
-    any type `T`. Here, `<:<` is a class defined as follows.
+  * 一个隐式定义，为任何类型`T`生成类型为`T <:< T`的实例。这里，`<:<`是一个定义如下的类。
+
 
     ```scala
     sealed abstract class <:<[-From, +To] extends (From => To)
     ```
 
-    Implicit parameters of `<:<` types are typically used to implement type constraints.
+     `<:<` 类型的隐式参数通常用于实现类型约束。
